@@ -38,8 +38,11 @@ async function getAnswer(question) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question }),
     });
-    if (!res.ok) throw new Error("API hatası: " + res.status);
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.error("API HATA DETAYI:", data);
+      throw new Error(data.error || ("API hatası: " + res.status));
+    }
     if (!data.answer) throw new Error("Boş cevap");
     return data.answer;
   } catch (err) {

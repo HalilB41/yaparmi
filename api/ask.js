@@ -32,20 +32,27 @@ Kurallar:
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: [{ text: `${systemPrompt}\n\nSoru: ${question}` }],
             },
           ],
           generationConfig: {
             temperature: 1.1,
-            maxOutputTokens: 60,
+            maxOutputTokens: 100,
           },
+          safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+          ],
         }),
       }
     );
@@ -53,17 +60,26 @@ Kurallar:
     if (!response.ok) {
       const errText = await response.text();
       console.error("Gemini API hatası:", response.status, errText);
-      throw new Error("Gemini API hatası");
+      return res.status(500).json({
+        error: "Gemini API hatası",
+        detail: `HTTP ${response.status}: ${errText.slice(0, 300)}`,
+      });
     }
 
     const data = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
-    if (!text) throw new Error("Boş cevap döndü");
+    if (!text) {
+      console.error("Boş cevap döndü, ham veri:", JSON.stringify(data).slice(0, 500));
+      return res.status(500).json({
+        error: "Boş cevap döndü",
+        detail: JSON.stringify(data).slice(0, 300),
+      });
+    }
 
     return res.status(200).json({ answer: text });
   } catch (err) {
     console.error("AI cevap hatası:", err.message);
-    return res.status(500).json({ error: "AI cevap üretemedi" });
+    return res.status(500).json({ error: "AI cevap üretemedi", detail: err.message });
   }
 }
