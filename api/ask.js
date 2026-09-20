@@ -45,7 +45,10 @@ Kurallar:
           ],
           generationConfig: {
             temperature: 1.1,
-            maxOutputTokens: 100,
+            maxOutputTokens: 500,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
           },
           safetySettings: [
             { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
