@@ -82,10 +82,22 @@ const askBtn = document.getElementById("ask-btn");
 const btnText = askBtn.querySelector(".btn-text");
 const btnLoading = askBtn.querySelector(".btn-loading");
 
+// Son sorulan soruyu hatırlıyoruz: kutuda hâlâ aynı soru duruyorsa
+// (kullanıcı yeni bir şey yazmadıysa) tekrar "Sor"a basınca soruyu
+// tekrar göndermek yerine kutuyu temizliyoruz.
+let lastAskedQuestion = null;
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const question = input.value.trim();
   if (!question) return;
+
+  if (lastAskedQuestion !== null && question === lastAskedQuestion) {
+    input.value = "";
+    lastAskedQuestion = null;
+    input.focus();
+    return;
+  }
 
   answerPlaceholderEl.hidden = true;
   askBtn.disabled = true;
@@ -96,10 +108,12 @@ form.addEventListener("submit", async (e) => {
   typeWrite(response);
   logQuestion(question, response);
 
+  lastAskedQuestion = question;
+
   askBtn.disabled = false;
   btnText.hidden = false;
   btnLoading.hidden = true;
-  input.value = "";
+  // Not: soru kutuda kalsın diye input.value burada temizlenmiyor.
   input.focus();
 });
 
