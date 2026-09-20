@@ -221,28 +221,6 @@ body {
 .sound-toggle:hover { transform: scale(1.08); background: rgba(0,0,0,0.55); }
 .sound-toggle.muted { opacity: 0.55; }
 
-.sound-unlock {
-  position: fixed;
-  left: 50%;
-  bottom: 90px;
-  transform: translateX(-50%);
-  z-index: 6;
-}
-.sound-unlock button {
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--card-border);
-  background: rgba(0,0,0,0.55);
-  color: var(--text);
-  font-size: 0.9rem;
-  cursor: pointer;
-  animation: pulse 1.8s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255,93,162,0.4); }
-  50% { box-shadow: 0 0 0 10px rgba(255,93,162,0); }
-}
-
 @media (max-width: 420px) {
   #ask-form { flex-direction: column; }
   #ask-btn { width: 100%; }

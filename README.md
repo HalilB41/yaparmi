@@ -1,6 +1,7 @@
 # yaparmi.com
 
-Berkay hakkında ne sorulursa sorulsun, kâhin (site) hep olumsuz cevap veriyor.
+Berkay hakkında ne sorulursa sorulsun, kâhin (site) hep olumsuz ama esprili
+bir cevap veriyor — cevapları gerçek zamanlı olarak Google Gemini AI üretiyor.
 Arka planda 2 ses dosyası sırayla çalıyor, isteyen sağ alttaki butondan
 kapatabiliyor. Sorular istersen Firebase'e kaydediliyor.
 
@@ -12,13 +13,30 @@ yaparmi-site/
 ├─ css/style.css
 ├─ js/firebase-config.js   <- kendi Firebase bilgilerini buraya yapıştır
 ├─ js/script.js
+├─ api/ask.js              <- Vercel serverless function, Gemini AI'ya soru gönderir
 ├─ audio/
-│  ├─ track1.mp3           <- eklenecek
-│  └─ track2.mp3           <- eklenecek
+│  ├─ track1.mp3
+│  └─ track2.mp3
 ├─ robots.txt              <- arama motorlarına kapalı (sadece link ile girilsin diye)
 ├─ vercel.json
+├─ push.bat                <- kodu tek tıkla GitHub'a gönderir
 └─ .gitignore
 ```
+
+## 0) AI cevapları için Gemini API key al (yeni)
+
+1. https://aistudio.google.com/apikey adresine git, Google hesabınla giriş yap.
+2. **Create API key** butonuna bas, ücretsiz bir key oluşacak (Gemini'nin
+   ücretsiz kullanım kotası var, küçük bir şaka sitesi için fazlasıyla yeterli).
+3. Oluşan key'i kopyala.
+4. Vercel'de projenin içine gir → **Settings > Environment Variables**.
+5. Key adı: `GEMINI_API_KEY`, Value: kopyaladığın key. **Save**.
+6. Kaydettikten sonra projeyi bir kere yeniden deploy et (Deployments sekmesinden
+   son deployment'ın yanındaki "..." menüsünden **Redeploy**) ki değişken aktif olsun.
+
+Not: Bu key'i asla `js/` klasöründeki dosyalara veya GitHub'a yapıştırma —
+sadece Vercel'in Environment Variables kısmına eklenir, orada gizli kalır.
+API key eklemezsen site bozulmaz, sadece sabit/rastgele yedek cevapları kullanır.
 
 ## 1) Ses dosyalarını ekle
 

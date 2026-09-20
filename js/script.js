@@ -4,9 +4,9 @@
 
 const NAME = "Berkay";
 
-// Ne sorulursa sorulsun havuzdan rastgele bir "olumsuz" cevap seçilir.
-// {name} otomatik olarak yukarıdaki NAME ile değiştirilir.
-const RESPONSES = [
+// AI cevap veremezse (kota doldu, internet yok vb.) buradan rastgele
+// bir yedek cevap seçilir, site hiçbir zaman bozulmaz.
+const FALLBACK_RESPONSES = [
   "Hayır, {name} bunu yapamaz.",
   "{name}'dan bu iş çıkmaz, boşuna bekleme.",
   "İhtimal düşük... aslında ihtimal yok, {name} başaramaz.",
@@ -22,14 +22,30 @@ const RESPONSES = [
   "%0 ihtimal. {name} bunu yapamaz.",
   "{name} bu sefer de son ana bırakıp yapamayacak.",
   "Maalesef {name} bunu da yapamayacak.",
-  "Herkes umutlanıyor ama {name} yine yapamaz.",
-  "{name} sözde girişir, sonunda yapamaz.",
-  "Falcı bakıyor... falcı gülüyor... {name} yapamaz.",
 ];
 
-function pickResponse() {
-  const template = RESPONSES[Math.floor(Math.random() * RESPONSES.length)];
+function pickFallbackResponse() {
+  const template = FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
   return template.replaceAll("{name}", NAME);
+}
+
+// ---------------- AI'dan cevap al (yedekli) ----------------
+
+async function getAnswer(question) {
+  try {
+    const res = await fetch("/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+    });
+    if (!res.ok) throw new Error("API hatası: " + res.status);
+    const data = await res.json();
+    if (!data.answer) throw new Error("Boş cevap");
+    return data.answer;
+  } catch (err) {
+    console.warn("AI cevabı alınamadı, yedek cevap kullanılıyor:", err.message);
+    return pickFallbackResponse();
+  }
 }
 
 // ---------------- Typewriter efekti (Google Çeviri tarzı) ----------------
@@ -63,7 +79,7 @@ const askBtn = document.getElementById("ask-btn");
 const btnText = askBtn.querySelector(".btn-text");
 const btnLoading = askBtn.querySelector(".btn-loading");
 
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const question = input.value.trim();
   if (!question) return;
@@ -73,18 +89,15 @@ form.addEventListener("submit", (e) => {
   btnText.hidden = true;
   btnLoading.hidden = false;
 
-  // Küçük bir "düşünme" gecikmesi -> falcı havası
-  setTimeout(() => {
-    const response = pickResponse();
-    typeWrite(response);
-    logQuestion(question, response);
+  const response = await getAnswer(question);
+  typeWrite(response);
+  logQuestion(question, response);
 
-    askBtn.disabled = false;
-    btnText.hidden = false;
-    btnLoading.hidden = true;
-    input.value = "";
-    input.focus();
-  }, 500 + Math.random() * 500);
+  askBtn.disabled = false;
+  btnText.hidden = false;
+  btnLoading.hidden = true;
+  input.value = "";
+  input.focus();
 });
 
 // ---------------- Firestore'a kayıt (opsiyonel) ----------------
@@ -105,26 +118,32 @@ function logQuestion(question, response) {
 // ============================================================
 // Arka plan sesleri — iki dosya sırayla, otomatik ve döngülü
 // ============================================================
+// Tarayıcılar sesli otomatik oynatmayı engelliyor, bu yüzden:
+// 1) Ses "sessiz" (muted) halde otomatik başlar (buna her tarayıcı izin verir).
+// 2) Kullanıcı sayfada herhangi bir yere ilk tıkladığı / bir tuşa bastığı an
+//    ses otomatik olarak sesli hale gelir. Ayrı bir "başlat" butonuna gerek yok.
 
 const track1 = document.getElementById("track1");
 const track2 = document.getElementById("track2");
 const soundToggle = document.getElementById("sound-toggle");
 const soundIcon = document.getElementById("sound-icon");
-const soundUnlock = document.getElementById("sound-unlock");
-const soundUnlockBtn = document.getElementById("sound-unlock-btn");
 
 const tracks = [track1, track2];
 let currentTrack = 0;
 let isMuted = false;
+let soundUnlocked = false;
+
+tracks.forEach((audio) => {
+  audio.muted = true;
+  audio.addEventListener("ended", playNextTrack);
+});
 
 function playCurrentTrack() {
-  if (isMuted) return;
   const audio = tracks[currentTrack];
   const p = audio.play();
   if (p && p.catch) {
     p.catch(() => {
-      // Tarayıcı otomatik oynatmayı engelledi, kullanıcı etkileşimi bekleniyor.
-      soundUnlock.hidden = false;
+      /* tarayıcı engelledi, ilk kullanıcı etkileşiminde tekrar denenecek */
     });
   }
 }
@@ -134,18 +153,17 @@ function playNextTrack() {
   playCurrentTrack();
 }
 
-tracks.forEach((audio) => {
-  audio.addEventListener("ended", playNextTrack);
-});
-
-function startAudioLoop() {
-  soundUnlock.hidden = true;
+function unlockSound() {
+  if (soundUnlocked || isMuted) return;
+  soundUnlocked = true;
+  tracks.forEach((a) => (a.muted = false));
   playCurrentTrack();
 }
 
-soundUnlockBtn.addEventListener("click", startAudioLoop);
+["click", "touchstart", "keydown", "scroll"].forEach((evt) => {
+  document.addEventListener(evt, unlockSound, { once: true, passive: true });
+});
 
-// Sayfa yüklenir yüklenmez dene; tarayıcı engellerse "sesi başlat" butonu çıkar.
 window.addEventListener("load", () => {
   playCurrentTrack();
 });
@@ -158,8 +176,9 @@ soundToggle.addEventListener("click", () => {
 
   if (isMuted) {
     tracks.forEach((a) => a.pause());
-    soundUnlock.hidden = true;
   } else {
+    soundUnlocked = true;
+    tracks.forEach((a) => (a.muted = false));
     playCurrentTrack();
   }
 });
