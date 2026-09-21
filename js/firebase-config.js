@@ -14,12 +14,13 @@
 // ============================================================
 
 const firebaseConfig = {
-  apiKey: "BURAYA_API_KEY_GELECEK",
-  authDomain: "BURAYA_PROJE.firebaseapp.com",
-  projectId: "BURAYA_PROJE_ID",
-  storageBucket: "BURAYA_PROJE.appspot.com",
-  messagingSenderId: "BURAYA_SENDER_ID",
-  appId: "BURAYA_APP_ID"
+  apiKey: "AIzaSyBvkESGAXaEfIFUZxlfO3fA0VZHguDaX4U",
+  authDomain: "yaparmi.firebaseapp.com",
+  projectId: "yaparmi",
+  storageBucket: "yaparmi.firebasestorage.app",
+  messagingSenderId: "601883593189",
+  appId: "1:601883593189:web:22d1fbd6562e7f8e33070c",
+  measurementId: "G-1EL6G2D6DX"
 };
 
 let db = null;
