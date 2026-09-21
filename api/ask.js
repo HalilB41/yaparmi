@@ -75,12 +75,23 @@ async function askNousWithModel(model, apiKey, messages, maxTokens) {
   }
 
   const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content?.trim();
+  const choice = data?.choices?.[0];
+  // Bazı modeller cevabı "content" yerine "reasoning_content"/"text" gibi
+  // farklı bir alanda döndürüyor; hepsini sırayla deniyoruz.
+  const text = (
+    choice?.message?.content ||
+    choice?.message?.reasoning_content ||
+    choice?.text ||
+    ""
+  )
+    .toString()
+    .trim();
   if (!text) {
     return {
+      // Bu modelde format uyuşmuyor olabilir, bir sonraki adayı dene.
       ok: false,
-      retryable: false,
-      detail: `Nous (${model}) boş cevap döndü: ` + JSON.stringify(data).slice(0, 200),
+      retryable: true,
+      detail: `Nous (${model}) boş cevap döndü (finish_reason: ${choice?.finish_reason}): ` + JSON.stringify(data).slice(0, 400),
     };
   }
   return { ok: true, answer: text };

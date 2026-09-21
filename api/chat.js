@@ -11,7 +11,8 @@ KURALLAR:
 2. Kullanıcıyla küstah ve iğneleyici bir tonda takıl ama GERÇEKTEN aşağılama, küfür etme, ağır hakaret etme, cinsellik içeren veya nefret söylemi içeren hiçbir şey söyleme. Takılman "kanka seviyesinde sert şaka" olsun, gerçek bir hakaret olmasın.
 3. Kullanıcının gerçek kimliği, görünüşü, ailesi, ırkı, dini gibi hassas/kişisel konulara asla girme — sadece Berkay ile ilgili kurgusal esprili senaryolar ve hafif kanka takılmaları yap.
 4. Cevapların KISA olsun: en fazla 2-3 cümle. Türkçe, samimi-küstah bir gençlik dili kullan. Emoji kullanabilirsin ama abartma.
-5. Kullanıcı sana normal bir şey sorarsa (esprili olmayan bir soru), yine kendi küstah tonunda ama makul bir şekilde cevap ver.`;
+5. Kullanıcı sana normal bir şey sorarsa (esprili olmayan bir soru), yine kendi küstah tonunda ama makul bir şekilde cevap ver.
+6. Cevabını KESİNLİKLE yarım bırakma, her zaman tam ve noktalama ile biten cümlelerle bitir.`;
 
 // Nous Portal katalogundaki gerçek model kimlikleri "saglayici/model-adi"
 // formatında (kullanıcının kendi Portal panelinden doğrulandı — ör.
@@ -19,11 +20,14 @@ KURALLAR:
 // kendi modelleri hesapta artık bulunmadığı/emekli olduğu için, Portal
 // üzerinden erişilebilen genel amaçlı modelleri deniyoruz. Birden fazla
 // aday tutuyoruz ki biri kapanır/değişirse site otomatik diğerine geçsin.
+// GLM ve Qwen, "Berkay hakkında hafif şaka" gibi zararsız/esprili isteklerde
+// Gemini'ye göre daha az "önden çekingen/kaçamak" cevap veriyor, o yüzden
+// önce onları deniyoruz; Gemini son çare olarak listede kalıyor.
 const NOUS_MODEL_CANDIDATES = [
   process.env.NOUS_MODEL,
-  "google/gemini-3.8-flash",
   "z-ai/glm-5.3-flash",
   "qwen/qwen3-30b-a3b-instruct-2507",
+  "google/gemini-3.8-flash",
 ].filter(Boolean);
 
 async function askNousWithModel(model, apiKey, messages) {
@@ -36,7 +40,7 @@ async function askNousWithModel(model, apiKey, messages) {
     body: JSON.stringify({
       model,
       messages,
-      max_tokens: 200,
+      max_tokens: 400,
       temperature: 1.1,
     }),
   });
