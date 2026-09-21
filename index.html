@@ -20,24 +20,31 @@
   </div>
 
   <main class="app-shell">
-    <header class="site-header">
+    <header class="topbar">
+      <button type="button" class="hamburger-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
       <a href="#" class="logo-link" id="homeLink" aria-label="Ana sayfaya dön (soru-cevap)">
         <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
       </a>
-      <p class="subtitle">Berkay'ın hayatı hakkında merak ettiğin her şeyi sor.</p>
+
+      <div class="auth-widget" id="authWidget">
+        <button type="button" class="auth-toggle" id="authToggle">Giriş Yap</button>
+        <div class="card auth-panel" id="authPanel" hidden></div>
+      </div>
     </header>
 
-    <nav class="side-fab side-fab-left" id="leftNav">
-      <a href="/spor" class="fab-item">
-        <span class="fab-icon">⚽</span><span class="fab-label">Spor</span>
-      </a>
-      <a href="/ders" class="fab-item">
-        <span class="fab-icon">📚</span><span class="fab-label">Ders</span>
-      </a>
-      <a href="/oyun" class="fab-item">
-        <span class="fab-icon">🎮</span><span class="fab-label">Oyun</span>
-      </a>
+    <p class="subtitle" style="text-align:center;">Berkay'ın hayatı hakkında merak ettiğin her şeyi sor.</p>
+
+    <nav class="menu-drawer" id="menuDrawer" hidden>
+      <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
+      <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
+      <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
+      <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
+      <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
     </nav>
+    <div class="menu-overlay" id="menuOverlay" hidden></div>
 
     <section class="center-panel">
         <div class="panel card" id="panel-trivia">
@@ -97,36 +104,30 @@
         </div>
     </section>
 
-    <nav class="side-fab side-fab-right" id="rightNav">
-      <a href="/sosyal" class="fab-item">
-        <span class="fab-icon">👥</span><span class="fab-label">Sosyal Hayat</span>
-      </a>
-      <a href="/galeri" class="fab-item">
-        <span class="fab-icon">🖼️</span><span class="fab-label">Galeri</span>
-      </a>
-      <button type="button" class="fab-item" data-view="ahir">
-        <span class="fab-icon">🐴</span><span class="fab-label">Berkayın Ahırı</span>
-      </button>
-    </nav>
-
     <footer class="site-footer">
       <p>yaparmi.com — sadece eğlence amaçlıdır 😄</p>
     </footer>
   </main>
 
+  <!-- Sağ altta sabit: Berkayın Ahırı + ses açma/kapama -->
+  <div class="corner-fab" id="cornerFab">
+    <button type="button" class="fab-round" id="ahirBtn" data-view="ahir" aria-label="Berkayın Ahırı">🐴</button>
+    <button id="sound-toggle" class="fab-round sound-toggle" aria-pressed="false" title="Sesi aç/kapat">
+      <span id="sound-icon">🔊</span>
+    </button>
+  </div>
+
   <!-- Arka plan sesleri: audio/track1.mp3 ve audio/track2.mp3 sırayla çalar -->
   <audio id="track1" src="audio/track1.mp3" preload="auto"></audio>
   <audio id="track2" src="audio/track2.mp3" preload="auto"></audio>
-
-  <button id="sound-toggle" class="sound-toggle" aria-pressed="false" title="Sesi aç/kapat">
-    <span id="sound-icon">🔊</span>
-  </button>
 
   <!-- Firebase (compat SDK) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>

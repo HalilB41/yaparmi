@@ -7,16 +7,25 @@ sağ alttaki butondan kapatabiliyor. Sorular istersen Firebase'e kaydediliyor.
 
 **Berkayın Ahırı** ayrı bir şey: orada yapay zeka YOK, sadece siteye giren
 gerçek ziyaretçiler Firebase üzerinden birbiriyle gerçek zamanlı yazışıyor.
+Ahır'da kullanılan takma ad, aşağıdaki gerçek **Kayıt Ol** hesabıyla
+**eşdeğer değil** — biri şifresiz/geçici bir takma ad, diğeri kullanıcı
+adı + şifre ile gerçek bir hesap. İkisi de tamamen opsiyonel, hiçbir şey
+için kayıt olmak zorunlu değil.
 
 ## Dosya yapısı
 
 ```
 yaparmi-site/
 ├─ index.html
-├─ spor.html, ders.html, oyun.html, sosyal.html, galeri.html   <- "çok yakında" sayfaları
+├─ spor.html, ders.html, oyun.html, sosyal.html   <- "çok yakında" sayfaları
+├─ galeri.html      <- yatay kaydırmalı fotoğraf galerisi + fotoğraf öner
+├─ admin.html       <- sadece "admin" kullanıcı adına giriş yapınca görünür
 ├─ css/style.css
 ├─ js/firebase-config.js   <- kendi Firebase bilgilerini buraya yapıştır
-├─ js/script.js
+├─ js/site.js       <- TÜM sayfalarda ortak: hamburger menü + giriş/kayıt widget'ı
+├─ js/script.js     <- sadece index.html: soru-cevap kutusu + Berkayın Ahırı
+├─ js/gallery.js    <- sadece galeri.html
+├─ js/admin.js      <- sadece admin.html
 ├─ api/ask.js              <- Vercel serverless function, Nous Research'e soru gönderir
 ├─ audio/
 │  ├─ track1.mp3
@@ -48,16 +57,20 @@ cevaplarına döner, hiçbir zaman bozulmaz.
 
 ## 2) Firebase kurulumu
 
-Firebase hem "Genel" kutusundaki soruları kaydetmek hem de **Berkayın
-Ahırı**'nın gerçek zamanlı, gerçek kullanıcı sohbetini çalıştırmak için
-kullanılıyor. Ahır olmadan da site çalışır ama Ahır'a girildiğinde "Firebase
-ayarlanmamış" uyarısı görünür.
+Firebase; "Genel" kutusundaki soruları kaydetmek, **Berkayın Ahırı**'nın
+gerçek zamanlı sohbetini çalıştırmak, **Giriş Yap / Kayıt Ol** hesap
+sistemini ve **Galeri**'yi çalıştırmak için kullanılıyor. Firebase
+eklemezsen site bozulmaz: "Genel" kutusu normal çalışır, geri kalanı
+(Ahır, giriş/kayıt, galeri) "bağlı değil" uyarısı gösterir.
 
 1. https://console.firebase.google.com → **Add project** → proje adı ver (ör. `yaparmi`).
 2. Sol menü → **Build > Firestore Database** → **Create database** → "test mode" ile başlat, sonra aşağıdaki kuralları uygula.
-3. Sol menü → **Build > Authentication** → **Get started** → **Sign-in method** sekmesinden **Anonymous**'u aç ve **Enable** yap. (Ahır'daki spam korumasının çalışması için bu şart — her ziyaretçiye görünmez, isimsiz bir kimlik veriyor.)
-4. Sol üstteki dişli ⚙️ → **Project settings** → **Your apps** → **</>** (Web) simgesine tıkla, bir isim ver, "Also set up Firebase Hosting" kutusunu **işaretleme**.
-5. Sana verilen `firebaseConfig` objesini kopyala, `js/firebase-config.js` içindeki `BURAYA_...` yerlerine yapıştır.
+3. Sol menü → **Build > Authentication** → **Get started** → **Sign-in method** sekmesinden **Anonymous**'u ve **Email/Password**'ü aç, ikisini de **Enable** yap.
+   - **Anonymous**: Ahır'daki (ve galerideki fotoğraf önerisi gönderme) spam korumasının çalışması için şart — her ziyaretçiye görünmez, isimsiz bir kimlik veriyor.
+   - **Email/Password**: sağ üstteki **Giriş Yap / Kayıt Ol** için şart. Kullanıcı sadece bir kullanıcı adı + şifre giriyor; arka planda bu, `kullaniciadi@yaparmi.local` gibi sahte bir e-postaya çevrilip Firebase'in kendi (güvenli, şifreleri düz metin tutmayan) e-posta/şifre girişiyle işleniyor — gerçek bir e-posta adresi değil, hiçbir yere mail atılmıyor.
+4. Sol menü → **Build > Storage** → **Get started** → varsayılan ayarlarla ilerle, sonra aşağıdaki Storage kurallarını uygula. (Galeri fotoğrafları burada tutuluyor.)
+5. Sol üstteki dişli ⚙️ → **Project settings** → **Your apps** → **</>** (Web) simgesine tıkla, bir isim ver, "Also set up Firebase Hosting" kutusunu **işaretleme**.
+6. Sana verilen `firebaseConfig` objesini kopyala, `js/firebase-config.js` içine yapıştır.
 
 ### Firestore güvenlik kuralları (spam/saldırı koruması dahil)
 
@@ -69,15 +82,37 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // "Genel" kutusundaki sorular — herkes ekleyebilir, kimse okuyamaz
-    // (sadece sen Firebase konsolundan görebilirsin).
-    match /sorular/{docId} {
-      allow create: if true;
-      allow read, update, delete: if false;
+    function isAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'admin';
     }
 
-    // Kullanıcı adı rezervasyonu — her isim sadece 1 kişiye ait olabilir.
-    // Belge ID'si = kullanıcı adının kendisi (boşluksuz, küçük harf, en
+    // "Genel" kutusundaki sorular — herkes ekleyebilir, sadece admin okuyabilir
+    // (admin panelinden "kim ne zaman ne sormuş" diye görmek için).
+    match /sorular/{docId} {
+      allow create: if true;
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Kayıtlı hesaplar (kullanıcı adı + şifre, sağ üstteki Giriş Yap/Kayıt Ol).
+    // Belge ID'si = uid. "admin" kullanıcı adını İLK ALAN kişi otomatik
+    // admin rolü alır ve tüm yetkilere sahip olur.
+    match /kullanicilar/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['kullaniciAdi', 'rol', 'olusturulmaTarihi'])
+        && request.resource.data.kullaniciAdi is string
+        && request.resource.data.kullaniciAdi.size() > 0
+        && request.resource.data.kullaniciAdi.size() <= 20
+        && request.resource.data.rol == (request.resource.data.kullaniciAdi == 'admin' ? 'admin' : 'kullanici')
+        && request.resource.data.olusturulmaTarihi == request.time;
+      allow update, delete: if false;
+    }
+
+    // Berkayın Ahırı'ndaki takma ad rezervasyonu (kayıt olmakla eşdeğer
+    // DEĞİL). Belge ID'si = takma adın kendisi (boşluksuz, küçük harf, en
     // fazla 12 karakter), bu yüzden aynı isim ikinci kez "create"
     // edilemez (Firestore bunu "update" sayar ve update kapalı olduğu
     // için istek reddedilir) — yani aynı isimden 2. kişi asla giremez.
@@ -96,9 +131,9 @@ service cloud.firestore {
 
     // Berkayın Ahırı — gerçek kullanıcı mesajları. Sadece (anonim de olsa)
     // giriş yapmış biri yazabilir, kendi kimliği (uid) dışında birini taklit
-    // edemez, sadece kendi rezerve ettiği kullanıcı adıyla yazabilir,
-    // isim boşluksuz + en fazla 12 karakter, mesaj uzunluğu sınırlı, ve
-    // son mesajından en az 3 saniye geçmeden yeni mesaj atamaz (aşağıdaki
+    // edemez, sadece kendi rezerve ettiği takma adla yazabilir, isim
+    // boşluksuz + en fazla 12 karakter, mesaj uzunluğu sınırlı, ve son
+    // mesajından en az 3 saniye geçmeden yeni mesaj atamaz (aşağıdaki
     // ahir_limits koleksiyonuyla).
     match /ahir_mesajlar/{mesajId} {
       allow read: if request.auth != null;
@@ -126,20 +161,78 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['sonMesajZamani'])
         && request.resource.data.sonMesajZamani == request.time;
     }
+
+    // Galeri — herkes bakabilir, sadece admin ekleyip çıkarabilir.
+    match /galeri/{fotoId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['yol', 'tarih'])
+        && request.resource.data.yol is string
+        && request.resource.data.tarih == request.time;
+      allow update, delete: if isAdmin();
+    }
+
+    // Galeri fotoğraf önerileri — giriş yapmış (anonim de olsa) herkes
+    // önerebilir, sadece admin görüp onaylayabilir/silebilir.
+    match /galeri_oneriler/{oneriId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['yol', 'gonderenUid', 'gonderenKullaniciAdi', 'tarih'])
+        && request.resource.data.yol is string
+        && request.resource.data.gonderenUid == request.auth.uid
+        && request.resource.data.tarih == request.time;
+    }
   }
 }
 ```
 
-Bu kurallar şunları garanti eder: (1) biri Firestore'a doğrudan istek atsa
-bile giriş yapmadan hiçbir şey yazamaz, (2) kendi kimliğinin dışında birini
-taklit edip spam atamaz, (3) aynı kullanıcı adını 2. bir kişi asla alamaz
-(isim = benzersiz belge ID'si), (4) kullanıcı adı boşluksuz (tek kelime) ve
-en fazla 12 karakter olmak zorunda, (5) 3 saniyeden sık mesaj gönderemez —
-yani site "birileri saldırıp çökertsin" diye açık bir kapı bırakmıyor.
+### Storage güvenlik kuralları (galeri fotoğrafları için)
 
-Firebase eklemezsen site bozulmaz: "Genel" kutusu normal çalışmaya devam
-eder, sorular hiçbir yere kaydedilmez ve Ahır'a girildiğinde bağlı olmadığını
-söyleyen bir uyarı gösterilir.
+Firebase Console → **Build > Storage** → **Rules** sekmesine şunu yapıştır ve
+**Publish** de:
+
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Yayınlanan galeri fotoğrafları — herkes görebilir, sadece admin
+    // yükleyip silebilir.
+    match /galeri/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && firestore.get(/databases/(default)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'admin';
+    }
+
+    // Onay bekleyen öneriler — sadece admin görebilir, giriş yapmış
+    // (anonim de olsa) herkes yükleyebilir (8MB'a kadar, sadece resim).
+    match /oneriler/{allPaths=**} {
+      allow read: if request.auth != null
+        && firestore.get(/databases/(default)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'admin';
+      allow write: if request.auth != null
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+```
+
+Bu kurallar şunları garanti eder: (1) biri Firestore/Storage'a doğrudan
+istek atsa bile giriş yapmadan hiçbir şey yazamaz, (2) kendi kimliğinin
+dışında birini taklit edip spam atamaz, (3) Ahır'da aynı takma adı 2. bir
+kişi asla alamaz, (4) galeriye sadece admin fotoğraf ekleyip çıkarabilir,
+öneri kuyruğunu sadece admin görebilir, (5) bot soru geçmişini sadece admin
+okuyabilir — yani site "birileri saldırıp çökertsin" diye açık bir kapı
+bırakmıyor.
+
+### İlk admin hesabını oluştur
+
+Rules'ı yayınladıktan sonra siteye gir, sağ üstten **Kayıt Ol**'a bas ve
+kullanıcı adı olarak **tam olarak `admin`** yaz (istediğin bir şifreyle).
+Bu kullanıcı adını ilk alan kişi otomatik olarak admin olur ve
+`/admin` sayfasından bot soru geçmişini ve galeri önerilerini
+yönetebilir — bu yüzden bunu ilk sen yapmalısın, başkası "admin" adını
+alırsa o kişi admin olur.
 
 ## 3) GitHub'a yükle
 
@@ -175,10 +268,20 @@ git push -u origin main
 - `robots.txt` ile Google gibi arama motorlarına "indexleme" dedik, yani sadece
   linki bilenler bulabilir, rastgele aramalarda çıkmaz.
 - Otomatik ses: tarayıcılar sesli otomatik oynatmayı bazen engelliyor. Öyle
-  olursa ekranda "🔊 Sesi başlat" düğmesi belirir, bir tıkla başlar. Sağ alttaki
-  yuvarlak buton sesi istediğin an kapatıp açar.
+  olursa ekranda "🔊 Sesi başlat" düğmesi belirir, bir tıkla başlar. Sağ
+  alttaki yuvarlak buton sesi istediğin an kapatıp açar.
 - Yedek cevap havuzunu (`js/script.js` içindeki `FALLBACK_RESPONSES` dizisi)
   istediğin an değiştirip yeni cümleler ekleyebilirsin.
 - Berkayın Ahırı'ndaki mesajlar Firestore'da kalıcı olarak duruyor (sohbet
   ekranında sadece en son 50 mesaj gösteriliyor). Zamanla çok birikirse
   Firebase konsolundan elle temizleyebilirsin.
+- Sol üstteki ☰ butonu Spor/Ders/Oyun/Sosyal Hayat/Galeri linklerini içeren
+  bir menü açar. Sağ altta Berkayın Ahırı ve ses açma/kapama butonları
+  sabit duruyor.
+- Galerideki bütün fotoğraflar (hem admin'in direkt eklediği hem
+  onaylanan öneriler) tarayıcıda otomatik olarak 1080×1080 kareye
+  kırpılıp küçültülüyor, böylece hepsi aynı boyutta görünüyor.
+- Kenar durumu: bir kişi önce Ahır'da (kayıt olmadan) bir takma ad seçip,
+  sonra farklı bir tarayıcı/oturumda gerçek hesaba kayıt olursa, eski
+  takma adı yeni hesaba otomatik taşınmaz — Ahır'a tekrar girip aynı adı
+  (boşsa) yeniden seçmesi gerekir.

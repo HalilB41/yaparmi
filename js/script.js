@@ -47,10 +47,11 @@ function showView(view) {
   });
 }
 
-// Sadece Berkayın Ahırı butonu (data-view'lı olan) sayfa içi panel
-// değiştiriyor; Spor/Ders/Oyun/Sosyal Hayat/Galeri artık düz <a href>
-// linkleri, tarayıcı kendi gerçek sayfa geçişini yapıyor.
-const allNavItems = document.querySelectorAll(".fab-item[data-view]");
+// Sadece Berkayın Ahırı butonu (data-view'lı olan, sağ alttaki yuvarlak
+// buton) sayfa içi panel değiştiriyor; Spor/Ders/Oyun/Sosyal Hayat/Galeri
+// artık hamburger menüdeki düz <a href> linkleri, tarayıcı kendi gerçek
+// sayfa geçişini yapıyor.
+const allNavItems = document.querySelectorAll("[data-view]");
 allNavItems.forEach((btn) => {
   btn.addEventListener("click", () => {
     allNavItems.forEach((b) => b.classList.remove("active"));
@@ -178,12 +179,19 @@ form.addEventListener("submit", async (e) => {
 function logQuestion(question, response, category) {
   if (typeof db === "undefined" || !db) return;
   try {
-    db.collection("sorular").add({
+    const profile = window.YaparmiAuth && window.YaparmiAuth.getProfile ? window.YaparmiAuth.getProfile() : null;
+    const payload = {
       soru: question,
       cevap: response,
       kategori: category || "genel",
       tarih: firebase.firestore.FieldValue.serverTimestamp(),
-    });
+    };
+    // Giriş yapmış (kayıtlı, anonim Ahır oturumu değil) biriyse kullanıcı
+    // adını da ekliyoruz — admin panelinde "kim sormuş" diye görünsün diye.
+    if (profile && profile.kullaniciAdi) {
+      payload.kullaniciAdi = profile.kullaniciAdi;
+    }
+    db.collection("sorular").add(payload);
   } catch (err) {
     console.warn("Soru kaydedilemedi:", err.message);
   }
@@ -462,10 +470,16 @@ function initAhir() {
     startAhirListener();
   });
 
-  auth.signInAnonymously().catch((err) => {
-    console.error("Ahır giriş hatası:", err.message);
-    appendAhirNotice("Sohbete bağlanılamadı, sayfayı yenilemeyi dene.");
-  });
+  // Zaten bir hesapla giriş yapılmışsa (sağ üstteki Giriş Yap/Kayıt Ol ile,
+  // anonim de olsa) onu kullan; anonim girişi SADECE hiç oturum yoksa
+  // başlat. Aksi halde signInAnonymously() gerçek hesabı değiştirip
+  // kullanıcıyı sessizce oturumdan düşürürdü.
+  if (!auth.currentUser) {
+    auth.signInAnonymously().catch((err) => {
+      console.error("Ahır giriş hatası:", err.message);
+      appendAhirNotice("Sohbete bağlanılamadı, sayfayı yenilemeyi dene.");
+    });
+  }
 }
 
 let lastAhirSendAt = 0;

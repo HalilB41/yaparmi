@@ -25,11 +25,18 @@ const firebaseConfig = {
 
 let db = null;
 let auth = null;
+let storage = null;
 
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   auth = firebase.auth();
+  // Storage SDK yüklenmemiş sayfalarda (bazı basit "çok yakında"
+  // sayfalarında) firebase.storage tanımsız olabilir, o yüzden kontrol
+  // ediyoruz — galeri özelliği o sayfalarda zaten kullanılmıyor.
+  if (typeof firebase.storage === "function") {
+    storage = firebase.storage();
+  }
 } catch (err) {
-  console.warn("Firebase henüz ayarlanmadı, sorular/Ahır sohbeti çalışmayacak:", err.message);
+  console.warn("Firebase henüz ayarlanmadı, sorular/Ahır sohbeti/galeri çalışmayacak:", err.message);
 }

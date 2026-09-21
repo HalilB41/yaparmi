@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ders — yaparmi.com</title>
+  <title>Admin Paneli — yaparmi.com</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css" />
@@ -41,11 +41,42 @@
     </nav>
     <div class="menu-overlay" id="menuOverlay" hidden></div>
 
-    <section class="center-panel">
-      <div class="panel card placeholder-card">
-        <h2>📚 Ders</h2>
-        <p class="muted">Çok yakında burada olacak...</p>
-        <p><a href="/" class="link-btn">◀ Ana sayfaya dön</a></p>
+    <section class="center-panel" style="max-width: 760px;">
+      <div class="panel card" id="adminGate">
+        <div class="admin-gate">
+          <p>Bu sayfayı görmek için <strong>admin</strong> kullanıcı adıyla giriş yapmalısın (sağ üstten).</p>
+        </div>
+      </div>
+
+      <div id="adminContent" hidden>
+        <div class="panel card admin-section">
+          <h2>📸 Galeri önerileri</h2>
+          <div id="queueList"><p class="muted">Yükleniyor...</p></div>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2>➕ Galeriye direkt fotoğraf ekle</h2>
+          <form class="admin-upload" id="adminUploadForm" autocomplete="off">
+            <input type="file" id="adminUploadFile" accept="image/*" required />
+            <button type="submit" class="admin-btn publish">Yayınla</button>
+          </form>
+          <p class="suggest-status" id="adminUploadStatus"></p>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2>🔮 Bot soru geçmişi</h2>
+          <p class="muted" style="margin-top:-6px;">Sadece giriş yapıp soru sormuş kişilerin kullanıcı adı görünür, giriş yapmadan sorulan sorular "Misafir" olarak listelenir.</p>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Tarih</th><th>Kullanıcı</th><th>Soru</th><th>Cevap</th></tr>
+              </thead>
+              <tbody id="soruTableBody">
+                <tr><td colspan="4" class="muted">Yükleniyor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -58,7 +89,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>
