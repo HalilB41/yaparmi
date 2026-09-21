@@ -13,30 +13,34 @@
 
 (function () {
   // ---------------- Hamburger menü ----------------
+  // Tam ekran kaplayan koyu bir perde YOK artık — menü sadece hamburger
+  // butonunun hemen altında küçük bir panel olarak açılıyor, dışarıya
+  // (panelin ve butonun dışına) tıklayınca kapanıyor.
   const menuBtn = document.getElementById("menuBtn");
   const menuDrawer = document.getElementById("menuDrawer");
-  const menuOverlay = document.getElementById("menuOverlay");
 
   function closeMenu() {
-    if (!menuBtn || !menuDrawer || !menuOverlay) return;
+    if (!menuBtn || !menuDrawer) return;
     menuBtn.setAttribute("aria-expanded", "false");
     menuDrawer.hidden = true;
-    menuOverlay.hidden = true;
   }
   function openMenu() {
-    if (!menuBtn || !menuDrawer || !menuOverlay) return;
+    if (!menuBtn || !menuDrawer) return;
     menuBtn.setAttribute("aria-expanded", "true");
     menuDrawer.hidden = false;
-    menuOverlay.hidden = false;
   }
   if (menuBtn) {
-    menuBtn.addEventListener("click", () => {
+    menuBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
       const isOpen = menuBtn.getAttribute("aria-expanded") === "true";
       if (isOpen) closeMenu();
       else openMenu();
     });
   }
-  if (menuOverlay) menuOverlay.addEventListener("click", closeMenu);
+  document.addEventListener("click", (e) => {
+    if (!menuDrawer || menuDrawer.hidden) return;
+    if (!menuDrawer.contains(e.target) && !menuBtn.contains(e.target)) closeMenu();
+  });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeMenu();
   });

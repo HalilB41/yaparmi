@@ -18,28 +18,28 @@
     <span class="blob blob-3"></span>
   </div>
 
+  <button type="button" class="hamburger-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="menu-drawer" id="menuDrawer" hidden>
+    <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
+    <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
+    <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
+    <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
+    <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
+  </nav>
+
+  <div class="auth-widget" id="authWidget">
+    <button type="button" class="auth-toggle" id="authToggle">Giriş Yap</button>
+    <div class="card auth-panel" id="authPanel" hidden></div>
+  </div>
+
   <main class="app-shell">
-    <header class="topbar">
-      <button type="button" class="hamburger-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+    <header class="site-header-simple">
       <a href="/" class="logo-link" aria-label="Ana sayfaya dön">
         <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
       </a>
-      <div class="auth-widget" id="authWidget">
-        <button type="button" class="auth-toggle" id="authToggle">Giriş Yap</button>
-        <div class="card auth-panel" id="authPanel" hidden></div>
-      </div>
     </header>
-
-    <nav class="menu-drawer" id="menuDrawer" hidden>
-      <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
-      <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
-      <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
-      <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
-      <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
-    </nav>
-    <div class="menu-overlay" id="menuOverlay" hidden></div>
 
     <section class="center-panel">
       <div class="panel card">

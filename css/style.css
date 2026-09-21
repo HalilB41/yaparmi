@@ -114,25 +114,22 @@ body {
 .placeholder-card h2 { margin-top: 0; }
 .muted { color: var(--text-dim); }
 
-/* ---------------- Üst bar: hamburger menü + logo + giriş/kayıt ---------------- */
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.topbar .logo-link { flex: none; }
+/* ---------------- Üst bar: hamburger menü + logo + giriş/kayıt ----------------
+   Hamburger SOL ÜST köşeye, Giriş Yap SAĞ ÜST köşeye "position: fixed" ile
+   sabitleniyor — yani gerçek ekran kenarına yapışıyor, sayfanın ortalanmış
+   880px'lik içerik sütununun içinde kaybolup ortada kalmıyor. Logo ise
+   normal akışta, sayfa başlığı olarak ortada duruyor. */
 
 .hamburger-btn {
-  flex: none;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 11;
   width: 48px;
   height: 48px;
   border-radius: 50%;
   border: 2px solid var(--accent);
-  background: rgba(20, 10, 40, 0.75);
+  background: rgba(20, 10, 40, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
@@ -156,28 +153,32 @@ body {
 .hamburger-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
 .hamburger-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-.menu-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 8;
+.site-header-simple {
+  text-align: center;
+  margin-bottom: 10px;
 }
 
+/* Menü artık tüm ekranı kaplayan bir çekmece DEĞİL — hamburger butonunun
+   hemen altına, ona bağlıymış gibi açılan, içeriği kadar yer kaplayan
+   küçük bir panel. */
 .menu-drawer {
   position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: min(270px, 82vw);
+  top: 78px;
+  left: 20px;
+  z-index: 11;
+  width: min(230px, 78vw);
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
   background: rgba(18, 10, 36, 0.98);
-  border-right: 1px solid var(--card-border);
+  border: 1px solid var(--card-border);
+  border-radius: 22px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  z-index: 9;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 84px 18px 24px;
+  gap: 10px;
+  padding: 14px;
 }
 
 /* Tüm menü butonları AYNI (tek) ton — sadece soldaki ikon rozeti hafifçe
@@ -219,9 +220,15 @@ body {
 .menu-item:nth-child(4) .fab-icon { background: rgba(255, 93, 162, 0.25); }
 .menu-item:nth-child(5) .fab-icon { background: rgba(124, 92, 255, 0.28); }
 
-/* ---------------- Sağ üst: Giriş Yap / Kayıt Ol ---------------- */
+/* ---------------- Sağ üst: Giriş Yap / Kayıt Ol ----------------
+   Hamburger gibi bu da gerçek ekran köşesine sabitleniyor. */
 
-.auth-widget { flex: none; position: relative; }
+.auth-widget {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 11;
+}
 
 .auth-toggle {
   padding: 10px 16px;

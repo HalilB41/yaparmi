@@ -19,32 +19,31 @@
     <span class="blob blob-3"></span>
   </div>
 
-  <main class="app-shell">
-    <header class="topbar">
-      <button type="button" class="hamburger-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+  <!-- Sol üst köşeye sabit: hamburger menü -->
+  <button type="button" class="hamburger-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="menu-drawer" id="menuDrawer" hidden>
+    <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
+    <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
+    <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
+    <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
+    <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
+  </nav>
 
+  <!-- Sağ üst köşeye sabit: Giriş Yap / Kayıt Ol -->
+  <div class="auth-widget" id="authWidget">
+    <button type="button" class="auth-toggle" id="authToggle">Giriş Yap</button>
+    <div class="card auth-panel" id="authPanel" hidden></div>
+  </div>
+
+  <main class="app-shell">
+    <header class="site-header-simple">
       <a href="#" class="logo-link" id="homeLink" aria-label="Ana sayfaya dön (soru-cevap)">
         <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
       </a>
-
-      <div class="auth-widget" id="authWidget">
-        <button type="button" class="auth-toggle" id="authToggle">Giriş Yap</button>
-        <div class="card auth-panel" id="authPanel" hidden></div>
-      </div>
+      <p class="subtitle">Berkay'ın hayatı hakkında merak ettiğin her şeyi sor.</p>
     </header>
-
-    <p class="subtitle" style="text-align:center;">Berkay'ın hayatı hakkında merak ettiğin her şeyi sor.</p>
-
-    <nav class="menu-drawer" id="menuDrawer" hidden>
-      <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
-      <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
-      <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
-      <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
-      <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
-    </nav>
-    <div class="menu-overlay" id="menuOverlay" hidden></div>
 
     <section class="center-panel">
         <div class="panel card" id="panel-trivia">
@@ -109,13 +108,13 @@
     </footer>
   </main>
 
-  <!-- Sağ altta sabit: Berkayın Ahırı + ses açma/kapama -->
-  <div class="corner-fab" id="cornerFab">
-    <button type="button" class="fab-round" id="ahirBtn" data-view="ahir" aria-label="Berkayın Ahırı">🐴</button>
-    <button id="sound-toggle" class="fab-round sound-toggle" aria-pressed="false" title="Sesi aç/kapat">
-      <span id="sound-icon">🔊</span>
-    </button>
-  </div>
+  <!-- Sol altta sabit: Berkayın Ahırı -->
+  <button type="button" class="fab-round corner-left" id="ahirBtn" data-view="ahir" aria-label="Berkayın Ahırı">🐴</button>
+
+  <!-- Sağ altta sabit: ses açma/kapama -->
+  <button id="sound-toggle" class="fab-round corner-right sound-toggle" aria-pressed="false" title="Sesi aç/kapat">
+    <span id="sound-icon">🔊</span>
+  </button>
 
   <!-- Arka plan sesleri: audio/track1.mp3 ve audio/track2.mp3 sırayla çalar -->
   <audio id="track1" src="audio/track1.mp3" preload="auto"></audio>
