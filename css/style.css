@@ -367,6 +367,13 @@ body {
 .link-btn[hidden] { display: none; }
 
 .username-gate p { color: var(--text-dim); margin-top: 0; }
+.username-error {
+  min-height: 1.2em;
+  margin: 8px 2px 0;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
 #usernameForm { display: flex; gap: 10px; }
 #usernameInput {
   flex: 1;

@@ -76,18 +76,38 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
+    // Kullanıcı adı rezervasyonu — her isim sadece 1 kişiye ait olabilir.
+    // Belge ID'si = kullanıcı adının kendisi (boşluksuz, küçük harf, en
+    // fazla 12 karakter), bu yüzden aynı isim ikinci kez "create"
+    // edilemez (Firestore bunu "update" sayar ve update kapalı olduğu
+    // için istek reddedilir) — yani aynı isimden 2. kişi asla giremez.
+    match /ahir_kullanicilar/{kullaniciAdi} {
+      allow read: if false;
+      allow create: if request.auth != null
+        && kullaniciAdi.matches('^[^\\s]{1,12}$')
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.uid
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if false;
+    }
+
     // Berkayın Ahırı — gerçek kullanıcı mesajları. Sadece (anonim de olsa)
     // giriş yapmış biri yazabilir, kendi kimliği (uid) dışında birini taklit
-    // edemez, mesaj/isim uzunluğu sınırlı, ve son mesajından en az 3 saniye
-    // geçmeden yeni mesaj atamaz (aşağıdaki ahir_limits koleksiyonuyla).
+    // edemez, sadece kendi rezerve ettiği kullanıcı adıyla yazabilir,
+    // isim boşluksuz + en fazla 12 karakter, mesaj uzunluğu sınırlı, ve
+    // son mesajından en az 3 saniye geçmeden yeni mesaj atamaz (aşağıdaki
+    // ahir_limits koleksiyonuyla).
     match /ahir_mesajlar/{mesajId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.keys().hasOnly(['uid', 'kullaniciAdi', 'mesaj', 'tarih'])
         && request.resource.data.kullaniciAdi is string
-        && request.resource.data.kullaniciAdi.size() > 0
-        && request.resource.data.kullaniciAdi.size() <= 20
+        && request.resource.data.kullaniciAdi.matches('^[^\\s]{1,12}$')
+        && get(/databases/$(database)/documents/ahir_kullanicilar/$(request.resource.data.kullaniciAdi)).data.uid == request.auth.uid
         && request.resource.data.mesaj is string
         && request.resource.data.mesaj.size() > 0
         && request.resource.data.mesaj.size() <= 300
@@ -110,10 +130,12 @@ service cloud.firestore {
 }
 ```
 
-Bu kurallar üç şeyi garanti eder: (1) biri Firestore'a doğrudan istek atsa
+Bu kurallar şunları garanti eder: (1) biri Firestore'a doğrudan istek atsa
 bile giriş yapmadan hiçbir şey yazamaz, (2) kendi kimliğinin dışında birini
-taklit edip spam atamaz, (3) 3 saniyeden sık mesaj gönderemez — yani site
-"birileri saldırıp çökertsin" diye açık bir kapı bırakmıyor.
+taklit edip spam atamaz, (3) aynı kullanıcı adını 2. bir kişi asla alamaz
+(isim = benzersiz belge ID'si), (4) kullanıcı adı boşluksuz (tek kelime) ve
+en fazla 12 karakter olmak zorunda, (5) 3 saniyeden sık mesaj gönderemez —
+yani site "birileri saldırıp çökertsin" diye açık bir kapı bırakmıyor.
 
 Firebase eklemezsen site bozulmaz: "Genel" kutusu normal çalışmaya devam
 eder, sorular hiçbir yere kaydedilmez ve Ahır'a girildiğinde bağlı olmadığını

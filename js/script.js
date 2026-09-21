@@ -324,13 +324,60 @@ function refreshAhirUI() {
 }
 refreshAhirUI();
 
-usernameForm.addEventListener("submit", (e) => {
+// Kullanıcı adını normalize eder: baştaki/sondaki/aradaki TÜM boşlukları
+// kaldırır (birleşik/tek kelime olsun diye), küçük harfe çevirir (Türkçe
+// İ/I kurallarına göre) ve en fazla 12 karaktere keser.
+function normalizeUsername(raw) {
+  return raw
+    .normalize("NFC")
+    .replace(/\s+/g, "")
+    .toLocaleLowerCase("tr-TR")
+    .slice(0, 12);
+}
+
+const usernameSubmitBtn = usernameForm.querySelector("button[type=submit]");
+const usernameError = document.getElementById("usernameError");
+
+function setUsernameError(text) {
+  if (usernameError) usernameError.textContent = text || "";
+}
+
+usernameForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const name = usernameInput.value.trim().slice(0, 20);
-  if (!name) return;
-  setUsername(name);
-  usernameInput.value = "";
-  refreshAhirUI();
+  const name = normalizeUsername(usernameInput.value);
+  setUsernameError("");
+
+  if (!name) {
+    setUsernameError("Boşluksuz, en az 1 karakterli bir kullanıcı adı yaz.");
+    return;
+  }
+  if (!db || !auth) {
+    setUsernameError("Ahır şu an bağlı değil, birkaç saniye sonra tekrar dene.");
+    return;
+  }
+  if (!ahirReady || !auth.currentUser) {
+    setUsernameError("Bağlanılıyor, birkaç saniye sonra tekrar dene.");
+    return;
+  }
+
+  if (usernameSubmitBtn) usernameSubmitBtn.disabled = true;
+
+  try {
+    // Kullanıcı adı = belge ID'si. Bu isim daha önce alınmışsa Firestore
+    // kuralları bu isteği "update" sayıp reddeder (allow update: if false
+    // olduğu için), yani aynı isimden 2. kişi asla alamaz.
+    await db.collection("ahir_kullanicilar").doc(name).set({
+      uid: auth.currentUser.uid,
+    });
+    setUsername(name);
+    usernameInput.value = "";
+    refreshAhirUI();
+  } catch (err) {
+    console.error("Kullanıcı adı alınamadı:", err.message);
+    setUsernameError("Bu kullanıcı adı zaten alınmış, başka bir tane dene.");
+  }
+
+  if (usernameSubmitBtn) usernameSubmitBtn.disabled = false;
 });
 
 ahirChangeNameBtn.addEventListener("click", () => {
@@ -445,7 +492,7 @@ ahirForm.addEventListener("submit", async (e) => {
     const uid = auth.currentUser.uid;
     await db.collection("ahir_mesajlar").add({
       uid,
-      kullaniciAdi: username.slice(0, 20),
+      kullaniciAdi: username.slice(0, 12),
       mesaj: text.slice(0, 300),
       tarih: firebase.firestore.FieldValue.serverTimestamp(),
     });

@@ -79,11 +79,12 @@
           </div>
 
           <div class="username-gate" id="usernameGate">
-            <p>Sohbete başlamadan önce bir kullanıcı adı seç:</p>
+            <p>Sohbete başlamadan önce bir kullanıcı adı seç (boşluksuz, en fazla 12 karakter, herkes farklı bir isim kullanmalı):</p>
             <form id="usernameForm" autocomplete="off">
-              <input id="usernameInput" type="text" maxlength="20" placeholder="Kullanıcı adın..." required />
+              <input id="usernameInput" type="text" maxlength="16" placeholder="Kullaniciadin (boşluksuz)" required />
               <button type="submit">Girişi Yap</button>
             </form>
+            <p class="username-error" id="usernameError" aria-live="polite"></p>
           </div>
 
           <div class="ahir-chat" id="ahirChat" hidden>
