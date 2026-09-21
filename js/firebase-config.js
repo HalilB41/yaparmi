@@ -23,10 +23,12 @@ const firebaseConfig = {
 };
 
 let db = null;
+let auth = null;
 
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
+  auth = firebase.auth();
 } catch (err) {
-  console.warn("Firebase henüz ayarlanmadı, sorular kaydedilmeyecek:", err.message);
+  console.warn("Firebase henüz ayarlanmadı, sorular/Ahır sohbeti çalışmayacak:", err.message);
 }

@@ -60,7 +60,7 @@ allNavItems.forEach((btn) => {
     showView(view);
 
     if (view === "ahir") {
-      maybeGreetAhir();
+      initAhir();
     }
   });
 });
@@ -154,6 +154,11 @@ form.addEventListener("submit", async (e) => {
   askBtn.disabled = true;
   btnText.hidden = true;
   btnLoading.hidden = false;
+
+  // Cevap gelene kadar kutuda "düşünüyor" mesajı göster.
+  if (typingTimer) clearInterval(typingTimer);
+  answerTextEl.textContent = "Kanzi düşünüyor...";
+  cursorEl.hidden = false;
 
   const response = await getAnswer(question);
   typeWrite(response);
@@ -253,7 +258,10 @@ soundToggle.addEventListener("click", () => {
 });
 
 // ============================================================
-// Berkayın Ahırı — kullanıcı adı + AI ile serbest sohbet
+// Berkayın Ahırı — kullanıcı adı + GERÇEK KULLANICILARIN birbiriyle
+// yazıştığı, Firebase Firestore'a bağlı ortak sohbet odası.
+// Burada yapay zeka YOK: her mesaj Firestore'a yazılıp herkese gerçek
+// zamanlı (onSnapshot) dağıtılıyor, kimse bot cevabı almıyor.
 // ============================================================
 
 const USERNAME_KEY = "yaparmi_username";
@@ -298,9 +306,7 @@ const ahirChangeNameBtn = document.getElementById("ahirChangeNameBtn");
 const ahirMessages = document.getElementById("ahirMessages");
 const ahirForm = document.getElementById("ahirForm");
 const ahirInput = document.getElementById("ahirInput");
-
-let ahirGreeted = false;
-let ahirHistory = [];
+const ahirSendBtn = ahirForm.querySelector("button[type=submit]");
 
 function refreshAhirUI() {
   const name = getUsername();
@@ -325,7 +331,6 @@ usernameForm.addEventListener("submit", (e) => {
   setUsername(name);
   usernameInput.value = "";
   refreshAhirUI();
-  maybeGreetAhir();
 });
 
 ahirChangeNameBtn.addEventListener("click", () => {
@@ -350,57 +355,109 @@ function appendAhirMessage(text, sender) {
   return div;
 }
 
-function maybeGreetAhir() {
-  const name = getUsername();
-  if (!name || ahirGreeted || ahirMessages.children.length > 0) return;
-  ahirGreeted = true;
-  appendAhirMessage(
-    `${name}, Ahır'a hoş geldin. Berkay efsanesini gerçekten tanıyor musun yoksa sadece vakit mi öldürüyorsun? Bir şey yaz da görelim. 😏`,
-    "ai"
-  );
+// Sistem bildirimleri (bağlantı hatası, hız sınırı vb.) — bir kullanıcıdan
+// gelmiyor, sadece "other" balon stilini ödünç alıyor.
+function appendAhirNotice(text) {
+  appendAhirMessage(text, "other");
 }
+
+function setAhirInputEnabled(enabled) {
+  ahirInput.disabled = !enabled;
+  ahirSendBtn.disabled = !enabled;
+}
+
+// ---------------- Firebase: anonim giriş + gerçek zamanlı ortak sohbet ----------------
+
+let ahirInitStarted = false;
+let ahirListenerStarted = false;
+let ahirReady = false;
+
+function startAhirListener() {
+  if (ahirListenerStarted) return;
+  ahirListenerStarted = true;
+  db.collection("ahir_mesajlar")
+    .orderBy("tarih", "asc")
+    .limitToLast(50)
+    .onSnapshot(
+      (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type !== "added") return;
+          const data = change.doc.data();
+          if (!data || typeof data.mesaj !== "string") return;
+          const isOwn = !!(auth.currentUser && data.uid === auth.currentUser.uid);
+          const label = isOwn ? data.mesaj : `${data.kullaniciAdi || "?"}: ${data.mesaj}`;
+          appendAhirMessage(label, isOwn ? "user" : "other");
+        });
+      },
+      (err) => {
+        console.error("Ahır dinleme hatası:", err.message);
+        appendAhirNotice("Sohbet akışı koptu, sayfayı yenilemeyi dene.");
+      }
+    );
+}
+
+function initAhir() {
+  if (ahirInitStarted) return;
+  ahirInitStarted = true;
+
+  if (!db || !auth) {
+    appendAhirNotice("Ahır şu an bağlı değil (Firebase ayarlanmamış). Daha sonra tekrar dene.");
+    setAhirInputEnabled(false);
+    return;
+  }
+
+  setAhirInputEnabled(false);
+
+  auth.onAuthStateChanged((user) => {
+    if (!user) return;
+    ahirReady = true;
+    setAhirInputEnabled(true);
+    startAhirListener();
+  });
+
+  auth.signInAnonymously().catch((err) => {
+    console.error("Ahır giriş hatası:", err.message);
+    appendAhirNotice("Sohbete bağlanılamadı, sayfayı yenilemeyi dene.");
+  });
+}
+
+let lastAhirSendAt = 0;
 
 ahirForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = ahirInput.value.trim();
   const username = getUsername();
-  if (!text || !username) return;
+  if (!text || !username || !ahirReady) return;
 
-  appendAhirMessage(text, "user");
-  ahirHistory.push({ role: "user", content: text });
+  // İstemci tarafında basit bir hız sınırı; asıl (bypass edilemeyen) koruma
+  // Firestore güvenlik kurallarında.
+  const now = Date.now();
+  if (now - lastAhirSendAt < 3000) {
+    appendAhirNotice("Yavaş ol biraz, art arda çok hızlı yazıyorsun.");
+    return;
+  }
+  lastAhirSendAt = now;
+
   ahirInput.value = "";
-  ahirInput.disabled = true;
-
-  const thinkingEl = appendAhirMessage("...", "ai thinking");
+  setAhirInputEnabled(false);
 
   try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username,
-        message: text,
-        history: ahirHistory.slice(-10),
-      }),
+    const uid = auth.currentUser.uid;
+    await db.collection("ahir_mesajlar").add({
+      uid,
+      kullaniciAdi: username.slice(0, 20),
+      mesaj: text.slice(0, 300),
+      tarih: firebase.firestore.FieldValue.serverTimestamp(),
     });
-    const data = await res.json().catch(() => ({}));
-    thinkingEl.remove();
-
-    if (!res.ok || !data.reply) {
-      console.error("Ahır sohbet hatası:", data);
-      appendAhirMessage("Ahır şu an çok kalabalık galiba, birazdan tekrar dene.", "ai");
-    } else {
-      appendAhirMessage(data.reply, "ai");
-      ahirHistory.push({ role: "assistant", content: data.reply });
-    }
+    // Hız sınırı kaydı — Firestore kuralları bir sonraki mesajda bunu kontrol ediyor.
+    await db.collection("ahir_limits").doc(uid).set({
+      sonMesajZamani: firebase.firestore.FieldValue.serverTimestamp(),
+    });
   } catch (err) {
-    thinkingEl.remove();
-    console.error("Ahır bağlantı hatası:", err.message);
-    appendAhirMessage("Bağlantı koptu galiba, tekrar dene.", "ai");
+    console.error("Ahır mesaj gönderme hatası:", err.message);
+    appendAhirNotice("Mesaj gönderilemedi, tekrar dene.");
   }
 
-  ahirInput.disabled = false;
+  setAhirInputEnabled(true);
   ahirInput.focus();
 });
-
-maybeGreetAhir();

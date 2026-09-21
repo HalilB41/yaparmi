@@ -1,19 +1,23 @@
 # yaparmi.com
 
 Berkay hakkında ne sorulursa sorulsun, kâhin (site) hep olumsuz ama esprili
-bir cevap veriyor — cevapları gerçek zamanlı olarak Google Gemini AI üretiyor.
-Arka planda 2 ses dosyası sırayla çalıyor, isteyen sağ alttaki butondan
-kapatabiliyor. Sorular istersen Firebase'e kaydediliyor.
+bir cevap veriyor — cevapları gerçek zamanlı olarak Nous Research üzerinden
+bir yapay zeka üretiyor. Arka planda 2 ses dosyası sırayla çalıyor, isteyen
+sağ alttaki butondan kapatabiliyor. Sorular istersen Firebase'e kaydediliyor.
+
+**Berkayın Ahırı** ayrı bir şey: orada yapay zeka YOK, sadece siteye giren
+gerçek ziyaretçiler Firebase üzerinden birbiriyle gerçek zamanlı yazışıyor.
 
 ## Dosya yapısı
 
 ```
 yaparmi-site/
 ├─ index.html
+├─ spor.html, ders.html, oyun.html, sosyal.html, galeri.html   <- "çok yakında" sayfaları
 ├─ css/style.css
 ├─ js/firebase-config.js   <- kendi Firebase bilgilerini buraya yapıştır
 ├─ js/script.js
-├─ api/ask.js              <- Vercel serverless function, Gemini AI'ya soru gönderir
+├─ api/ask.js              <- Vercel serverless function, Nous Research'e soru gönderir
 ├─ audio/
 │  ├─ track1.mp3
 │  └─ track2.mp3
@@ -23,53 +27,97 @@ yaparmi-site/
 └─ .gitignore
 ```
 
-## 0) AI cevapları için Gemini API key al (yeni)
+## 0) Nous Research (Hermes) API key ekle
 
-1. https://aistudio.google.com/apikey adresine git, Google hesabınla giriş yap.
-2. **Create API key** butonuna bas, ücretsiz bir key oluşacak (Gemini'nin
-   ücretsiz kullanım kotası var, küçük bir şaka sitesi için fazlasıyla yeterli).
-3. Oluşan key'i kopyala.
-4. Vercel'de projenin içine gir → **Settings > Environment Variables**.
-5. Key adı: `GEMINI_API_KEY`, Value: kopyaladığın key. **Save**.
-6. Kaydettikten sonra projeyi bir kere yeniden deploy et (Deployments sekmesinden
-   son deployment'ın yanındaki "..." menüsünden **Redeploy**) ki değişken aktif olsun.
+Ana soru-cevap kutusunun ("Berkay ... yapar mı?") cevapları Nous Research
+üzerinden üretiliyor. Key yoksa/başarısız olursa site kendi sabit yedek
+cevaplarına döner, hiçbir zaman bozulmaz.
 
-Not: Bu key'i asla `js/` klasöründeki dosyalara veya GitHub'a yapıştırma —
-sadece Vercel'in Environment Variables kısmına eklenir, orada gizli kalır.
-API key eklemezsen site bozulmaz, sadece sabit/rastgele yedek cevapları kullanır.
+1. https://portal.nousresearch.com adresine git, hesabınla giriş yap.
+2. API Keys kısmından yeni bir key oluştur.
+3. Vercel'de `yaparmi` projesine gir → **Settings > Environment Variables**.
+4. Key adı: `NOUS_API_KEY`, Value: oluşturduğun key. **Save**.
+5. (İstersen) farklı bir model denemek istersen `NOUS_MODEL` adında ikinci bir
+   değişken ekleyip Nous Portal panelindeki modellerden birinin adını
+   (ör. `z-ai/glm-5.3-flash`) yazabilirsin.
+6. **Deployments** sekmesinden **Redeploy** de.
 
 ## 1) Ses dosyalarını ekle
 
 `audio/` klasörüne iki mp3 dosyasını **track1.mp3** ve **track2.mp3** isimleriyle koy.
-(Bu sohbette gönderdiğini söylediğin dosyalar bana ulaşmadı, o yüzden şu an
-placeholder olarak duruyor — `audio/README-SES-DOSYALARI.txt` dosyasına bak.)
 
-## 2) Firebase kurulumu (opsiyonel ama istedin)
+## 2) Firebase kurulumu
+
+Firebase hem "Genel" kutusundaki soruları kaydetmek hem de **Berkayın
+Ahırı**'nın gerçek zamanlı, gerçek kullanıcı sohbetini çalıştırmak için
+kullanılıyor. Ahır olmadan da site çalışır ama Ahır'a girildiğinde "Firebase
+ayarlanmamış" uyarısı görünür.
 
 1. https://console.firebase.google.com → **Add project** → proje adı ver (ör. `yaparmi`).
 2. Sol menü → **Build > Firestore Database** → **Create database** → "test mode" ile başlat, sonra aşağıdaki kuralları uygula.
-3. Sol üstteki dişli ⚙️ → **Project settings** → **Your apps** → **</>** (Web) simgesine tıkla, bir isim ver, "Also set up Firebase Hosting" kutusunu **işaretleme**.
-4. Sana verilen `firebaseConfig` objesini kopyala, `js/firebase-config.js` içindeki `BURAYA_...` yerlerine yapıştır.
+3. Sol menü → **Build > Authentication** → **Get started** → **Sign-in method** sekmesinden **Anonymous**'u aç ve **Enable** yap. (Ahır'daki spam korumasının çalışması için bu şart — her ziyaretçiye görünmez, isimsiz bir kimlik veriyor.)
+4. Sol üstteki dişli ⚙️ → **Project settings** → **Your apps** → **</>** (Web) simgesine tıkla, bir isim ver, "Also set up Firebase Hosting" kutusunu **işaretleme**.
+5. Sana verilen `firebaseConfig` objesini kopyala, `js/firebase-config.js` içindeki `BURAYA_...` yerlerine yapıştır.
 
-### Önerilen Firestore güvenlik kuralları
+### Firestore güvenlik kuralları (spam/saldırı koruması dahil)
 
-Firebase Console → Firestore Database → **Rules** sekmesine şunu yapıştır
-(herkes soru **ekleyebilsin** ama kimse başkalarının sorularını
-**okuyamasın**, sadece sen konsoldan görebilirsin):
+Firebase Console → Firestore Database → **Rules** sekmesine şunu yapıştır ve
+**Publish** de:
 
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // "Genel" kutusundaki sorular — herkes ekleyebilir, kimse okuyamaz
+    // (sadece sen Firebase konsolundan görebilirsin).
     match /sorular/{docId} {
       allow create: if true;
       allow read, update, delete: if false;
+    }
+
+    // Berkayın Ahırı — gerçek kullanıcı mesajları. Sadece (anonim de olsa)
+    // giriş yapmış biri yazabilir, kendi kimliği (uid) dışında birini taklit
+    // edemez, mesaj/isim uzunluğu sınırlı, ve son mesajından en az 3 saniye
+    // geçmeden yeni mesaj atamaz (aşağıdaki ahir_limits koleksiyonuyla).
+    match /ahir_mesajlar/{mesajId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'kullaniciAdi', 'mesaj', 'tarih'])
+        && request.resource.data.kullaniciAdi is string
+        && request.resource.data.kullaniciAdi.size() > 0
+        && request.resource.data.kullaniciAdi.size() <= 20
+        && request.resource.data.mesaj is string
+        && request.resource.data.mesaj.size() > 0
+        && request.resource.data.mesaj.size() <= 300
+        && request.resource.data.tarih == request.time
+        && (
+          !exists(/databases/$(database)/documents/ahir_limits/$(request.auth.uid))
+          || request.time > get(/databases/$(database)/documents/ahir_limits/$(request.auth.uid)).data.sonMesajZamani + duration.value(3, 's')
+        );
+      allow update, delete: if false;
+    }
+
+    // Ahır hız sınırı kaydı — herkes SADECE kendi belgesini okuyup yazabilir.
+    match /ahir_limits/{uid} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['sonMesajZamani'])
+        && request.resource.data.sonMesajZamani == request.time;
     }
   }
 }
 ```
 
-Firebase eklemezsen de site bozulmaz, sadece sorular hiçbir yere kaydedilmez.
+Bu kurallar üç şeyi garanti eder: (1) biri Firestore'a doğrudan istek atsa
+bile giriş yapmadan hiçbir şey yazamaz, (2) kendi kimliğinin dışında birini
+taklit edip spam atamaz, (3) 3 saniyeden sık mesaj gönderemez — yani site
+"birileri saldırıp çökertsin" diye açık bir kapı bırakmıyor.
+
+Firebase eklemezsen site bozulmaz: "Genel" kutusu normal çalışmaya devam
+eder, sorular hiçbir yere kaydedilmez ve Ahır'a girildiğinde bağlı olmadığını
+söyleyen bir uyarı gösterilir.
 
 ## 3) GitHub'a yükle
 
@@ -107,5 +155,8 @@ git push -u origin main
 - Otomatik ses: tarayıcılar sesli otomatik oynatmayı bazen engelliyor. Öyle
   olursa ekranda "🔊 Sesi başlat" düğmesi belirir, bir tıkla başlar. Sağ alttaki
   yuvarlak buton sesi istediğin an kapatıp açar.
-- Cevap havuzunu (`js/script.js` içindeki `RESPONSES` dizisi) istediğin an
-  değiştirip yeni cümleler ekleyebilirsin.
+- Yedek cevap havuzunu (`js/script.js` içindeki `FALLBACK_RESPONSES` dizisi)
+  istediğin an değiştirip yeni cümleler ekleyebilirsin.
+- Berkayın Ahırı'ndaki mesajlar Firestore'da kalıcı olarak duruyor (sohbet
+  ekranında sadece en son 50 mesaj gösteriliyor). Zamanla çok birikirse
+  Firebase konsolundan elle temizleyebilirsin.

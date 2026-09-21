@@ -415,7 +415,9 @@ body {
   color: white;
   border-bottom-right-radius: 4px;
 }
-.msg.ai {
+/* "other" = Ahır'da başka bir gerçek ziyaretçinin mesajı (yapay zeka yok) */
+.msg.ai,
+.msg.other {
   align-self: flex-start;
   background: rgba(0,0,0,0.3);
   border: 1px solid var(--card-border);
