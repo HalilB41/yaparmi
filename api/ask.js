@@ -1,7 +1,6 @@
 // Vercel Serverless Function — /api/ask
-// Soruyu bir AI'ya gönderir, "Berkay" hakkında esprili/olumsuz bir cevap
-// üretmesini ister. Önce Nous Research (varsa NOUS_API_KEY), o başarısız
-// olursa Gemini (varsa GEMINI_API_KEY) dener. İkisi de yoksa/başarısız
+// Soruyu Nous Research üzerinden bir AI'ya gönderir, "Berkay" hakkında
+// esprili/olumsuz bir cevap üretmesini ister. NOUS_API_KEY yoksa/başarısız
 // olursa hata döner, istemci (script.js) kendi yedek cevaplarına geçer.
 
 const SYSTEM_PROMPT = `Sen "yaparmi.com" adlı eğlence/şaka sitesindeki şakacı bir kahinsin.
@@ -10,8 +9,8 @@ Kullanıcılar "Berkay" adlı bir kişi hakkında sorular soruyor (ör. "Berkay 
 Soru Berkay'ın hayatının herhangi bir alanıyla (ders, spor, oyun, sosyal hayat, ne olursa) ilgili olabilir.
 
 Kurallar:
-- Türkçe yaz. Tek cümle, en fazla 20-25 kelime.
-- Cevabını KESİNLİKLE yarım bırakma, her zaman tam ve noktalama ile biten bir cümle yaz.
+- Türkçe yaz. Cevabın HER ZAMAN ortalama 5-6 cümle olsun; çok daha kısa geçme, konuyla alakalı ek detay/espri katarak doldur ama bu sınırı KESİNLİKLE aşma.
+- Cevabını KESİNLİKLE yarım bırakma, her zaman tam ve noktalama ile biten cümlelerle bitir.
 - Cevabın HER ZAMAN olumsuz olmalı: Berkay başaramaz, yapamaz, beceremez, olmaz tarzında.
 - Sorunun içeriğine gönderme yaparak yaratıcı ve esprili bir cevap üret, genel geçme cümleler kurma.
 - Küfür, hakaret veya gerçekten kırıcı/aşağılayıcı ifade KULLANMA. Sadece hafif, arkadaşça dalga geçen bir ton kullan.
@@ -25,9 +24,6 @@ Kurallar:
 // kendi modelleri hesapta artık bulunmadığı/emekli olduğu için, Portal
 // üzerinden erişilebilen genel amaçlı modelleri deniyoruz. Birden fazla
 // aday tutuyoruz ki biri kapanır/değişirse site otomatik diğerine geçsin.
-// GLM ve Qwen, "Berkay hakkında hafif şaka" gibi zararsız/esprili isteklerde
-// Gemini'ye göre daha az "önden çekingen/kaçamak" cevap veriyor, o yüzden
-// önce onları deniyoruz; Gemini son çare olarak listede kalıyor.
 const NOUS_MODEL_CANDIDATES = [
   process.env.NOUS_MODEL,
   "z-ai/glm-5.3-flash",
@@ -100,7 +96,7 @@ async function askNous(question, systemPrompt) {
   for (const model of NOUS_MODEL_CANDIDATES) {
     if (tried.includes(model)) continue;
     tried.push(model);
-    const result = await askNousWithModel(model, apiKey, messages, 400);
+    const result = await askNousWithModel(model, apiKey, messages, 900);
     if (result.ok) return result;
     failDetails.push(result.detail);
     if (!result.retryable) break;
@@ -128,7 +124,7 @@ async function askGemini(question, systemPrompt) {
         ],
         generationConfig: {
           temperature: 1.1,
-          maxOutputTokens: 500,
+          maxOutputTokens: 900,
           thinkingConfig: { thinkingBudget: 0 },
         },
         safetySettings: [
