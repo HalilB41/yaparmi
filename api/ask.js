@@ -24,6 +24,7 @@ Kurallar:
 - Sorunun içeriğine gönderme yaparak yaratıcı ve esprili bir cevap üret, genel geçme cümleler kurma.
 - Türkçe yaz. Tek cümle, en fazla 20-25 kelime.
 - Küfür, hakaret veya gerçekten kırıcı/aşağılayıcı ifade KULLANMA. Sadece hafif, arkadaşça dalga geçen bir ton kullan.
+- Cevabını KESİNLİKLE yarım bırakma, her zaman tam ve noktalama ile biten bir cümle yaz.
 - Sadece cevabın kendisini yaz, başka hiçbir açıklama, tırnak işareti veya ön ek ekleme.`;
 }
 
@@ -35,11 +36,14 @@ Kurallar:
 // kendi modelleri hesapta artık bulunmadığı/emekli olduğu için, Portal
 // üzerinden erişilebilen genel amaçlı modelleri deniyoruz. Birden fazla
 // aday tutuyoruz ki biri kapanır/değişirse site otomatik diğerine geçsin.
+// GLM ve Qwen, "Berkay hakkında hafif şaka" gibi zararsız/esprili isteklerde
+// Gemini'ye göre daha az "önden çekingen/kaçamak" cevap veriyor, o yüzden
+// önce onları deniyoruz; Gemini son çare olarak listede kalıyor.
 const NOUS_MODEL_CANDIDATES = [
   process.env.NOUS_MODEL,
-  "google/gemini-3.8-flash",
   "z-ai/glm-5.3-flash",
   "qwen/qwen3-30b-a3b-instruct-2507",
+  "google/gemini-3.8-flash",
 ].filter(Boolean);
 
 async function askNousWithModel(model, apiKey, messages, maxTokens) {
@@ -96,7 +100,7 @@ async function askNous(question, systemPrompt) {
   for (const model of NOUS_MODEL_CANDIDATES) {
     if (tried.includes(model)) continue;
     tried.push(model);
-    const result = await askNousWithModel(model, apiKey, messages, 150);
+    const result = await askNousWithModel(model, apiKey, messages, 400);
     if (result.ok) return result;
     failDetails.push(result.detail);
     if (!result.retryable) break;

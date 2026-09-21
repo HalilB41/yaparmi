@@ -43,10 +43,11 @@ async function askNousWithModel(model, apiKey, messages) {
 
   if (!response.ok) {
     const errText = await response.text();
+    const authFailure = response.status === 401 || response.status === 403;
     return {
       ok: false,
-      retryable: response.status === 404 || /retired/i.test(errText),
-      detail: `Nous (${model}) HTTP ${response.status}: ${errText.slice(0, 300)}`,
+      retryable: !authFailure,
+      detail: `Nous (${model}) HTTP ${response.status}: ${errText.slice(0, 200)}`,
     };
   }
 
@@ -63,14 +64,16 @@ async function askNous(messages) {
   if (!apiKey) return { ok: false, skipped: true, detail: "Nous atlandı: NOUS_API_KEY tanımlı değil" };
 
   const tried = [];
+  const failDetails = [];
   for (const model of NOUS_MODEL_CANDIDATES) {
     if (tried.includes(model)) continue;
     tried.push(model);
     const result = await askNousWithModel(model, apiKey, messages);
     if (result.ok) return result;
-    if (!result.retryable) return result;
+    failDetails.push(result.detail);
+    if (!result.retryable) break;
   }
-  return { ok: false, detail: `Nous: denenen modellerin hepsi başarısız (${tried.join(", ")})` };
+  return { ok: false, detail: failDetails.join(" || ") };
 }
 
 async function askGemini(messages) {
