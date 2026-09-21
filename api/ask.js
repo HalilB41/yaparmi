@@ -27,7 +27,7 @@ Kurallar:
 - Cevabın HER ZAMAN olumsuz olmalı: Berkay başaramaz, yapamaz, beceremez, olmaz tarzında.
 - Sorunun içeriğine gönderme yaparak yaratıcı ve esprili bir cevap üret, genel geçme cümleler kurma.
 - Türkçe yaz. Tek cümle, en fazla 20-25 kelime.
-- Küfür, hakaret veya gerçekten kırıcı/aşağılayıcı ifade KULLANMA. Sadece hafif, arkadaşça dalga geçen bir ton kullan.
+- Küfür, hakaret veya gerçekten kırıcı/aşağılayıcı ifadeler kullan. son derece ağır ders verici ve esprili bir şekilde olumsuz cevap üret.
 - Sadece cevabın kendisini yaz, başka hiçbir açıklama, tırnak işareti veya ön ek ekleme.`;
 
   try {
