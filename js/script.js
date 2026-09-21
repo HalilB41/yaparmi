@@ -29,14 +29,37 @@ function pickFallbackResponse() {
   return template.replaceAll("{name}", NAME);
 }
 
+// ---------------- Kategoriler (Berkay'ın hayatının alanları) ----------------
+
+const CATEGORIES = {
+  genel: { placeholder: "spor yapar mı?" },
+  ders: { placeholder: "sınavı geçer mi?" },
+  spor: { placeholder: "maçı kazanır mı?" },
+  oyun: { placeholder: "oyunda seviye atlar mı?" },
+  sosyal: { placeholder: "kıza çıkma teklif eder mi?" },
+};
+
+let currentCategory = "genel";
+
+const categoryTabsEl = document.getElementById("categoryTabs");
+categoryTabsEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".cat-tab");
+  if (!btn) return;
+  categoryTabsEl.querySelectorAll(".cat-tab").forEach((b) => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentCategory = btn.dataset.cat;
+  const cfg = CATEGORIES[currentCategory] || CATEGORIES.genel;
+  input.placeholder = cfg.placeholder;
+});
+
 // ---------------- AI'dan cevap al (yedekli) ----------------
 
-async function getAnswer(question) {
+async function getAnswer(question, category) {
   try {
     const res = await fetch("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, category }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -89,10 +112,13 @@ let lastAskedQuestion = null;
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const question = input.value.trim();
-  if (!question) return;
+  const rest = input.value.trim();
+  if (!rest) return;
 
-  if (lastAskedQuestion !== null && question === lastAskedQuestion) {
+  // Kutuda kullanıcının yazdığı kısım, "Berkay" öneki hep sabit.
+  const question = `${NAME} ${rest}`;
+
+  if (lastAskedQuestion !== null && rest === lastAskedQuestion) {
     input.value = "";
     lastAskedQuestion = null;
     input.focus();
@@ -104,11 +130,11 @@ form.addEventListener("submit", async (e) => {
   btnText.hidden = true;
   btnLoading.hidden = false;
 
-  const response = await getAnswer(question);
+  const response = await getAnswer(question, currentCategory);
   typeWrite(response);
-  logQuestion(question, response);
+  logQuestion(question, response, currentCategory);
 
-  lastAskedQuestion = question;
+  lastAskedQuestion = rest;
 
   askBtn.disabled = false;
   btnText.hidden = false;
@@ -119,12 +145,13 @@ form.addEventListener("submit", async (e) => {
 
 // ---------------- Firestore'a kayıt (opsiyonel) ----------------
 
-function logQuestion(question, response) {
+function logQuestion(question, response, category) {
   if (typeof db === "undefined" || !db) return;
   try {
     db.collection("sorular").add({
       soru: question,
       cevap: response,
+      kategori: category || "genel",
       tarih: firebase.firestore.FieldValue.serverTimestamp(),
     });
   } catch (err) {

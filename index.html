@@ -22,20 +22,31 @@
   <main class="wrap">
     <header class="site-header">
       <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
-      <p class="subtitle">Berkay ile ilgili merak ettiğin her şeyi sor.</p>
+      <p class="subtitle">Berkay'ın hayatı hakkında merak ettiğin her şeyi sor.</p>
     </header>
 
     <section class="card">
+      <div class="category-tabs" id="categoryTabs" role="tablist">
+        <button type="button" class="cat-tab active" data-cat="genel">🔮 Genel</button>
+        <button type="button" class="cat-tab" data-cat="ders">📚 Ders</button>
+        <button type="button" class="cat-tab" data-cat="spor">⚽ Spor</button>
+        <button type="button" class="cat-tab" data-cat="oyun">🎮 Oyun</button>
+        <button type="button" class="cat-tab" data-cat="sosyal">👥 Sosyal Hayat</button>
+      </div>
+
       <form id="ask-form" autocomplete="off">
         <label for="question" class="visually-hidden">Sorunu yaz</label>
-        <input
-          id="question"
-          name="question"
-          type="text"
-          placeholder="ör: Berkay ders çalışır mı?"
-          maxlength="140"
-          required
-        />
+        <div class="input-with-prefix">
+          <span class="berkay-prefix">Berkay</span>
+          <input
+            id="question"
+            name="question"
+            type="text"
+            placeholder="spor yapar mı?"
+            maxlength="120"
+            required
+          />
+        </div>
         <button type="submit" id="ask-btn">
           <span class="btn-text">Sor</span>
           <span class="btn-loading" hidden>...</span>
