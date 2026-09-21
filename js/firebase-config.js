@@ -25,18 +25,15 @@ const firebaseConfig = {
 
 let db = null;
 let auth = null;
-let storage = null;
 
+// Not: Firebase Storage bilerek kullanılmıyor (yeni projelerde ücretli
+// Blaze planı istiyor). Galeri fotoğrafları da diğer her şey gibi sadece
+// Firestore (ücretsiz Spark planı) üzerinden, base64 metin olarak
+// saklanıyor — bkz. js/site.js: resizeImageToSquare().
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   auth = firebase.auth();
-  // Storage SDK yüklenmemiş sayfalarda (bazı basit "çok yakında"
-  // sayfalarında) firebase.storage tanımsız olabilir, o yüzden kontrol
-  // ediyoruz — galeri özelliği o sayfalarda zaten kullanılmıyor.
-  if (typeof firebase.storage === "function") {
-    storage = firebase.storage();
-  }
 } catch (err) {
   console.warn("Firebase henüz ayarlanmadı, sorular/Ahır sohbeti/galeri çalışmayacak:", err.message);
 }

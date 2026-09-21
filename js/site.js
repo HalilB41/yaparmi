@@ -62,10 +62,14 @@
 
   // ---------------- Görsel yeniden boyutlandırma (galeri için) ----------------
   // Hangi boyutta / oranda yüklenirse yüklensin, kare şeklinde ve aynı
-  // piksel boyutunda bir JPEG'e küçültüp/kırpıyor — galerideki bütün
-  // fotoğraflar böylece aynı boyutta oluyor.
+  // piksel boyutunda bir JPEG'e küçültüp/kırpıyor. Firebase Storage
+  // KULLANMIYORUZ (yeni projelerde ücretli Blaze planı istiyor) — bunun
+  // yerine fotoğrafı base64 (data URL) metnine çevirip DOĞRUDAN Firestore
+  // belgesine gömüyoruz. Firestore'un ücretsiz planı (Spark) bu iş için
+  // yeterli, tek kısıtı bir belgenin ~1MB'ı geçmemesi — o yüzden kaliteyi
+  // gerekirse otomatik düşürerek 900KB'ın altına sığdırıyoruz.
   window.resizeImageToSquare = async function resizeImageToSquare(file, size) {
-    size = size || 1080;
+    size = size || 720;
     const bitmap = await createImageBitmap(file);
     const canvas = document.createElement("canvas");
     canvas.width = size;
@@ -79,7 +83,17 @@
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, size, size);
     ctx.drawImage(bitmap, x, y, w, h);
-    return await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
+
+    let quality = 0.82;
+    let dataUrl = canvas.toDataURL("image/jpeg", quality);
+    while (dataUrl.length > 900000 && quality > 0.3) {
+      quality -= 0.12;
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+    }
+    if (dataUrl.length > 900000) {
+      throw new Error("Fotoğraf çok büyük/karmaşık, daha küçük ya da daha sade bir fotoğraf dene.");
+    }
+    return dataUrl;
   };
 
   // ---------------- Giriş Yap / Kayıt Ol widget'ı ----------------

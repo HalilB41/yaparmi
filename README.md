@@ -68,9 +68,11 @@ eklemezsen site bozulmaz: "Genel" kutusu normal çalışır, geri kalanı
 3. Sol menü → **Build > Authentication** → **Get started** → **Sign-in method** sekmesinden **Anonymous**'u ve **Email/Password**'ü aç, ikisini de **Enable** yap.
    - **Anonymous**: Ahır'daki (ve galerideki fotoğraf önerisi gönderme) spam korumasının çalışması için şart — her ziyaretçiye görünmez, isimsiz bir kimlik veriyor.
    - **Email/Password**: sağ üstteki **Giriş Yap / Kayıt Ol** için şart. Kullanıcı sadece bir kullanıcı adı + şifre giriyor; arka planda bu, `kullaniciadi@yaparmi.local` gibi sahte bir e-postaya çevrilip Firebase'in kendi (güvenli, şifreleri düz metin tutmayan) e-posta/şifre girişiyle işleniyor — gerçek bir e-posta adresi değil, hiçbir yere mail atılmıyor.
-4. Sol menü → **Build > Storage** → **Get started** → varsayılan ayarlarla ilerle, sonra aşağıdaki Storage kurallarını uygula. (Galeri fotoğrafları burada tutuluyor.)
-5. Sol üstteki dişli ⚙️ → **Project settings** → **Your apps** → **</>** (Web) simgesine tıkla, bir isim ver, "Also set up Firebase Hosting" kutusunu **işaretleme**.
-6. Sana verilen `firebaseConfig` objesini kopyala, `js/firebase-config.js` içine yapıştır.
+4. Sol üstteki dişli ⚙️ → **Project settings** → **Your apps** → **</>** (Web) simgesine tıkla, bir isim ver, "Also set up Firebase Hosting" kutusunu **işaretleme**.
+5. Sana verilen `firebaseConfig` objesini kopyala, `js/firebase-config.js` içine yapıştır.
+
+Not: **Storage'a hiç gerek yok** — galeri de dahil her şey Firestore
+üzerinden (ücretsiz plan) çalışıyor, aşağıda anlatılıyor.
 
 ### Firestore güvenlik kuralları (spam/saldırı koruması dahil)
 
@@ -163,11 +165,15 @@ service cloud.firestore {
     }
 
     // Galeri — herkes bakabilir, sadece admin ekleyip çıkarabilir.
+    // Fotoğraf, Firebase Storage KULLANILMADAN (ücretli Blaze planı
+    // istiyor), site.js'te küçültülüp base64 metne çevrilerek doğrudan
+    // "resim" alanına yazılıyor — bu yüzden ~900KB üst sınırı var.
     match /galeri/{fotoId} {
       allow read: if true;
       allow create: if isAdmin()
-        && request.resource.data.keys().hasOnly(['yol', 'tarih'])
-        && request.resource.data.yol is string
+        && request.resource.data.keys().hasOnly(['resim', 'tarih'])
+        && request.resource.data.resim is string
+        && request.resource.data.resim.size() < 900000
         && request.resource.data.tarih == request.time;
       allow update, delete: if isAdmin();
     }
@@ -177,8 +183,9 @@ service cloud.firestore {
     match /galeri_oneriler/{oneriId} {
       allow read, update, delete: if isAdmin();
       allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['yol', 'gonderenUid', 'gonderenKullaniciAdi', 'tarih'])
-        && request.resource.data.yol is string
+        && request.resource.data.keys().hasOnly(['resim', 'gonderenUid', 'gonderenKullaniciAdi', 'tarih'])
+        && request.resource.data.resim is string
+        && request.resource.data.resim.size() < 900000
         && request.resource.data.gonderenUid == request.auth.uid
         && request.resource.data.tarih == request.time;
     }
@@ -186,44 +193,20 @@ service cloud.firestore {
 }
 ```
 
-### Storage güvenlik kuralları (galeri fotoğrafları için)
+Bu kurallar şunları garanti eder: (1) biri Firestore'a doğrudan istek atsa
+bile giriş yapmadan hiçbir şey yazamaz, (2) kendi kimliğinin dışında birini
+taklit edip spam atamaz, (3) Ahır'da aynı takma adı 2. bir kişi asla alamaz,
+(4) galeriye sadece admin fotoğraf ekleyip çıkarabilir, öneri kuyruğunu
+sadece admin görebilir, (5) bot soru geçmişini sadece admin okuyabilir —
+yani site "birileri saldırıp çökertsin" diye açık bir kapı bırakmıyor.
 
-Firebase Console → **Build > Storage** → **Rules** sekmesine şunu yapıştır ve
-**Publish** de:
-
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-
-    // Yayınlanan galeri fotoğrafları — herkes görebilir, sadece admin
-    // yükleyip silebilir.
-    match /galeri/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null
-        && firestore.get(/databases/(default)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'admin';
-    }
-
-    // Onay bekleyen öneriler — sadece admin görebilir, giriş yapmış
-    // (anonim de olsa) herkes yükleyebilir (8MB'a kadar, sadece resim).
-    match /oneriler/{allPaths=**} {
-      allow read: if request.auth != null
-        && firestore.get(/databases/(default)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'admin';
-      allow write: if request.auth != null
-        && request.resource.size < 8 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
-    }
-  }
-}
-```
-
-Bu kurallar şunları garanti eder: (1) biri Firestore/Storage'a doğrudan
-istek atsa bile giriş yapmadan hiçbir şey yazamaz, (2) kendi kimliğinin
-dışında birini taklit edip spam atamaz, (3) Ahır'da aynı takma adı 2. bir
-kişi asla alamaz, (4) galeriye sadece admin fotoğraf ekleyip çıkarabilir,
-öneri kuyruğunu sadece admin görebilir, (5) bot soru geçmişini sadece admin
-okuyabilir — yani site "birileri saldırıp çökertsin" diye açık bir kapı
-bırakmıyor.
+**Firebase Storage kullanılmıyor** — yeni Firebase projelerinde bir bucket
+açmak artık ücretli (Blaze) plan istiyor. Bunun yerine galeri fotoğrafları
+tarayıcıda 720×720'e küçültülüp bir metin (base64) olarak doğrudan
+Firestore'a yazılıyor; Firestore'un ücretsiz (Spark) planı bunun için
+yeterli. Tek kısıtı: bir fotoğrafın sıkıştırılmış hali ~900KB'ı geçemez —
+kod bunu otomatik ayarlıyor (kaliteyi gerekirse kademeli düşürüyor), sen
+bir şey yapmana gerek yok.
 
 ### İlk admin hesabını oluştur
 
@@ -276,11 +259,12 @@ git push -u origin main
   ekranında sadece en son 50 mesaj gösteriliyor). Zamanla çok birikirse
   Firebase konsolundan elle temizleyebilirsin.
 - Sol üstteki ☰ butonu Spor/Ders/Oyun/Sosyal Hayat/Galeri linklerini içeren
-  bir menü açar. Sağ altta Berkayın Ahırı ve ses açma/kapama butonları
-  sabit duruyor.
+  bir menü açar, sağ üstte Giriş Yap/Kayıt Ol duruyor. Sol altta Berkayın
+  Ahırı, sağ altta ses açma/kapama butonu sabit duruyor. Dördü de gerçek
+  ekran köşesine sabitlenmiş durumda (sayfa içeriği ortalanmış olsa bile).
 - Galerideki bütün fotoğraflar (hem admin'in direkt eklediği hem
-  onaylanan öneriler) tarayıcıda otomatik olarak 1080×1080 kareye
-  kırpılıp küçültülüyor, böylece hepsi aynı boyutta görünüyor.
+  onaylanan öneriler) tarayıcıda otomatik olarak 720×720 kareye kırpılıp
+  küçültülüyor, böylece hepsi aynı boyutta görünüyor.
 - Kenar durumu: bir kişi önce Ahır'da (kayıt olmadan) bir takma ad seçip,
   sonra farklı bir tarayıcı/oturumda gerçek hesaba kayıt olursa, eski
   takma adı yeni hesaba otomatik taşınmaz — Ahır'a tekrar girip aynı adı

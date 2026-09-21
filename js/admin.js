@@ -48,16 +48,8 @@ function loadQueue() {
 
           const img = document.createElement("img");
           img.alt = "";
+          if (typeof data.resim === "string") img.src = data.resim;
           row.appendChild(img);
-          if (typeof data.yol === "string") {
-            storage
-              .ref(data.yol)
-              .getDownloadURL()
-              .then((url) => {
-                img.src = url;
-              })
-              .catch(() => {});
-          }
 
           const meta = document.createElement("div");
           meta.className = "meta";
@@ -99,7 +91,7 @@ function loadQueue() {
 async function publishSuggestion(id, data) {
   try {
     await db.collection("galeri").add({
-      yol: data.yol,
+      resim: data.resim,
       tarih: firebase.firestore.FieldValue.serverTimestamp(),
     });
     await db.collection("galeri_oneriler").doc(id).delete();
@@ -167,11 +159,9 @@ if (adminUploadForm) {
     const submitBtn = adminUploadForm.querySelector("button[type=submit]");
     if (submitBtn) submitBtn.disabled = true;
     try {
-      const blob = await resizeImageToSquare(file, 1080);
-      const path = "galeri/" + Date.now() + "_" + Math.random().toString(36).slice(2) + ".jpg";
-      await storage.ref(path).put(blob, { contentType: "image/jpeg" });
+      const dataUrl = await resizeImageToSquare(file, 720);
       await db.collection("galeri").add({
-        yol: path,
+        resim: dataUrl,
         tarih: firebase.firestore.FieldValue.serverTimestamp(),
       });
       adminUploadStatus.textContent = "Yayınlandı!";
