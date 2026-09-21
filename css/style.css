@@ -14,6 +14,16 @@
 
 * { box-sizing: border-box; }
 
+/* ÖNEMLİ: .menu-drawer, .ahir-chat, .ahir-user-info gibi bazı sınıflar
+   kendi "display: flex" kuralını taşıyor. Tarayıcının "hidden" özelliği
+   için varsayılan "display:none" kuralı, aynı öğe üzerindeki BAŞKA bir
+   display kuralı tarafından ezilebiliyor (aynen menüde olduğu gibi —
+   hamburger'e hiç basılmadan menü sürekli açık görünüyordu). Bu kural
+   bunu tek elden ve kalıcı olarak engelliyor: "hidden" varsa, ne olursa
+   olsun görünmez.
+*/
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -257,19 +267,12 @@ body {
   color: white;
 }
 
-/* ---------------- Sağ altta sabit köşe butonları (Ahır + ses) ---------------- */
+/* ---------------- Sabit köşe butonları: Ahır SOL altta, ses SAĞ altta ---------------- */
 
-.corner-fab {
+.fab-round {
   position: fixed;
   bottom: 20px;
-  right: 20px;
   z-index: 5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-.fab-round {
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -287,6 +290,9 @@ body {
 }
 .fab-round:hover { transform: scale(1.08); background: rgba(0, 0, 0, 0.55); }
 .fab-round.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border-color: transparent; }
+
+.corner-left { left: 20px; }
+.corner-right { right: 20px; }
 
 .logo-link { text-decoration: none; display: inline-block; cursor: pointer; }
 
