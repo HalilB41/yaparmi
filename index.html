@@ -21,19 +21,25 @@
 
   <main class="app-shell">
     <header class="site-header">
-      <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
+      <a href="#" class="logo-link" id="homeLink" aria-label="Ana sayfaya dön (soru-cevap)">
+        <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
+      </a>
       <p class="subtitle">Berkay'ın hayatı hakkında merak ettiğin her şeyi sor.</p>
     </header>
 
-    <div class="layout">
-      <nav class="side-nav side-nav-left" id="leftNav">
-        <button type="button" class="nav-item active" data-view="trivia">🔮 Genel</button>
-        <button type="button" class="nav-item" data-view="spor">⚽ Spor</button>
-        <button type="button" class="nav-item" data-view="ders">📚 Ders</button>
-        <button type="button" class="nav-item" data-view="oyun">🎮 Oyun</button>
-      </nav>
+    <nav class="side-fab side-fab-left" id="leftNav">
+      <button type="button" class="fab-item" data-view="spor">
+        <span class="fab-icon">⚽</span><span class="fab-label">Spor</span>
+      </button>
+      <button type="button" class="fab-item" data-view="ders">
+        <span class="fab-icon">📚</span><span class="fab-label">Ders</span>
+      </button>
+      <button type="button" class="fab-item" data-view="oyun">
+        <span class="fab-icon">🎮</span><span class="fab-label">Oyun</span>
+      </button>
+    </nav>
 
-      <section class="center-panel">
+    <section class="center-panel">
         <div class="panel card" id="panel-trivia">
           <form id="ask-form" autocomplete="off">
             <label for="question" class="visually-hidden">Sorunu yaz</label>
@@ -113,14 +119,19 @@
             </form>
           </div>
         </div>
-      </section>
+    </section>
 
-      <nav class="side-nav side-nav-right" id="rightNav">
-        <button type="button" class="nav-item" data-view="sosyal">👥 Sosyal Hayat</button>
-        <button type="button" class="nav-item" data-view="galeri">🖼️ Galeri</button>
-        <button type="button" class="nav-item" data-view="ahir">🐴 Berkayın Ahırı</button>
-      </nav>
-    </div>
+    <nav class="side-fab side-fab-right" id="rightNav">
+      <button type="button" class="fab-item" data-view="sosyal">
+        <span class="fab-icon">👥</span><span class="fab-label">Sosyal Hayat</span>
+      </button>
+      <button type="button" class="fab-item" data-view="galeri">
+        <span class="fab-icon">🖼️</span><span class="fab-label">Galeri</span>
+      </button>
+      <button type="button" class="fab-item" data-view="ahir">
+        <span class="fab-icon">🐴</span><span class="fab-label">Berkayın Ahırı</span>
+      </button>
+    </nav>
 
     <footer class="site-footer">
       <p>yaparmi.com — sadece eğlence amaçlıdır 😄</p>
