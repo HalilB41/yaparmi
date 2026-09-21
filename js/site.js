@@ -133,11 +133,20 @@
 
     function renderLoggedOut() {
       authToggle.textContent = "Giriş Yap";
+      // Kayıt olurken şifreyi yanlış yazmamak için ikinci bir "şifre tekrar"
+      // kutusu ekleniyor — sadece kayıt modunda, girişte gerek yok.
+      const confirmField =
+        mode === "register"
+          ? '<input id="authPassConfirm" type="password" placeholder="Şifre (tekrar)" minlength="6" autocomplete="new-password" required />'
+          : "";
       authPanel.innerHTML =
         '<div class="auth-error" id="authErr"></div>' +
         '<form id="authForm" autocomplete="off">' +
         '<input id="authUser" type="text" placeholder="Kullanıcı adı" maxlength="20" autocomplete="username" required />' +
-        '<input id="authPass" type="password" placeholder="Şifre (en az 6 karakter)" minlength="6" autocomplete="current-password" required />' +
+        '<input id="authPass" type="password" placeholder="Şifre (en az 6 karakter)" minlength="6" autocomplete="' +
+        (mode === "register" ? "new-password" : "current-password") +
+        '" required />' +
+        confirmField +
         '<button type="submit" id="authSubmitBtn">' +
         (mode === "login" ? "Giriş Yap" : "Kayıt Ol") +
         "</button>" +
@@ -193,6 +202,13 @@
         if (errEl) errEl.textContent = "Şu an bağlı değil, birkaç saniye sonra tekrar dene.";
         return;
       }
+      if (mode === "register") {
+        const confirmEl = document.getElementById("authPassConfirm");
+        if (confirmEl && confirmEl.value !== pass) {
+          if (errEl) errEl.textContent = "Şifreler eşleşmiyor, ikisini de aynı yaz.";
+          return;
+        }
+      }
 
       const submitBtn = document.getElementById("authSubmitBtn");
       if (submitBtn) submitBtn.disabled = true;
@@ -243,6 +259,27 @@
           if (snap.exists) {
             profile = Object.assign({ uid: user.uid }, snap.data());
             renderLoggedIn();
+          } else if (user.email && user.email.endsWith("@yaparmi.local")) {
+            // Hesap (Firebase Authentication'da) var ama profil belgesi
+            // (kullanicilar/{uid}) yok — mesela Firestore kuralları henüz
+            // yayınlanmadan önce kayıt olunduysa bu olur. Burada kendini
+            // onarmayı deniyor; kurallar artık doğruysa bu yazma başarılı
+            // olur ve admin paneli/rozeti bir sonraki denemede açılır.
+            const recoveredName = user.email.slice(0, user.email.indexOf("@"));
+            const rol = recoveredName === "admin" ? "admin" : "kullanici";
+            try {
+              await db.collection("kullanicilar").doc(user.uid).set({
+                kullaniciAdi: recoveredName,
+                rol: rol,
+                olusturulmaTarihi: firebase.firestore.FieldValue.serverTimestamp(),
+              });
+              profile = { uid: user.uid, kullaniciAdi: recoveredName, rol: rol };
+              renderLoggedIn();
+            } catch (err2) {
+              console.warn("Profil onarılamadı (Firestore kuralları henüz güncel olmayabilir):", err2.message);
+              profile = null;
+              renderLoggedOut();
+            }
           } else {
             profile = null;
             renderLoggedOut();
