@@ -31,17 +31,13 @@ function pickFallbackResponse() {
 
 // ---------------- Sol/sağ menü ve panel geçişleri ----------------
 // Trivia (Genel soru-cevap kutusu) tek ve kategorisiz: hangi konuda soru
-// sorulursa sorulsun yapay zeka aynı kutudan cevap verir. Spor / Ders / Oyun /
-// Sosyal Hayat / Galeri / Berkayın Ahırı bunun ayrı kategorileri DEĞİL,
-// kendi başlarına bağımsız panellerdir (şimdilik çoğu placeholder).
+// sorulursa sorulsun yapay zeka aynı kutudan cevap verir. Berkayın Ahırı da
+// aynı sayfada (SPA) açılan tek panel; Spor/Ders/Oyun/Sosyal Hayat/Galeri
+// artık ayrı gerçek sayfalar (spor.html, ders.html, ...) — index.html'de
+// düz <a href> linkleri, JS'e ihtiyaçları yok.
 
 const panels = {
   trivia: document.getElementById("panel-trivia"),
-  spor: document.getElementById("panel-spor"),
-  ders: document.getElementById("panel-ders"),
-  oyun: document.getElementById("panel-oyun"),
-  sosyal: document.getElementById("panel-sosyal"),
-  galeri: document.getElementById("panel-galeri"),
   ahir: document.getElementById("panel-ahir"),
 };
 
@@ -51,7 +47,10 @@ function showView(view) {
   });
 }
 
-const allNavItems = document.querySelectorAll(".nav-item");
+// Sadece Berkayın Ahırı butonu (data-view'lı olan) sayfa içi panel
+// değiştiriyor; Spor/Ders/Oyun/Sosyal Hayat/Galeri artık düz <a href>
+// linkleri, tarayıcı kendi gerçek sayfa geçişini yapıyor.
+const allNavItems = document.querySelectorAll(".fab-item[data-view]");
 allNavItems.forEach((btn) => {
   btn.addEventListener("click", () => {
     allNavItems.forEach((b) => b.classList.remove("active"));
@@ -66,14 +65,26 @@ allNavItems.forEach((btn) => {
   });
 });
 
+// Logo'ya tıklayınca (kenar butonlarından herhangi birine tıklayıp
+// başka bir panele geçtikten sonra bile) her zaman ortadaki soru-cevap
+// kutusuna geri dönülür.
+const homeLink = document.getElementById("homeLink");
+if (homeLink) {
+  homeLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    allNavItems.forEach((b) => b.classList.remove("active"));
+    showView("trivia");
+  });
+}
+
 // ---------------- AI'dan cevap al (yedekli) ----------------
 
-async function getAnswer(question, category) {
+async function getAnswer(question) {
   try {
     const res = await fetch("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, category }),
+      body: JSON.stringify({ question }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -144,7 +155,7 @@ form.addEventListener("submit", async (e) => {
   btnText.hidden = true;
   btnLoading.hidden = false;
 
-  const response = await getAnswer(question, "genel");
+  const response = await getAnswer(question);
   typeWrite(response);
   logQuestion(question, response, "genel");
 

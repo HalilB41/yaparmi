@@ -4,20 +4,10 @@
 // olursa Gemini (varsa GEMINI_API_KEY) dener. İkisi de yoksa/başarısız
 // olursa hata döner, istemci (script.js) kendi yedek cevaplarına geçer.
 
-const CATEGORY_HINTS = {
-  genel: "Soru Berkay'ın hayatının herhangi bir alanıyla ilgili olabilir.",
-  ders: "Soru okul, ders çalışma, sınav, ödev gibi eğitim hayatıyla ilgili. Cevabında okul/ders temalı esprili bir başarısızlık senaryosu kur.",
-  spor: "Soru spor, antrenman, maç, fitness gibi konularla ilgili. Cevabında spor temalı esprili bir başarısızlık senaryosu kur.",
-  oyun: "Soru video oyunları, bilgisayar/telefon oyunları, e-spor gibi konularla ilgili. Cevabında oyun temalı esprili bir başarısızlık senaryosu kur.",
-  sosyal: "Soru arkadaşlık, sosyal hayat, aşk, çıkma teklifi, parti gibi konularla ilgili. Cevabında sosyal hayatla ilgili esprili bir başarısızlık senaryosu kur.",
-};
-
-function buildSystemPrompt(category) {
-  const hint = CATEGORY_HINTS[category] || CATEGORY_HINTS.genel;
-  return `Sen "yaparmi.com" adlı eğlence/şaka sitesindeki şakacı bir kahinsin.
+const SYSTEM_PROMPT = `Sen "yaparmi.com" adlı eğlence/şaka sitesindeki şakacı bir kahinsin.
 Kullanıcılar "Berkay" adlı bir kişi hakkında sorular soruyor (ör. "Berkay ders çalışır mı?", "Berkay evlenir mi?").
 
-${hint}
+Soru Berkay'ın hayatının herhangi bir alanıyla (ders, spor, oyun, sosyal hayat, ne olursa) ilgili olabilir.
 
 Kurallar:
 - Cevabın HER ZAMAN olumsuz olmalı: Berkay başaramaz, yapamaz, beceremez, olmaz tarzında.
@@ -26,7 +16,6 @@ Kurallar:
 - Küfür, hakaret veya gerçekten kırıcı/aşağılayıcı ifade KULLANMA. Sadece hafif, arkadaşça dalga geçen bir ton kullan.
 - Cevabını KESİNLİKLE yarım bırakma, her zaman tam ve noktalama ile biten bir cümle yaz.
 - Sadece cevabın kendisini yaz, başka hiçbir açıklama, tırnak işareti veya ön ek ekleme.`;
-}
 
 // ---------------- Nous Research (Hermes) ----------------
 
@@ -172,7 +161,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { question, category } = req.body || {};
+  const { question } = req.body || {};
 
   if (!question || typeof question !== "string" || question.trim().length === 0) {
     return res.status(400).json({ error: "Geçersiz soru" });
@@ -181,11 +170,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Soru çok uzun" });
   }
 
-  const systemPrompt = buildSystemPrompt(typeof category === "string" ? category : "genel");
   const attempts = [];
 
   try {
-    const nous = await askNous(question, systemPrompt);
+    const nous = await askNous(question, SYSTEM_PROMPT);
     if (nous.ok) return res.status(200).json({ answer: nous.answer, provider: "nous" });
     attempts.push(nous.detail || "Nous: bilinmeyen hata");
   } catch (err) {
@@ -193,7 +181,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const gemini = await askGemini(question, systemPrompt);
+    const gemini = await askGemini(question, SYSTEM_PROMPT);
     if (gemini.ok) return res.status(200).json({ answer: gemini.answer, provider: "gemini" });
     attempts.push(gemini.detail || "Gemini: bilinmeyen hata");
   } catch (err) {

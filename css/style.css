@@ -122,6 +122,9 @@ body {
 .side-fab-left { left: 24px; }
 .side-fab-right { right: 24px; }
 
+/* Spor/Ders/Oyun/Sosyal Hayat/Galeri artık <a href> (gerçek ayrı sayfa),
+   Berkayın Ahırı ise hâlâ <button> (sayfa içi panel) — ikisi de aynı
+   .fab-item görünümünü paylaşıyor. */
 .fab-item {
   display: flex;
   flex-direction: column;
@@ -141,6 +144,7 @@ body {
   font-weight: 600;
   line-height: 1.15;
   text-align: center;
+  text-decoration: none;
   cursor: pointer;
   transition: transform 0.15s, color 0.15s, border-color 0.15s, background 0.2s;
 }
