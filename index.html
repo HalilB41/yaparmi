@@ -19,48 +19,108 @@
     <span class="blob blob-3"></span>
   </div>
 
-  <main class="wrap">
+  <main class="app-shell">
     <header class="site-header">
       <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
       <p class="subtitle">Berkay'ın hayatı hakkında merak ettiğin her şeyi sor.</p>
     </header>
 
-    <section class="card">
-      <div class="category-tabs" id="categoryTabs" role="tablist">
-        <button type="button" class="cat-tab active" data-cat="genel">🔮 Genel</button>
-        <button type="button" class="cat-tab" data-cat="ders">📚 Ders</button>
-        <button type="button" class="cat-tab" data-cat="spor">⚽ Spor</button>
-        <button type="button" class="cat-tab" data-cat="oyun">🎮 Oyun</button>
-        <button type="button" class="cat-tab" data-cat="sosyal">👥 Sosyal Hayat</button>
-      </div>
+    <div class="layout">
+      <nav class="side-nav side-nav-left" id="leftNav">
+        <button type="button" class="nav-item active" data-view="trivia">🔮 Genel</button>
+        <button type="button" class="nav-item" data-view="spor">⚽ Spor</button>
+        <button type="button" class="nav-item" data-view="ders">📚 Ders</button>
+        <button type="button" class="nav-item" data-view="oyun">🎮 Oyun</button>
+      </nav>
 
-      <form id="ask-form" autocomplete="off">
-        <label for="question" class="visually-hidden">Sorunu yaz</label>
-        <div class="input-with-prefix">
-          <span class="berkay-prefix">Berkay</span>
-          <input
-            id="question"
-            name="question"
-            type="text"
-            placeholder="spor yapar mı?"
-            maxlength="120"
-            required
-          />
+      <section class="center-panel">
+        <div class="panel card" id="panel-trivia">
+          <form id="ask-form" autocomplete="off">
+            <label for="question" class="visually-hidden">Sorunu yaz</label>
+            <div class="input-with-prefix">
+              <span class="berkay-prefix">Berkay</span>
+              <input
+                id="question"
+                name="question"
+                type="text"
+                placeholder="spor yapar mı?"
+                maxlength="120"
+                required
+              />
+            </div>
+            <button type="submit" id="ask-btn">
+              <span class="btn-text">Sor</span>
+              <span class="btn-loading" hidden>...</span>
+            </button>
+          </form>
+
+          <div class="answer-box" id="answer-box" aria-live="polite">
+            <span class="answer-placeholder" id="answer-placeholder">Cevap burada görünecek 👀</span>
+            <span class="answer-text" id="answer-text"></span>
+            <span class="cursor" id="cursor" hidden></span>
+          </div>
+
+          <p class="hint">Ne sorarsan sor, kâhin dürüst cevap verir. (Genelde kötü haber olur.)</p>
         </div>
-        <button type="submit" id="ask-btn">
-          <span class="btn-text">Sor</span>
-          <span class="btn-loading" hidden>...</span>
-        </button>
-      </form>
 
-      <div class="answer-box" id="answer-box" aria-live="polite">
-        <span class="answer-placeholder" id="answer-placeholder">Cevap burada görünecek 👀</span>
-        <span class="answer-text" id="answer-text"></span>
-        <span class="cursor" id="cursor" hidden></span>
-      </div>
+        <div class="panel card placeholder-card" id="panel-spor" hidden>
+          <h2>⚽ Spor</h2>
+          <p class="muted">Çok yakında burada olacak...</p>
+        </div>
 
-      <p class="hint">Ne sorarsan sor, kâhin dürüst cevap verir. (Genelde kötü haber olur.)</p>
-    </section>
+        <div class="panel card placeholder-card" id="panel-ders" hidden>
+          <h2>📚 Ders</h2>
+          <p class="muted">Çok yakında burada olacak...</p>
+        </div>
+
+        <div class="panel card placeholder-card" id="panel-oyun" hidden>
+          <h2>🎮 Oyun</h2>
+          <p class="muted">Çok yakında burada olacak...</p>
+        </div>
+
+        <div class="panel card placeholder-card" id="panel-sosyal" hidden>
+          <h2>👥 Sosyal Hayat</h2>
+          <p class="muted">Çok yakında burada olacak...</p>
+        </div>
+
+        <div class="panel card placeholder-card" id="panel-galeri" hidden>
+          <h2>🖼️ Galeri</h2>
+          <p class="muted">Çok yakında burada olacak...</p>
+        </div>
+
+        <div class="panel card ahir-card" id="panel-ahir" hidden>
+          <div class="ahir-header">
+            <h2>🐴 Berkayın Ahırı</h2>
+            <div class="ahir-user-info" id="ahirUserInfo" hidden>
+              <span id="ahirUsernameDisplay"></span>
+              <button type="button" id="ahirChangeNameBtn" class="link-btn">değiştir</button>
+            </div>
+          </div>
+
+          <div class="username-gate" id="usernameGate">
+            <p>Sohbete başlamadan önce bir kullanıcı adı seç:</p>
+            <form id="usernameForm" autocomplete="off">
+              <input id="usernameInput" type="text" maxlength="20" placeholder="Kullanıcı adın..." required />
+              <button type="submit">Girişi Yap</button>
+            </form>
+          </div>
+
+          <div class="ahir-chat" id="ahirChat" hidden>
+            <div class="ahir-messages" id="ahirMessages"></div>
+            <form id="ahirForm" autocomplete="off">
+              <input id="ahirInput" type="text" maxlength="300" placeholder="Bir şeyler yaz..." />
+              <button type="submit">Gönder</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <nav class="side-nav side-nav-right" id="rightNav">
+        <button type="button" class="nav-item" data-view="sosyal">👥 Sosyal Hayat</button>
+        <button type="button" class="nav-item" data-view="galeri">🖼️ Galeri</button>
+        <button type="button" class="nav-item" data-view="ahir">🐴 Berkayın Ahırı</button>
+      </nav>
+    </div>
 
     <footer class="site-footer">
       <p>yaparmi.com — sadece eğlence amaçlıdır 😄</p>
