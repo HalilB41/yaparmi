@@ -29,17 +29,18 @@ Kurallar:
 
 // ---------------- Nous Research (Hermes) ----------------
 
-// Nous Portal katalogundaki gerçek model kimlikleri "saglayici/model-adi"
-// formatında (kullanıcının kendi Portal panelinden doğrulandı — ör.
-// google/gemini-3.8-flash, z-ai/glm-5.3-flash). "Hermes-4-70B" gibi Nous'un
-// kendi modelleri hesapta artık bulunmadığı/emekli olduğu için, Portal
-// üzerinden erişilebilen genel amaçlı modelleri deniyoruz. Birden fazla
-// aday tutuyoruz ki biri kapanır/değişirse site otomatik diğerine geçsin.
+// Nous zaman zaman modelleri emekliye ayırıp yeni sürümler çıkarıyor, üstüne
+// bazen model adı "Hermes-4-70B" yerine "nousresearch/hermes-4-70b" gibi
+// sağlayıcı-önekli/küçük harfli bir slug bekliyor. Bu yüzden tek bir isme
+// güvenmek yerine birkaç farklı adı/formatı sırayla deniyoruz.
 const NOUS_MODEL_CANDIDATES = [
   process.env.NOUS_MODEL,
-  "google/gemini-3.8-flash",
-  "z-ai/glm-5.3-flash",
-  "qwen/qwen3-30b-a3b-instruct-2507",
+  "Hermes-4.3-36B",
+  "nousresearch/hermes-4.3-36b",
+  "Hermes-4-405B",
+  "nousresearch/hermes-4-405b",
+  "Hermes-4-70B",
+  "nousresearch/hermes-4-70b",
 ].filter(Boolean);
 
 async function askNousWithModel(model, apiKey, messages, maxTokens) {

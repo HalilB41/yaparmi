@@ -13,15 +13,17 @@ KURALLAR:
 4. Cevapların KISA olsun: en fazla 2-3 cümle. Türkçe, samimi-küstah bir gençlik dili kullan. Emoji kullanabilirsin ama abartma.
 5. Kullanıcı sana normal bir şey sorarsa (esprili olmayan bir soru), yine kendi küstah tonunda ama makul bir şekilde cevap ver.`;
 
-// Nous zaman zaman modelleri emekliye ayırıp yeni sürümler çıkarıyor
-// (ör. Hermes-4-70B → Hermes-4.3-36B). Tek bir model adına güvenmek
-// yerine sırayla birkaç adayı deniyoruz; biri "retired/emekli" ya da
-// 404 dönerse otomatik bir sonrakine geçiyoruz.
+// Nous Portal katalogundaki gerçek model kimlikleri "saglayici/model-adi"
+// formatında (kullanıcının kendi Portal panelinden doğrulandı — ör.
+// google/gemini-3.8-flash, z-ai/glm-5.3-flash). "Hermes-4-70B" gibi Nous'un
+// kendi modelleri hesapta artık bulunmadığı/emekli olduğu için, Portal
+// üzerinden erişilebilen genel amaçlı modelleri deniyoruz. Birden fazla
+// aday tutuyoruz ki biri kapanır/değişirse site otomatik diğerine geçsin.
 const NOUS_MODEL_CANDIDATES = [
   process.env.NOUS_MODEL,
-  "Hermes-4.3-36B",
-  "Hermes-4-405B",
-  "Hermes-4-70B",
+  "google/gemini-3.8-flash",
+  "z-ai/glm-5.3-flash",
+  "qwen/qwen3-30b-a3b-instruct-2507",
 ].filter(Boolean);
 
 async function askNousWithModel(model, apiKey, messages) {
@@ -149,7 +151,7 @@ export default async function handler(req, res) {
   try {
     const nous = await askNous(messages);
     if (nous.ok) return res.status(200).json({ reply: nous.reply, provider: "nous" });
-    if (!nous.skipped) attempts.push(nous.detail);
+    attempts.push(nous.detail || "Nous: bilinmeyen hata");
   } catch (err) {
     attempts.push("Nous hata: " + err.message);
   }
@@ -157,7 +159,7 @@ export default async function handler(req, res) {
   try {
     const gemini = await askGemini(messages);
     if (gemini.ok) return res.status(200).json({ reply: gemini.reply, provider: "gemini" });
-    if (!gemini.skipped) attempts.push(gemini.detail);
+    attempts.push(gemini.detail || "Gemini: bilinmeyen hata");
   } catch (err) {
     attempts.push("Gemini hata: " + err.message);
   }
@@ -165,6 +167,6 @@ export default async function handler(req, res) {
   console.error("Ahır sohbeti: tüm AI sağlayıcıları başarısız:", attempts);
   return res.status(500).json({
     error: "AI cevap üretemedi",
-    detail: attempts.length ? attempts.join(" | ") : "Hiçbir API key tanımlı değil",
+    detail: attempts.join(" | "),
   });
 }
