@@ -29,12 +29,18 @@ Kurallar:
 
 // ---------------- Nous Research (Hermes) ----------------
 
-async function askNous(question, systemPrompt) {
-  const apiKey = process.env.NOUS_API_KEY;
-  if (!apiKey) return { ok: false, skipped: true };
+// Nous zaman zaman modelleri emekliye ayırıp yeni sürümler çıkarıyor
+// (ör. Hermes-4-70B → Hermes-4.3-36B). Bu yüzden tek bir model adına
+// güvenmek yerine sırayla birkaç adayı deniyoruz; biri "retired/emekli"
+// ya da 404 dönerse otomatik bir sonrakine geçiyoruz.
+const NOUS_MODEL_CANDIDATES = [
+  process.env.NOUS_MODEL,
+  "Hermes-4.3-36B",
+  "Hermes-4-405B",
+  "Hermes-4-70B",
+].filter(Boolean);
 
-  const model = process.env.NOUS_MODEL || "Hermes-4-70B";
-
+async function askNousWithModel(model, apiKey, messages, maxTokens) {
   const response = await fetch("https://inference-api.nousresearch.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -43,11 +49,8 @@ async function askNous(question, systemPrompt) {
     },
     body: JSON.stringify({
       model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: question },
-      ],
-      max_tokens: 150,
+      messages,
+      max_tokens: maxTokens,
       temperature: 1.1,
     }),
   });
@@ -56,23 +59,49 @@ async function askNous(question, systemPrompt) {
     const errText = await response.text();
     return {
       ok: false,
-      detail: `Nous HTTP ${response.status}: ${errText.slice(0, 300)}`,
+      retryable: response.status === 404 || /retired/i.test(errText),
+      detail: `Nous (${model}) HTTP ${response.status}: ${errText.slice(0, 300)}`,
     };
   }
 
   const data = await response.json();
   const text = data?.choices?.[0]?.message?.content?.trim();
   if (!text) {
-    return { ok: false, detail: "Nous boş cevap döndü: " + JSON.stringify(data).slice(0, 300) };
+    return {
+      ok: false,
+      retryable: false,
+      detail: `Nous (${model}) boş cevap döndü: ` + JSON.stringify(data).slice(0, 300),
+    };
   }
   return { ok: true, answer: text };
+}
+
+async function askNous(question, systemPrompt) {
+  const apiKey = process.env.NOUS_API_KEY;
+  if (!apiKey) return { ok: false, skipped: true, detail: "Nous atlandı: NOUS_API_KEY tanımlı değil" };
+
+  const messages = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: question },
+  ];
+
+  const tried = [];
+  for (const model of NOUS_MODEL_CANDIDATES) {
+    if (tried.includes(model)) continue;
+    tried.push(model);
+    const result = await askNousWithModel(model, apiKey, messages, 150);
+    if (result.ok) return result;
+    if (!result.retryable) return result;
+    // "retired"/404 ise sıradaki modeli dene
+  }
+  return { ok: false, detail: `Nous: denenen modellerin hepsi başarısız (${tried.join(", ")})` };
 }
 
 // ---------------- Google Gemini ----------------
 
 async function askGemini(question, systemPrompt) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return { ok: false, skipped: true };
+  if (!apiKey) return { ok: false, skipped: true, detail: "Gemini atlandı: GEMINI_API_KEY tanımlı değil" };
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
@@ -136,7 +165,7 @@ export default async function handler(req, res) {
   try {
     const nous = await askNous(question, systemPrompt);
     if (nous.ok) return res.status(200).json({ answer: nous.answer, provider: "nous" });
-    if (!nous.skipped) attempts.push(nous.detail);
+    attempts.push(nous.detail || "Nous: bilinmeyen hata");
   } catch (err) {
     attempts.push("Nous hata: " + err.message);
   }
@@ -144,7 +173,7 @@ export default async function handler(req, res) {
   try {
     const gemini = await askGemini(question, systemPrompt);
     if (gemini.ok) return res.status(200).json({ answer: gemini.answer, provider: "gemini" });
-    if (!gemini.skipped) attempts.push(gemini.detail);
+    attempts.push(gemini.detail || "Gemini: bilinmeyen hata");
   } catch (err) {
     attempts.push("Gemini hata: " + err.message);
   }
@@ -152,6 +181,6 @@ export default async function handler(req, res) {
   console.error("Tüm AI sağlayıcıları başarısız:", attempts);
   return res.status(500).json({
     error: "AI cevap üretemedi",
-    detail: attempts.length ? attempts.join(" | ") : "Hiçbir API key tanımlı değil (NOUS_API_KEY / GEMINI_API_KEY)",
+    detail: attempts.join(" | "),
   });
 }

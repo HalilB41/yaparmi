@@ -13,12 +13,18 @@ KURALLAR:
 4. Cevapların KISA olsun: en fazla 2-3 cümle. Türkçe, samimi-küstah bir gençlik dili kullan. Emoji kullanabilirsin ama abartma.
 5. Kullanıcı sana normal bir şey sorarsa (esprili olmayan bir soru), yine kendi küstah tonunda ama makul bir şekilde cevap ver.`;
 
-async function askNous(messages) {
-  const apiKey = process.env.NOUS_API_KEY;
-  if (!apiKey) return { ok: false, skipped: true };
+// Nous zaman zaman modelleri emekliye ayırıp yeni sürümler çıkarıyor
+// (ör. Hermes-4-70B → Hermes-4.3-36B). Tek bir model adına güvenmek
+// yerine sırayla birkaç adayı deniyoruz; biri "retired/emekli" ya da
+// 404 dönerse otomatik bir sonrakine geçiyoruz.
+const NOUS_MODEL_CANDIDATES = [
+  process.env.NOUS_MODEL,
+  "Hermes-4.3-36B",
+  "Hermes-4-405B",
+  "Hermes-4-70B",
+].filter(Boolean);
 
-  const model = process.env.NOUS_MODEL || "Hermes-4-70B";
-
+async function askNousWithModel(model, apiKey, messages) {
   const response = await fetch("https://inference-api.nousresearch.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -35,18 +41,39 @@ async function askNous(messages) {
 
   if (!response.ok) {
     const errText = await response.text();
-    return { ok: false, detail: `Nous HTTP ${response.status}: ${errText.slice(0, 300)}` };
+    return {
+      ok: false,
+      retryable: response.status === 404 || /retired/i.test(errText),
+      detail: `Nous (${model}) HTTP ${response.status}: ${errText.slice(0, 300)}`,
+    };
   }
 
   const data = await response.json();
   const text = data?.choices?.[0]?.message?.content?.trim();
-  if (!text) return { ok: false, detail: "Nous boş cevap döndü" };
+  if (!text) {
+    return { ok: false, retryable: false, detail: `Nous (${model}) boş cevap döndü` };
+  }
   return { ok: true, reply: text };
+}
+
+async function askNous(messages) {
+  const apiKey = process.env.NOUS_API_KEY;
+  if (!apiKey) return { ok: false, skipped: true, detail: "Nous atlandı: NOUS_API_KEY tanımlı değil" };
+
+  const tried = [];
+  for (const model of NOUS_MODEL_CANDIDATES) {
+    if (tried.includes(model)) continue;
+    tried.push(model);
+    const result = await askNousWithModel(model, apiKey, messages);
+    if (result.ok) return result;
+    if (!result.retryable) return result;
+  }
+  return { ok: false, detail: `Nous: denenen modellerin hepsi başarısız (${tried.join(", ")})` };
 }
 
 async function askGemini(messages) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return { ok: false, skipped: true };
+  if (!apiKey) return { ok: false, skipped: true, detail: "Gemini atlandı: GEMINI_API_KEY tanımlı değil" };
 
   // Gemini formatı farklı: system ayrı, geri kalanı user/model rolleriyle.
   const systemMsg = messages.find((m) => m.role === "system");
