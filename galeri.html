@@ -45,8 +45,13 @@
       <div class="panel card">
         <h2 style="margin-top:0;">🖼️ Galeri</h2>
 
-        <div class="gallery-scroller" id="galleryScroller">
-          <p class="gallery-empty">Yükleniyor...</p>
+        <div class="gallery-wrap">
+          <button type="button" class="gallery-arrow gallery-arrow-left" id="galleryPrev" aria-label="Önceki fotoğraf">‹</button>
+          <div class="gallery-scroller" id="galleryScroller">
+            <p class="gallery-empty">Yükleniyor...</p>
+          </div>
+          <button type="button" class="gallery-arrow gallery-arrow-right" id="galleryNext" aria-label="Sonraki fotoğraf">›</button>
+          <div class="gallery-counter" id="galleryCounter" hidden></div>
         </div>
 
         <div class="suggest-box">

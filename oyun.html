@@ -42,9 +42,20 @@
     </header>
 
     <section class="center-panel">
-      <div class="panel card placeholder-card">
-        <h2>🎮 Oyun</h2>
-        <p class="muted">Çok yakında burada olacak...</p>
+      <div class="panel card game-panel">
+        <h2 style="margin-top:0;">🎮 Oyun</h2>
+        <p class="muted" style="margin-top:0;">Canın sıkıldıysa buradan oyala kendini.</p>
+
+        <div class="game-picker" id="gamePicker">
+          <button type="button" class="game-tab active" data-game="2048">2048</button>
+          <button type="button" class="game-tab" data-game="yilan">🐍 Yılan</button>
+          <button type="button" class="game-tab" data-game="hafiza">🧠 Hafıza</button>
+          <button type="button" class="game-tab" data-game="xox">❌⭕ XOX</button>
+          <button type="button" class="game-tab" data-game="tkm">✊ Taş Kağıt Makas</button>
+        </div>
+
+        <div id="gameContainer"></div>
+
         <p><a href="/" class="link-btn">◀ Ana sayfaya dön</a></p>
       </div>
     </section>
@@ -60,5 +71,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
+  <script src="js/games.js"></script>
 </body>
 </html>

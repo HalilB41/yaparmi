@@ -11,9 +11,65 @@
 // ============================================================
 
 const galleryScroller = document.getElementById("galleryScroller");
+const galleryPrev = document.getElementById("galleryPrev");
+const galleryNext = document.getElementById("galleryNext");
+const galleryCounter = document.getElementById("galleryCounter");
 const suggestForm = document.getElementById("suggestForm");
 const suggestFile = document.getElementById("suggestFile");
 const suggestStatus = document.getElementById("suggestStatus");
+
+// Şu an ortada/en görünür duran fotoğrafın index'ini kaydırma konumundan
+// hesaplıyor — hem oklar hem de "2 / 6" sayacı bunu kullanıyor.
+function computeCurrentIndex() {
+  const cards = galleryScroller.querySelectorAll(".gallery-photo");
+  if (!cards.length) return 0;
+  const scrollerRect = galleryScroller.getBoundingClientRect();
+  const scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
+  let closestIdx = 0;
+  let closestDist = Infinity;
+  cards.forEach((card, i) => {
+    const rect = card.getBoundingClientRect();
+    const cardCenter = rect.left + rect.width / 2;
+    const dist = Math.abs(cardCenter - scrollerCenter);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closestIdx = i;
+    }
+  });
+  return closestIdx;
+}
+
+function updateGalleryNav() {
+  const cards = galleryScroller.querySelectorAll(".gallery-photo");
+  const total = cards.length;
+  if (!galleryPrev || !galleryNext || !galleryCounter) return;
+  if (!total) {
+    galleryCounter.hidden = true;
+    galleryPrev.disabled = true;
+    galleryNext.disabled = true;
+    return;
+  }
+  const idx = computeCurrentIndex();
+  galleryCounter.hidden = false;
+  galleryCounter.textContent = idx + 1 + " / " + total;
+  galleryPrev.disabled = idx <= 0;
+  galleryNext.disabled = idx >= total - 1;
+}
+
+function scrollGalleryToIndex(idx) {
+  const cards = galleryScroller.querySelectorAll(".gallery-photo");
+  if (!cards[idx]) return;
+  cards[idx].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+}
+
+if (galleryPrev) galleryPrev.addEventListener("click", () => scrollGalleryToIndex(computeCurrentIndex() - 1));
+if (galleryNext) galleryNext.addEventListener("click", () => scrollGalleryToIndex(computeCurrentIndex() + 1));
+
+let galleryScrollTimer = null;
+galleryScroller.addEventListener("scroll", () => {
+  if (galleryScrollTimer) clearTimeout(galleryScrollTimer);
+  galleryScrollTimer = setTimeout(updateGalleryNav, 80);
+});
 
 function loadGallery() {
   if (typeof db === "undefined" || !db) {
@@ -27,6 +83,7 @@ function loadGallery() {
       (snapshot) => {
         if (snapshot.empty) {
           galleryScroller.innerHTML = '<p class="gallery-empty">Henüz fotoğraf yok.</p>';
+          updateGalleryNav();
           return;
         }
         galleryScroller.innerHTML = "";
@@ -42,10 +99,12 @@ function loadGallery() {
           card.appendChild(img);
           galleryScroller.appendChild(card);
         });
+        updateGalleryNav();
       },
       (err) => {
         console.error("Galeri okunamadı:", err.message);
         galleryScroller.innerHTML = '<p class="gallery-empty">Galeri yüklenemedi.</p>';
+        updateGalleryNav();
       }
     );
 }

@@ -1,13 +1,17 @@
+/* Tek renk ailesi: sıcak altın/amber ("kâhin", kristal küre temasına uygun).
+   Eskiden pembe + mor + sarı üçü birden kullanılıyordu, karışık/"mide
+   bulandırıcı" duruyordu — artık HER YERDE aynı altın tonunun açık/koyu
+   halleri kullanılıyor, başka hiçbir renk yarışmıyor. */
 :root {
-  --bg-1: #1b1035;
-  --bg-2: #2d1b4e;
-  --accent: #ff5da2;
-  --accent-2: #7c5cff;
-  --accent-3: #ffce54;
+  --bg-1: #140f24;
+  --bg-2: #241a3d;
+  --accent: #e0a72e;
+  --accent-2: #b9860f;
+  --accent-3: #ffd66b;
   --card-bg: rgba(255, 255, 255, 0.06);
   --card-border: rgba(255, 255, 255, 0.14);
   --text: #f5f3ff;
-  --text-dim: #c6bfe0;
+  --text-dim: #b7b0c9;
   --radius: 20px;
   font-size: 16px;
 }
@@ -112,7 +116,42 @@ body {
   padding: 48px 24px;
 }
 .placeholder-card h2 { margin-top: 0; }
+.placeholder-emoji { font-size: 3rem; margin-bottom: 6px; line-height: 1.2; }
 .muted { color: var(--text-dim); }
+
+/* ---------------- Sosyal Hayat: yoldan geçen otobüs animasyonu ---------------- */
+.bus-scene {
+  position: relative;
+  height: 64px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.bus-scene .bus {
+  position: absolute;
+  bottom: 6px;
+  left: -80px;
+  font-size: 2.6rem;
+  animation: bus-drive 5s linear infinite;
+}
+@keyframes bus-drive {
+  0% { left: -80px; transform: scaleX(1); }
+  48% { transform: scaleX(1); }
+  50% { left: calc(100% + 80px); transform: scaleX(1); }
+  50.01% { transform: scaleX(-1); }
+  98% { transform: scaleX(-1); }
+  100% { left: -80px; transform: scaleX(-1); }
+}
+.bus-scene .road {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, var(--card-border) 0 16px, transparent 16px 30px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bus-scene .bus { animation: none; left: 40%; }
+}
 
 /* ---------------- Üst bar: hamburger menü + logo + giriş/kayıt ----------------
    Hamburger SOL ÜST köşeye, Giriş Yap SAĞ ÜST köşeye "position: fixed" ile
@@ -214,11 +253,7 @@ body {
   font-size: 1.15rem;
   background: rgba(255, 255, 255, 0.1);
 }
-.menu-item:nth-child(1) .fab-icon { background: rgba(255, 93, 162, 0.25); }
-.menu-item:nth-child(2) .fab-icon { background: rgba(124, 92, 255, 0.28); }
-.menu-item:nth-child(3) .fab-icon { background: rgba(255, 206, 84, 0.25); }
-.menu-item:nth-child(4) .fab-icon { background: rgba(255, 93, 162, 0.25); }
-.menu-item:nth-child(5) .fab-icon { background: rgba(124, 92, 255, 0.28); }
+.menu-item .fab-icon { background: rgba(224, 167, 46, 0.22); }
 
 /* ---------------- Sağ üst: Giriş Yap / Kayıt Ol ----------------
    Hamburger gibi bu da gerçek ekran köşesine sabitleniyor. */
@@ -372,7 +407,7 @@ body {
 }
 .input-with-prefix:focus-within {
   border-color: var(--accent-2);
-  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(224, 167, 46, 0.35);
 }
 
 .berkay-prefix {
@@ -593,12 +628,18 @@ body {
 
 /* ---------------- Galeri (yatay kaydırmalı, Snapchat tarzı) ---------------- */
 
+.gallery-wrap { position: relative; }
+
 .gallery-scroller {
   display: flex;
   gap: 14px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  padding: 4px 4px 14px;
+  /* Sol/sağ boşluk, üstteki oklarla ilk/son fotoğrafın üst üste
+     binmemesi için — ayrıca fotoğrafın "tek varmış" gibi durup kesik
+     görünmesini de engelliyor, komşu fotoğrafın kenarı hafif görünüyor. */
+  padding: 4px 44px 34px;
+  scroll-padding: 0 44px;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -606,7 +647,7 @@ body {
 
 .gallery-photo {
   flex: none;
-  width: min(78vw, 340px);
+  width: min(70vw, 300px);
   aspect-ratio: 1 / 1;
   border-radius: 18px;
   overflow: hidden;
@@ -617,6 +658,46 @@ body {
 .gallery-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .gallery-empty { text-align: center; color: var(--text-dim); padding: 30px 10px; }
+
+/* Yana kaydırılabileceğini belli eden şeffaf oklar + "2 / 6" sayacı. */
+.gallery-arrow {
+  position: absolute;
+  top: calc(50% - 17px);
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: var(--text);
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.gallery-arrow:hover { background: rgba(0, 0, 0, 0.6); }
+.gallery-arrow:disabled { opacity: 0.3; cursor: default; }
+.gallery-arrow-left { left: -6px; }
+.gallery-arrow-right { right: -6px; }
+
+.gallery-counter {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
 
 .suggest-box { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--card-border); }
 .suggest-box h3 { margin: 0 0 8px; font-size: 1rem; }
@@ -686,3 +767,353 @@ table.admin-table tr:last-child td { border-bottom: none; }
 .admin-upload input[type="file"] { color: var(--text-dim); font-size: 0.85rem; }
 
 .admin-gate { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+
+/* ============================================================
+   Oyun sayfası — oyun seçici sekmeleri + 5 oyun
+   ============================================================ */
+
+.game-panel { text-align: left; }
+
+.game-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 18px;
+}
+.game-tab {
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+}
+.game-tab:hover { transform: translateY(-1px); }
+.game-tab.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+  color: white;
+}
+
+.g2048-top, .memory-grid + .g2048-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.g2048-score { font-weight: 700; color: var(--text); }
+.g2048-hint { font-size: 0.8rem; margin: 10px 0 0; }
+.g2048-over {
+  margin: 14px 0 0;
+  font-weight: 700;
+  color: var(--accent-3);
+  text-align: center;
+}
+
+.game-mini-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.game-mini-btn:hover { border-color: var(--accent); }
+
+/* ---- 2048 ---- */
+.g2048-wrap { max-width: 340px; margin: 0 auto; }
+.g2048-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 8px;
+}
+.g2048-tile {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+.g2048-tile[data-value="2"] { background: rgba(255, 255, 255, 0.1); }
+.g2048-tile[data-value="4"] { background: rgba(255, 255, 255, 0.16); }
+.g2048-tile[data-value="8"] { background: #e0a72e; color: white; }
+.g2048-tile[data-value="16"] { background: #d69524; color: white; }
+.g2048-tile[data-value="32"] { background: #cc8420; color: white; }
+.g2048-tile[data-value="64"] { background: #c2721c; color: white; }
+.g2048-tile[data-value="128"] { background: #b9860f; color: white; font-size: 1rem; }
+.g2048-tile[data-value="256"] { background: #ffd66b; color: #241a3d; font-size: 1rem; }
+.g2048-tile[data-value="512"] { background: #ffca47; color: #241a3d; font-size: 1rem; }
+.g2048-tile[data-value="1024"] { background: #ffbe23; color: #241a3d; font-size: 0.85rem; }
+.g2048-tile[data-value="2048"] { background: #ffb300; color: #241a3d; font-size: 0.85rem; box-shadow: 0 0 0 2px var(--accent-3); }
+
+/* ---- Yön tuşları (2048 + Yılan ortak) ---- */
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(2, 44px);
+  gap: 6px;
+  justify-content: center;
+  margin: 14px auto 0;
+}
+.dpad-btn {
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.dpad-btn:hover { border-color: var(--accent); }
+.dpad-up { grid-column: 2; grid-row: 1; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-right { grid-column: 3; grid-row: 2; }
+.dpad-down { grid-column: 2; grid-row: 2; }
+
+/* ---- Yılan ---- */
+.snake-wrap { max-width: 280px; margin: 0 auto; text-align: center; }
+.snake-wrap canvas {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---- Hafıza ---- */
+.memory-wrap { max-width: 380px; margin: 0 auto; }
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.memory-card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  perspective: 600px;
+  padding: 0;
+}
+.memory-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border-radius: 12px;
+  backface-visibility: hidden;
+  transition: transform 0.25s;
+}
+.memory-back { background: rgba(255, 255, 255, 0.07); color: var(--text-dim); transform: rotateY(0deg); }
+.memory-front { background: linear-gradient(135deg, var(--accent), var(--accent-2)); transform: rotateY(-180deg); }
+.memory-card.is-flipped .memory-back,
+.memory-card.is-matched .memory-back { transform: rotateY(180deg); }
+.memory-card.is-flipped .memory-front,
+.memory-card.is-matched .memory-front { transform: rotateY(0deg); }
+.memory-card.is-matched { opacity: 0.55; }
+
+/* ---- XOX ---- */
+.xox-wrap { max-width: 300px; margin: 0 auto; }
+.xox-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.xox-cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text);
+  font-size: 1.7rem;
+  cursor: pointer;
+}
+.xox-cell:disabled,
+.xox-cell:hover { border-color: var(--accent); }
+
+/* ---- Taş Kağıt Makas ---- */
+.rps-wrap { max-width: 380px; margin: 0 auto; text-align: center; }
+.rps-score { font-weight: 700; margin-bottom: 14px; }
+.rps-choices { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.rps-choice-btn {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.rps-choice-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.rps-result { margin-top: 16px; font-weight: 600; min-height: 1.4em; }
+
+/* ============================================================
+   Ders sayfası — şakadan "optik form" sürükle-yaklaştır gösterisi
+   ============================================================ */
+
+.ders-panel { text-align: left; }
+
+.optik-scene { margin-top: 14px; }
+
+.optik-pencils {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  transform: rotate(-8deg);
+}
+.optik-pencils .optik-eraser { transform: rotate(20deg); }
+
+.optik-row-area {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.optik-booklet,
+.optik-reader {
+  flex: none;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.optik-booklet-icon,
+.optik-reader-icon { font-size: 1.6rem; margin-bottom: 4px; }
+
+.optik-reader {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  z-index: 6;
+  background: rgba(224, 167, 46, 0.14);
+  border-color: var(--accent);
+  transition: box-shadow 0.2s;
+}
+.optik-reader.is-dragging { cursor: grabbing; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.optik-reader.is-scanning {
+  animation: optik-scan-pulse 0.6s ease-in-out infinite;
+  border-color: var(--accent-3);
+}
+@keyframes optik-scan-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 214, 107, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 214, 107, 0); }
+}
+
+.optik-sheet {
+  flex: 1;
+  min-width: 0;
+  max-height: 340px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 10px 10px 14px;
+  margin-right: 68px;
+}
+.optik-sheet.is-scanning { border-color: var(--accent-3); }
+
+.optik-sheet-header {
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.optik-section h4 {
+  margin: 12px 0 6px;
+  font-size: 0.72rem;
+  color: var(--accent-3);
+  letter-spacing: 0.04em;
+}
+.optik-section:first-of-type h4 { margin-top: 0; }
+
+.optik-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+}
+.optik-row-num {
+  flex: none;
+  width: 20px;
+  font-size: 0.62rem;
+  color: var(--text-dim);
+}
+.optik-bubble {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.optik-bubble.is-filled {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  transform: scale(1.15);
+}
+
+.optik-hint {
+  text-align: center;
+  margin: 12px 0 0;
+  font-size: 0.82rem;
+}
+
+.optik-result {
+  margin-top: 16px;
+  text-align: center;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--accent);
+  background: rgba(224, 167, 46, 0.12);
+}
+.optik-result-emoji { font-size: 2.2rem; margin-bottom: 6px; }
+.optik-result-text { font-weight: 700; margin-bottom: 12px; }
+.optik-result-text strong { color: var(--accent-3); font-size: 1.2em; }
+
+@media (max-width: 420px) {
+  .optik-booklet, .optik-reader { width: 52px; font-size: 0.58rem; }
+  .optik-sheet { margin-right: 56px; }
+}

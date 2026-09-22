@@ -42,9 +42,54 @@
     </header>
 
     <section class="center-panel">
-      <div class="panel card placeholder-card">
-        <h2>📚 Ders</h2>
-        <p class="muted">Çok yakında burada olacak...</p>
+      <div class="panel card ders-panel">
+        <h2 style="margin-top:0;">📚 Ders</h2>
+        <p class="muted" style="margin-top:0;">Türkçe (30) + Matematik (30) + Genel Kültür (60) — optiği doldur, okuyucuyu forma yaklaştır.</p>
+
+        <div class="optik-scene" id="optikScene">
+          <div class="optik-pencils" aria-hidden="true">
+            <span class="optik-pencil">✏️</span>
+            <span class="optik-eraser">🧽</span>
+          </div>
+
+          <div class="optik-row-area" id="optikRowArea">
+            <div class="optik-booklet" aria-hidden="true">
+              <span class="optik-booklet-icon">📘</span>
+              <span class="optik-booklet-label">Deneme<br />Kitapçığı</span>
+            </div>
+
+            <div class="optik-sheet" id="optikSheet">
+              <div class="optik-sheet-header">OPTİK CEVAP FORMU</div>
+
+              <div class="optik-section" data-section="turkce">
+                <h4>TÜRKÇE (1-30)</h4>
+                <div class="optik-rows"></div>
+              </div>
+              <div class="optik-section" data-section="matematik">
+                <h4>MATEMATİK (1-30)</h4>
+                <div class="optik-rows"></div>
+              </div>
+              <div class="optik-section" data-section="gk">
+                <h4>GENEL KÜLTÜR (1-60)</h4>
+                <div class="optik-rows"></div>
+              </div>
+            </div>
+
+            <div class="optik-reader" id="optikReader" title="Sürükle ve optiğe yaklaştır">
+              <span class="optik-reader-icon">📡</span>
+              <span class="optik-reader-label">Optik<br />Okuyucu</span>
+            </div>
+          </div>
+
+          <p class="muted optik-hint" id="optikHint">👉 Optik okuyucuyu sürükleyip forma yaklaştır.</p>
+
+          <div class="optik-result" id="optikResult" hidden>
+            <div class="optik-result-emoji">🎉</div>
+            <div class="optik-result-text">Tebrikler, <strong>94</strong> aldın!</div>
+            <button type="button" class="game-mini-btn" id="optikRetry">🔄 Tekrar Dene</button>
+          </div>
+        </div>
+
         <p><a href="/" class="link-btn">◀ Ana sayfaya dön</a></p>
       </div>
     </section>
@@ -60,5 +105,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
+  <script src="js/ders.js"></script>
 </body>
 </html>
