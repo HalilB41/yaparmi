@@ -38,10 +38,9 @@ GÖREV ADIMLARI VE KURALLAR (BUNLARA KESİNLİKLE UYACAKSIN):
 // üzerinden erişilebilen genel amaçlı modelleri deniyoruz. Birden fazla
 // aday tutuyoruz ki biri kapanır/değişirse site otomatik diğerine geçsin.
 const NOUS_MODEL_CANDIDATES = [
-  process.env.NOUS_MODEL,
-  "z-ai/glm-5.3-flash",
+  "x-ai/grok-4.7",
   "qwen/qwen3-30b-a3b-instruct-2507",
-  "google/gemini-3.8-flash",
+  "qwen/qwen3.8-27b",
 ].filter(Boolean);
 
 async function askNousWithModel(model, apiKey, messages, maxTokens) {
@@ -188,7 +187,7 @@ export default async function handler(req, res) {
   } catch (err) {
     attempts.push("Nous hata: " + err.message);
   }
-
+/*
   try {
     const gemini = await askGemini(question, SYSTEM_PROMPT);
     if (gemini.ok) return res.status(200).json({ answer: gemini.answer, provider: "gemini" });
@@ -196,7 +195,7 @@ export default async function handler(req, res) {
   } catch (err) {
     attempts.push("Gemini hata: " + err.message);
   }
-
+*/
   console.error("Tüm AI sağlayıcıları başarısız:", attempts);
   return res.status(500).json({
     error: "AI cevap üretemedi",
