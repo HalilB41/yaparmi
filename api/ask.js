@@ -34,6 +34,31 @@ const NOUS_MODEL_CANDIDATES = [
   "qwen/qwen3.8-27b",
 ].filter(Boolean);
 
+// Model, aşağılayıcı/hedef alan içerik istendiği için isteği reddederse
+// bunu geçerli cevap saymıyoruz, bir sonraki aday modele geçiyoruz.
+function looksLikeRefusal(text) {
+  const t = text.toLowerCase();
+  const patterns = [
+    "üretemem",
+    "üretmem",
+    "yapamam",
+    "yardımcı olamam",
+    "uygun değil",
+    "içerik politikası",
+    "hakaret",
+    "aşağılayıcı",
+    "saygısız",
+    "zarar verici",
+    "i cannot",
+    "i can't",
+    "i won't",
+    "i'm not able to",
+    "cannot assist",
+    "not appropriate",
+  ];
+  return patterns.some((p) => t.includes(p));
+}
+
 async function askNousWithModel(model, apiKey, messages, maxTokens) {
   // Senin orijinal ve DOĞRU olan Nous API URL'si
   const response = await fetch("https://inference-api.nousresearch.com/v1/chat/completions", {
