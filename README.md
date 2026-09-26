@@ -17,7 +17,9 @@ için kayıt olmak zorunlu değil.
 ```
 yaparmi-site/
 ├─ index.html
-├─ spor.html, ders.html, oyun.html, sosyal.html   <- "çok yakında" sayfaları
+├─ spor.html, oyun.html   <- spor "çok yakında", oyun sayfası
+├─ ders.html        <- şakadan optik form: telefonu karekoda tut, 85-99 arası rastgele puan
+├─ sosyal.html      <- "hikaye seç" oyunu (İzmir'e gitsin / evde kalsın ...)
 ├─ galeri.html      <- yatay kaydırmalı fotoğraf galerisi + fotoğraf öner
 ├─ admin.html       <- sadece "admin" kullanıcı adına giriş yapınca görünür
 ├─ css/style.css
@@ -26,6 +28,10 @@ yaparmi-site/
 ├─ js/script.js     <- sadece index.html: soru-cevap kutusu + Berkayın Ahırı
 ├─ js/gallery.js    <- sadece galeri.html
 ├─ js/admin.js      <- sadece admin.html
+├─ js/ders.js       <- sadece ders.html (sahte karekod, deklanşör sesi, rastgele puan)
+├─ js/sosyal-hikaye.js  <- Sosyal Hayat hikayesinin varsayılan hali + Firestore'dan okuma
+├─ js/sosyal.js     <- sadece sosyal.html (hikaye oynatıcı)
+├─ js/sosyal-editor.js  <- admin.html'deki "Sosyal Hayat Düzenle" (algoritma şeması + editör)
 ├─ api/ask.js              <- Vercel serverless function, Nous Research'e soru gönderir
 ├─ audio/
 │  ├─ track1.mp3
@@ -178,6 +184,14 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Sosyal Hayat hikayesi (admin panelindeki "Sosyal Hayat Düzenle").
+    // "ana" belgesi hikayenin kendisi, "resim" belgesi ortadaki Berkay resmi.
+    // Herkes okuyabilir (oyun oynansın diye), sadece admin değiştirebilir.
+    match /sosyal_hikaye/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId in ['ana', 'resim'];
+    }
+
     // Galeri fotoğraf önerileri — giriş yapmış (anonim de olsa) herkes
     // önerebilir, sadece admin görüp onaylayabilir/silebilir.
     match /galeri_oneriler/{oneriId} {
@@ -269,3 +283,26 @@ git push -u origin main
   sonra farklı bir tarayıcı/oturumda gerçek hesaba kayıt olursa, eski
   takma adı yeni hesaba otomatik taşınmaz — Ahır'a tekrar girip aynı adı
   (boşsa) yeniden seçmesi gerekir.
+
+## Sosyal Hayat hikayesini düzenleme
+
+`admin` hesabıyla giriş yap → **Admin Paneli** → **👥 Sosyal Hayat Düzenle**.
+Önce hikayenin algoritma şeması (akış ağacı) açılır. Bir kutuya tıklayınca
+altta o adımın metnini, emojisini ve seçeneklerini (her butonun hangi adıma
+gideceğini) değiştirebilirsin. Seçeneği olmayan adım "SON" sayılır.
+**💾 Kaydet ve yayınla** deyince Sosyal Hayat sayfası anında yeni hikayeyi
+gösterir. Ortadaki Berkay resmini de aynı yerden yükleyebilirsin.
+Hiç kaydetmediysen `js/sosyal-hikaye.js` içindeki varsayılan hikaye çalışır.
+
+**Önemli:** Kaydetmenin çalışması için yukarıdaki Firestore kurallarındaki
+`sosyal_hikaye` bloğunun Firebase Console → Firestore → Rules'a eklenip
+**Publish** edilmesi gerekiyor.
+
+## Bot cevap tarzı
+
+`api/ask.js` içindeki `SYSTEM_PROMPT` artık Berkay hakkındaki bilgileri
+sıralayıp dökmüyor. Her soruya o konuya özel yeni ve absürt bir espri
+uyduruyor, bilinen olaylardan en fazla birini (alakalıysa) kullanıyor.
+Cevaplar 1-3 cümle. Sadece hafif laf sokmalara (mal, aptal, salak...)
+izin var. Aile, cinsel ve ağır küfürler yasak. Soru kutusunda artık sabit
+"Berkay" öneki yok, soru yazıldığı gibi gidiyor.

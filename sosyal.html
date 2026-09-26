@@ -42,13 +42,24 @@
     </header>
 
     <section class="center-panel">
-      <div class="panel card placeholder-card">
-        <div class="bus-scene" aria-hidden="true">
-          <span class="bus">🚌</span>
-          <span class="road"></span>
+      <div class="panel card story-card" id="storyCard">
+        <h2 class="story-title">👥 Berkay'ın Sosyal Hayatı</h2>
+        <p class="muted story-sub">Berkay'ın kaderi senin elinde. Seç bakalım ne olacak.</p>
+
+        <div class="story-stage" id="storyStage">
+          <div class="story-avatar" id="storyAvatar">
+            <img id="storyImg" alt="Berkay" hidden />
+            <span class="story-avatar-fallback" id="storyFallback">🧍</span>
+            <span class="story-emoji" id="storyEmoji"></span>
+          </div>
+          <p class="story-text" id="storyText">Yükleniyor...</p>
+          <div class="story-choices" id="storyChoices"></div>
+          <div class="story-footer">
+            <span class="story-step muted" id="storyStep"></span>
+            <button type="button" class="link-btn" id="storyRestart" hidden>🔁 Baştan başla</button>
+          </div>
         </div>
-        <h2>Maalesef!</h2>
-        <p class="muted">Berkay İzmir'e gitti.<br />Lütfen daha sonra tekrar deneyin.</p>
+
         <p><a href="/" class="link-btn">◀ Ana sayfaya dön</a></p>
       </div>
     </section>
@@ -64,5 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
+  <script src="js/sosyal-hikaye.js"></script>
+  <script src="js/sosyal.js"></script>
 </body>
 </html>

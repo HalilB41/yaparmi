@@ -141,8 +141,8 @@ form.addEventListener("submit", async (e) => {
   const rest = input.value.trim();
   if (!rest) return;
 
-  // Kutuda kullanıcının yazdığı kısım, "Berkay" öneki hep sabit.
-  const question = `${NAME} ${rest}`;
+  // Artık sabit "Berkay" öneki yok — soru, kullanıcının yazdığı haliyle gidiyor.
+  const question = rest;
 
   if (lastAskedQuestion !== null && rest === lastAskedQuestion) {
     input.value = "";

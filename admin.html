@@ -41,7 +41,7 @@
       </a>
     </header>
 
-    <section class="center-panel" style="max-width: 760px;">
+    <section class="center-panel" style="max-width: 980px;">
       <div class="panel card" id="adminGate">
         <div class="admin-gate">
           <p>Bu sayfayı görmek için <strong>admin</strong> kullanıcı adıyla giriş yapmalısın (sağ üstten).</p>
@@ -49,6 +49,39 @@
       </div>
 
       <div id="adminContent" hidden>
+        <div class="panel card admin-section">
+          <div class="se-top">
+            <h2 style="margin:0;">👥 Sosyal Hayat hikayesi</h2>
+            <button type="button" class="admin-btn publish" id="sosyalEditBtn">👥 Sosyal Hayat Düzenle</button>
+          </div>
+
+          <div id="sosyalEditor" class="se-editor" hidden>
+            <div class="se-img-box">
+              <img id="seImgPreview" alt="Berkay" hidden />
+              <div>
+                <p class="muted" style="margin:0 0 6px;">Ortadaki Berkay resmi:</p>
+                <input type="file" id="seImgFile" accept="image/*" />
+                <button type="button" class="admin-btn reject se-small" id="seImgRemove" hidden>Resmi kaldır</button>
+                <p class="suggest-status" id="seImgStatus"></p>
+              </div>
+            </div>
+
+            <h3 class="se-sub">🧭 Algoritma şeması</h3>
+            <p class="muted se-hint">Başlangıçtan itibaren tüm yollar. Bir kutuya tıkla, altta düzenle. ↪ olan kutular zaten şemada başka yerde olan bir adıma geri bağlanıyor.</p>
+            <div class="se-tree-wrap"><div class="se-tree" id="seTree"></div></div>
+            <div id="seOrphans"></div>
+
+            <div class="se-form" id="seForm"></div>
+
+            <div class="se-row se-actions se-bottom">
+              <button type="button" class="admin-btn publish" id="seSave">💾 Kaydet ve yayınla</button>
+              <button type="button" class="admin-btn reject" id="seAddNode">+ Boş adım ekle</button>
+              <button type="button" class="admin-btn reject" id="seReset">↺ Varsayılana dön</button>
+            </div>
+            <p class="suggest-status" id="seStatus"></p>
+          </div>
+        </div>
+
         <div class="panel card admin-section">
           <h2>📸 Galeri önerileri</h2>
           <div id="queueList"><p class="muted">Yükleniyor...</p></div>
@@ -92,5 +125,7 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/sosyal-hikaye.js"></script>
+  <script src="js/sosyal-editor.js"></script>
 </body>
 </html>

@@ -44,7 +44,7 @@
     <section class="center-panel">
       <div class="panel card ders-panel">
         <h2 style="margin-top:0;">📚 Ders</h2>
-        <p class="muted" style="margin-top:0;">Türkçe (30) + Matematik (30) + Genel Kültür (60) — optiği doldur, okuyucuyu forma yaklaştır.</p>
+        <p class="muted" style="margin-top:0;">Türkçe (30) + Matematik (30) + Genel Kültür (60) — telefonu optiğin sağ üstündeki karekoda tut, gerisini Berkay halleder.</p>
 
         <div class="optik-scene" id="optikScene">
           <div class="optik-pencils" aria-hidden="true">
@@ -58,34 +58,43 @@
               <span class="optik-booklet-label">Deneme<br />Kitapçığı</span>
             </div>
 
-            <div class="optik-sheet" id="optikSheet">
-              <div class="optik-sheet-header">OPTİK CEVAP FORMU</div>
+            <div class="optik-sheet-wrap">
+              <div class="optik-qr" id="optikQr" title="Telefonu buraya tut" aria-label="Karekod"></div>
+              <div class="optik-sheet" id="optikSheet">
+                <div class="optik-sheet-header">OPTİK CEVAP FORMU</div>
 
-              <div class="optik-section" data-section="turkce">
-                <h4>TÜRKÇE (1-30)</h4>
-                <div class="optik-rows"></div>
-              </div>
-              <div class="optik-section" data-section="matematik">
-                <h4>MATEMATİK (1-30)</h4>
-                <div class="optik-rows"></div>
-              </div>
-              <div class="optik-section" data-section="gk">
-                <h4>GENEL KÜLTÜR (1-60)</h4>
-                <div class="optik-rows"></div>
+                <div class="optik-section" data-section="turkce">
+                  <h4>TÜRKÇE (1-30)</h4>
+                  <div class="optik-rows"></div>
+                </div>
+                <div class="optik-section" data-section="matematik">
+                  <h4>MATEMATİK (1-30)</h4>
+                  <div class="optik-rows"></div>
+                </div>
+                <div class="optik-section" data-section="gk">
+                  <h4>GENEL KÜLTÜR (1-60)</h4>
+                  <div class="optik-rows"></div>
+                </div>
               </div>
             </div>
 
-            <div class="optik-reader" id="optikReader" title="Sürükle ve optiğe yaklaştır">
-              <span class="optik-reader-icon">📡</span>
-              <span class="optik-reader-label">Optik<br />Okuyucu</span>
+            <div class="optik-phone" id="optikPhone" title="Sürükle ve karekoda tut">
+              <span class="optik-phone-notch"></span>
+              <span class="optik-phone-screen">
+                <span class="optik-phone-cam">📷</span>
+                <span class="optik-phone-label">QR<br />Tara</span>
+              </span>
             </div>
           </div>
 
-          <p class="muted optik-hint" id="optikHint">👉 Optik okuyucuyu sürükleyip forma yaklaştır.</p>
+          <div class="camera-flash" id="cameraFlash" aria-hidden="true"></div>
+
+          <p class="muted optik-hint" id="optikHint">👉 Telefonu sürükleyip optiğin sağ üstündeki karekoda tut.</p>
 
           <div class="optik-result" id="optikResult" hidden>
             <div class="optik-result-emoji">🎉</div>
-            <div class="optik-result-text">Tebrikler, <strong>94</strong> aldın!</div>
+            <div class="optik-result-text" id="optikResultText">Tebrikler!</div>
+            <div class="optik-result-detail muted" id="optikResultDetail"></div>
             <button type="button" class="game-mini-btn" id="optikRetry">🔄 Tekrar Dene</button>
           </div>
         </div>
