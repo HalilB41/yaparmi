@@ -49,8 +49,24 @@ const NOUS_MODEL_CANDIDATES = [
   "qwen/qwen3.8-27b",
 ].filter(Boolean);
 
+// Her model için en fazla bu kadar beklenir; cevap gelmezse sıradaki
+// modele geçilir. Toplamda Vercel'in süre sınırına takılmamak için kısa tutuldu.
+const MODEL_TIMEOUT_MS = 9000;
+
+async function fetchWithTimeout(url, options, ms) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function askNousWithModel(model, apiKey, messages, maxTokens) {
-  const response = await fetch("https://inference-api.nousresearch.com/v1/chat/completions", {
+  let response;
+  try {
+    response = await fetchWithTimeout("https://inference-api.nousresearch.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -62,7 +78,14 @@ async function askNousWithModel(model, apiKey, messages, maxTokens) {
       max_tokens: maxTokens,
       temperature: 1.0,
     }),
-  });
+  }, MODEL_TIMEOUT_MS);
+  } catch (err) {
+    return {
+      ok: false,
+      retryable: true,
+      detail: `Nous (${model}) ${err.name === "AbortError" ? "zaman aşımı" : "bağlantı hatası: " + err.message}`,
+    };
+  }
 
   if (!response.ok) {
     const errText = await response.text();
@@ -76,12 +99,12 @@ async function askNousWithModel(model, apiKey, messages, maxTokens) {
 
   const data = await response.json();
   const choice = data?.choices?.[0];
-  const text = (
-    choice?.message?.content ||
-    choice?.message?.reasoning_content ||
-    choice?.text ||
-    ""
-  ).toString().trim();
+  // Sadece gerçek cevabı al; modelin "düşünce" (reasoning) metnini asla
+  // kullanıcıya gösterme.
+  const text = (choice?.message?.content || choice?.text || "")
+    .toString()
+    .replace(/<think>[\s\S]*?<\/think>/g, "")
+    .trim();
   
   if (!text) {
     return {
@@ -107,7 +130,7 @@ async function askNous(question, systemPrompt) {
   for (const model of NOUS_MODEL_CANDIDATES) {
     if (tried.includes(model)) continue;
     tried.push(model);
-    const result = await askNousWithModel(model, apiKey, messages, 600);
+    const result = await askNousWithModel(model, apiKey, messages, 900);
     if (result.ok) return result;
     failDetails.push(result.detail);
     if (!result.retryable) break;
@@ -121,7 +144,7 @@ async function askGemini(question, systemPrompt) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return { ok: false, skipped: true, detail: "Gemini atlandı: GEMINI_API_KEY tanımlı değil" };
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
@@ -135,7 +158,7 @@ async function askGemini(question, systemPrompt) {
         ],
         generationConfig: {
           temperature: 1.0,
-          maxOutputTokens: 600,
+          maxOutputTokens: 900,
         },
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
@@ -144,7 +167,8 @@ async function askGemini(question, systemPrompt) {
           { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
         ],
       }),
-    }
+    },
+    MODEL_TIMEOUT_MS
   );
 
   if (!response.ok) {
