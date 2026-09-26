@@ -1,35 +1,47 @@
 // ============================================================
 // sosyal-editor.js — sadece admin.html'de çalışır.
-// "👥 Sosyal Hayat Düzenle" butonuna basınca açılır:
-//   1) Önce hikayenin ALGORİTMA ŞEMASI (akış ağacı) görünür.
-//   2) Şemadaki bir kutuya tıklayınca altta o adım düzenlenir:
-//      metin, emoji, seçenekler (her seçeneğin gideceği adım).
-//   3) "Kaydet ve yayınla" ile Firestore'a (sosyal_hikaye/ana) yazılır,
-//      sosyal.html anında yeni hikayeyi kullanır.
-// Berkay'ın ortadaki resmi de buradan yüklenir (sosyal_hikaye/resim).
+// "👥 Sosyal Hayat Düzenle" butonuna basınca hikaye, Sosyal Hayat
+// sayfasındaki haliyle BİREBİR AYNI şekilde tam ekran açılır; tek fark
+// her şeyin yerinde düzenlenebilmesi:
+//   - Ortadaki yazıya ve emojiye tıklayıp değiştir.
+//   - Seçeneklerin yazısına tıklayıp değiştir, "Git ▶" ile o seçeneğin
+//     açtığı adıma geç, ✕ ile seçeneği sil, "+ Seçenek ekle" ile ekle.
+//   - Sona gelince "➕ Devam ettir" → hikaye oradan devam eder.
+//   - "💾 Kaydet ve yayınla" → Firestore (sosyal_hikaye/ana), oyun anında güncellenir.
 // ============================================================
 
 (function () {
   "use strict";
 
   const openBtn = document.getElementById("sosyalEditBtn");
-  const editor = document.getElementById("sosyalEditor");
-  if (!openBtn || !editor || !window.SosyalHikaye) return;
+  const overlay = document.getElementById("sosyalEditor");
+  if (!openBtn || !overlay || !window.SosyalHikaye) return;
 
-  const treeEl = document.getElementById("seTree");
-  const orphanEl = document.getElementById("seOrphans");
-  const formEl = document.getElementById("seForm");
-  const statusEl = document.getElementById("seStatus");
-  const saveBtn = document.getElementById("seSave");
-  const resetBtn = document.getElementById("seReset");
-  const addNodeBtn = document.getElementById("seAddNode");
-  const imgPreview = document.getElementById("seImgPreview");
-  const imgFile = document.getElementById("seImgFile");
-  const imgRemove = document.getElementById("seImgRemove");
-  const imgStatus = document.getElementById("seImgStatus");
+  // Tam ekran katman hiçbir kartın içinde sıkışmasın diye <body>'ye taşı.
+  document.body.appendChild(overlay);
+
+  const $ = (id) => document.getElementById(id);
+  const stage = $("seStage");
+  const emojiIn = $("seEmoji");
+  const textIn = $("seText");
+  const choicesEl = $("seChoices");
+  const endBox = $("seEnd");
+  const stepEl = $("seStep");
+  const pathEl = $("sePath");
+  const backBtn = $("seBack");
+  const deleteBtn = $("seDeleteNode");
+  const statusEl = $("seStatus");
+  const saveBtn = $("seSave");
+  const avatarImg = $("seAvatarImg");
+  const avatarFallback = $("seAvatarFallback");
+  const imgFile = $("seImgFile");
+  const imgRemove = $("seImgRemove");
+  const imgStatus = $("seImgStatus");
+
+  const MAX_SECENEK = 6;
 
   let hikaye = null;
-  let seciliId = null;
+  let gecmis = []; // ziyaret edilen adımların ID'leri; sonuncusu şu anki adım
   let kirli = false;
   let yuklendi = false;
 
@@ -40,15 +52,16 @@
     if (text !== undefined) e.textContent = text;
     return e;
   }
-  function kisalt(s, n) {
-    s = s || "";
-    return s.length > n ? s.slice(0, n - 1) + "…" : s;
-  }
   function yeniId() {
     let id;
     do {
       id = "d" + Math.random().toString(36).slice(2, 7);
     } while (hikaye.dugumler[id]);
+    return id;
+  }
+  function yeniDugum() {
+    const id = yeniId();
+    hikaye.dugumler[id] = { emoji: "", metin: "", secenekler: [] };
     return id;
   }
   function setStatus(t) {
@@ -59,256 +72,222 @@
     setStatus("● Kaydedilmemiş değişiklikler var");
     saveBtn.classList.add("is-dirty");
   }
+  function simdiki() {
+    return gecmis[gecmis.length - 1];
+  }
+  function kisalt(s, n) {
+    s = s || "";
+    return s.length > n ? s.slice(0, n - 1) + "…" : s;
+  }
+  function otoYukseklik() {
+    textIn.style.height = "auto";
+    textIn.style.height = textIn.scrollHeight + 2 + "px";
+  }
 
-  // ---------------- Algoritma şeması (ağaç) ----------------
-  // Başlangıç adımından DFS ile ağaç çiziliyor. Bir adıma ikinci kez
-  // ulaşılırsa (döngü ya da iki koldan aynı yere bağlantı) tekrar
-  // çizilmiyor, yerine "↪ git" kutusu konuyor.
-  function dugumKutusu(id, etiket) {
+  // ---------------- Bir adımı göster (oyundaki gibi) ----------------
+  function git(id, geriMi) {
+    if (!hikaye.dugumler[id]) return;
+    if (!geriMi) gecmis.push(id);
+    ciz(true);
+  }
+
+  function ciz(animasyon) {
+    const id = simdiki();
     const d = hikaye.dugumler[id];
-    const box = el("button", "se-node");
-    box.type = "button";
-    if (id === seciliId) box.classList.add("is-selected");
-    if (id === hikaye.baslangic) box.classList.add("is-start");
 
-    if (etiket) box.appendChild(el("span", "se-edge", etiket));
-    if (!d) {
-      box.classList.add("is-missing");
-      box.appendChild(el("span", "se-node-text", "⚠️ Eksik adım: " + id));
-      return box;
+    if (animasyon) {
+      stage.classList.remove("is-in");
+      void stage.offsetWidth;
+      stage.classList.add("is-in");
     }
+
+    emojiIn.value = d.emoji || "";
+    textIn.value = d.metin;
+    otoYukseklik();
+
+    // Seçenekler
+    choicesEl.innerHTML = "";
+    d.secenekler.forEach((s, i) => choicesEl.appendChild(secenekKutusu(d, s, i)));
+    if (d.secenekler.length && d.secenekler.length < MAX_SECENEK) {
+      const ekle = el("button", "story-choice se-add-choice", "+ Seçenek ekle");
+      ekle.type = "button";
+      ekle.addEventListener("click", () => {
+        d.secenekler.push({ etiket: "", hedef: yeniDugum() });
+        degisti();
+        ciz(false);
+        const inputs = choicesEl.querySelectorAll(".se-choice-input");
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      });
+      choicesEl.appendChild(ekle);
+    }
+
     const son = d.secenekler.length === 0;
-    if (son) box.classList.add("is-end");
-    const head = el("span", "se-node-head");
-    head.appendChild(el("span", "se-node-emoji", d.emoji || "•"));
-    head.appendChild(el("span", "se-node-id", id === hikaye.baslangic ? "BAŞLANGIÇ" : son ? "SON" : id));
-    box.appendChild(head);
-    box.appendChild(el("span", "se-node-text", kisalt(d.metin, 70) || "(boş metin)"));
-    box.addEventListener("click", () => sec(id));
+    endBox.hidden = !son;
+    stage.classList.toggle("is-end", son);
+
+    // Alt bilgi, yol, butonlar
+    stepEl.textContent = (son ? "🏁 SON · " : "") + gecmis.length + ". adım";
+    deleteBtn.hidden = id === hikaye.baslangic;
+    backBtn.disabled = gecmis.length < 2;
+    pathEl.innerHTML = "";
+    gecmis.forEach((gid, i) => {
+      const g = hikaye.dugumler[gid];
+      const b = el("button", "se-crumb" + (i === gecmis.length - 1 ? " is-current" : ""), (g && g.emoji) || "•");
+      b.type = "button";
+      b.title = kisalt(g && g.metin, 80) || "(boş adım)";
+      b.addEventListener("click", () => {
+        gecmis = gecmis.slice(0, i + 1);
+        ciz(true);
+      });
+      pathEl.appendChild(b);
+      if (i < gecmis.length - 1) pathEl.appendChild(el("span", "se-crumb-sep", "›"));
+    });
+  }
+
+  function secenekKutusu(d, s, i) {
+    const box = el("div", "story-choice se-choice-edit");
+    const hedef = hikaye.dugumler[s.hedef];
+    if (!s.etiket.trim()) box.classList.add("is-empty");
+
+    const inp = el("input", "se-choice-input");
+    inp.value = s.etiket;
+    inp.maxLength = 60;
+    inp.placeholder = "Seçenek yazısı...";
+    inp.addEventListener("input", () => {
+      s.etiket = inp.value;
+      box.classList.toggle("is-empty", !inp.value.trim());
+      degisti();
+    });
+    box.appendChild(inp);
+
+    const row = el("div", "se-choice-tools");
+    const gitBtn = el("button", "se-tool se-go", hedef && !hedef.metin.trim() ? "Yaz ▶" : "Git ▶");
+    gitBtn.type = "button";
+    gitBtn.title = hedef ? "Bu seçeneğin açtığı adım: " + (kisalt(hedef.metin, 80) || "(henüz boş)") : "";
+    gitBtn.addEventListener("click", () => git(s.hedef));
+    row.appendChild(gitBtn);
+
+    const silBtn = el("button", "se-tool", "✕");
+    silBtn.type = "button";
+    silBtn.title = "Bu seçeneği sil";
+    silBtn.addEventListener("click", () => {
+      const hedefBos = hedef && !hedef.metin.trim() && !hedef.secenekler.length;
+      d.secenekler.splice(i, 1);
+      // Hiç yazılmamış boş adım başka yerden kullanılmıyorsa onu da temizle
+      if (hedefBos && !Object.values(hikaye.dugumler).some((x) => x.secenekler.some((y) => y.hedef === s.hedef))) {
+        delete hikaye.dugumler[s.hedef];
+      }
+      degisti();
+      ciz(false);
+    });
+    row.appendChild(silBtn);
+
+    box.appendChild(row);
     return box;
   }
 
-  function agacCiz() {
-    treeEl.innerHTML = "";
-    const gorulen = new Set();
-    const root = el("ul");
-    root.appendChild(liCiz(hikaye.baslangic, null, gorulen));
-    treeEl.appendChild(root);
-    // İlk çizimde şemayı başlangıç kutusu ortada görünecek şekilde kaydır
-    if (!agacCiz.kaydirildi) {
-      agacCiz.kaydirildi = true;
-      const wrap = treeEl.parentElement;
-      requestAnimationFrame(() => {
-        wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
-      });
-    }
+  // ---------------- Yerinde düzenleme alanları ----------------
+  textIn.addEventListener("input", () => {
+    hikaye.dugumler[simdiki()].metin = textIn.value;
+    otoYukseklik();
+    degisti();
+  });
+  emojiIn.addEventListener("input", () => {
+    hikaye.dugumler[simdiki()].emoji = emojiIn.value;
+    const cur = pathEl.querySelector(".se-crumb.is-current");
+    if (cur) cur.textContent = emojiIn.value || "•";
+    degisti();
+  });
 
-    // Başlangıçtan ulaşılamayan adımlar
-    orphanEl.innerHTML = "";
-    const yetimler = Object.keys(hikaye.dugumler).filter((id) => !gorulen.has(id));
-    if (yetimler.length) {
-      orphanEl.appendChild(el("p", "muted se-orphan-title", "Hiçbir seçenekten ulaşılamayan adımlar (oyunda görünmez):"));
-      const row = el("div", "se-orphan-row");
-      yetimler.forEach((id) => row.appendChild(dugumKutusu(id)));
-      orphanEl.appendChild(row);
-    }
-  }
+  $("seContinue").addEventListener("click", () => {
+    const d = hikaye.dugumler[simdiki()];
+    d.secenekler.push({ etiket: "", hedef: yeniDugum() });
+    d.secenekler.push({ etiket: "", hedef: yeniDugum() });
+    degisti();
+    ciz(false);
+    const ilk = choicesEl.querySelector(".se-choice-input");
+    if (ilk) ilk.focus();
+  });
 
-  function liCiz(id, etiket, gorulen) {
-    const li = el("li");
-    if (gorulen.has(id) && hikaye.dugumler[id]) {
-      const ref = el("button", "se-node se-ref");
-      ref.type = "button";
-      if (etiket) ref.appendChild(el("span", "se-edge", etiket));
-      const d = hikaye.dugumler[id];
-      ref.appendChild(el("span", "se-node-text", "↪ " + (d.emoji || "") + " " + kisalt(d.metin, 28)));
-      ref.addEventListener("click", () => sec(id));
-      li.appendChild(ref);
-      return li;
-    }
-    gorulen.add(id);
-    li.appendChild(dugumKutusu(id, etiket));
-    const d = hikaye.dugumler[id];
-    if (d && d.secenekler.length) {
-      const ul = el("ul");
-      d.secenekler.forEach((s) => ul.appendChild(liCiz(s.hedef, s.etiket || "(etiketsiz)", gorulen)));
-      li.appendChild(ul);
-    }
-    return li;
-  }
+  backBtn.addEventListener("click", () => {
+    if (gecmis.length < 2) return;
+    gecmis.pop();
+    ciz(true);
+  });
+  $("seHome").addEventListener("click", () => {
+    gecmis = [hikaye.baslangic];
+    ciz(true);
+  });
 
-  // ---------------- Seçili adımı düzenleme formu ----------------
-  function sec(id) {
-    seciliId = id;
-    agacCiz();
-    formCiz();
-    formEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-
-  function hedefSecici(mevcut) {
-    const sel = el("select", "se-select");
-    Object.keys(hikaye.dugumler).forEach((id) => {
-      const d = hikaye.dugumler[id];
-      const o = el("option", null, (d.emoji || "•") + " " + kisalt(d.metin, 40) + "  [" + id + "]");
-      o.value = id;
-      if (id === mevcut) o.selected = true;
-      sel.appendChild(o);
+  deleteBtn.addEventListener("click", () => {
+    const id = simdiki();
+    if (id === hikaye.baslangic) return;
+    if (!confirm("Bu adım silinsin mi? Buraya gelen seçenekler de silinir.")) return;
+    delete hikaye.dugumler[id];
+    Object.values(hikaye.dugumler).forEach((x) => {
+      x.secenekler = x.secenekler.filter((s) => s.hedef !== id);
     });
-    const yeni = el("option", null, "➕ Yeni adım oluştur");
-    yeni.value = "__yeni__";
-    sel.appendChild(yeni);
-    if (!mevcut || !hikaye.dugumler[mevcut]) yeni.selected = true;
-    return sel;
-  }
-
-  function formCiz() {
-    formEl.innerHTML = "";
-    const d = hikaye.dugumler[seciliId];
-    if (!d) {
-      formEl.appendChild(el("p", "muted", "👆 Düzenlemek için şemadan bir kutuya tıkla."));
-      return;
-    }
-
-    const baslik = el("h3", "se-form-title", "✏️ Adım düzenle");
-    baslik.appendChild(el("span", "se-form-id", " [" + seciliId + "]"));
-    formEl.appendChild(baslik);
-
-    // Emoji + metin
-    const row1 = el("div", "se-row");
-    const emojiIn = el("input", "se-input se-emoji-input");
-    emojiIn.value = d.emoji || "";
-    emojiIn.maxLength = 8;
-    emojiIn.placeholder = "😀";
-    emojiIn.title = "Berkay'ın resminin köşesinde çıkan emoji";
-    emojiIn.addEventListener("input", () => {
-      d.emoji = emojiIn.value;
-      degisti();
-      agacCiz();
-    });
-    row1.appendChild(emojiIn);
-    const metinIn = el("textarea", "se-input se-textarea");
-    metinIn.value = d.metin;
-    metinIn.maxLength = 600;
-    metinIn.rows = 3;
-    metinIn.placeholder = "Bu adımda ekranda yazacak metin...";
-    metinIn.addEventListener("input", () => {
-      d.metin = metinIn.value;
-      degisti();
-      agacCiz();
-    });
-    row1.appendChild(metinIn);
-    formEl.appendChild(row1);
-
-    // Seçenekler
-    formEl.appendChild(
-      el("p", "muted se-hint", d.secenekler.length ? "Seçenekler (butonlar):" : "Bu adımda seçenek yok → burası bir SON. Devam ettirmek için seçenek ekle.")
-    );
-    d.secenekler.forEach((s, i) => {
-      const row = el("div", "se-row se-choice-row");
-      const etiketIn = el("input", "se-input");
-      etiketIn.value = s.etiket;
-      etiketIn.maxLength = 60;
-      etiketIn.placeholder = "Buton yazısı (ör. İzmir'e gitsin)";
-      etiketIn.addEventListener("input", () => {
-        s.etiket = etiketIn.value;
-        degisti();
-        agacCiz();
-      });
-      row.appendChild(etiketIn);
-      row.appendChild(el("span", "se-arrow", "→"));
-      const sel = hedefSecici(s.hedef);
-      sel.addEventListener("change", () => {
-        if (sel.value === "__yeni__") {
-          const id = yeniId();
-          hikaye.dugumler[id] = { emoji: "", metin: "", secenekler: [] };
-          s.hedef = id;
-        } else {
-          s.hedef = sel.value;
-        }
-        degisti();
-        agacCiz();
-        formCiz();
-      });
-      row.appendChild(sel);
-      const git = el("button", "admin-btn reject se-small", "Git");
-      git.type = "button";
-      git.title = "Bu seçeneğin gittiği adımı düzenle";
-      git.addEventListener("click", () => sec(s.hedef));
-      row.appendChild(git);
-      const sil = el("button", "admin-btn reject se-small", "✕");
-      sil.type = "button";
-      sil.title = "Seçeneği sil";
-      sil.addEventListener("click", () => {
-        d.secenekler.splice(i, 1);
-        degisti();
-        agacCiz();
-        formCiz();
-      });
-      row.appendChild(sil);
-      formEl.appendChild(row);
-    });
-
-    const actions = el("div", "se-row se-actions");
-    if (d.secenekler.length < 6) {
-      const ekle = el("button", "admin-btn publish se-small", "+ Seçenek ekle");
-      ekle.type = "button";
-      ekle.addEventListener("click", () => {
-        const id = yeniId();
-        hikaye.dugumler[id] = { emoji: "", metin: "", secenekler: [] };
-        d.secenekler.push({ etiket: "", hedef: id });
-        degisti();
-        agacCiz();
-        formCiz();
-      });
-      actions.appendChild(ekle);
-    }
-    if (seciliId !== hikaye.baslangic) {
-      const bas = el("button", "admin-btn reject se-small", "🚩 Başlangıç yap");
-      bas.type = "button";
-      bas.addEventListener("click", () => {
-        hikaye.baslangic = seciliId;
-        degisti();
-        agacCiz();
-        formCiz();
-      });
-      actions.appendChild(bas);
-
-      const silBtn = el("button", "admin-btn reject se-small se-danger", "🗑️ Adımı sil");
-      silBtn.type = "button";
-      silBtn.addEventListener("click", () => {
-        if (!confirm("Bu adım silinsin mi? Ona giden seçenekler de silinir.")) return;
-        const silinen = seciliId;
-        delete hikaye.dugumler[silinen];
-        Object.values(hikaye.dugumler).forEach((x) => {
-          x.secenekler = x.secenekler.filter((s) => s.hedef !== silinen);
-        });
-        seciliId = hikaye.baslangic;
-        degisti();
-        agacCiz();
-        formCiz();
-      });
-      actions.appendChild(silBtn);
-    }
-    formEl.appendChild(actions);
-  }
+    gecmis = gecmis.filter((g) => g !== id && hikaye.dugumler[g]);
+    if (!gecmis.length) gecmis = [hikaye.baslangic];
+    degisti();
+    ciz(true);
+  });
 
   // ---------------- Kaydet / sıfırla ----------------
-  function dogrula() {
-    const hatalar = [];
-    Object.entries(hikaye.dugumler).forEach(([id, d]) => {
-      if (!d.metin.trim()) hatalar.push("[" + id + "] adımının metni boş.");
-      d.secenekler.forEach((s, i) => {
-        if (!s.etiket.trim()) hatalar.push("[" + id + "] adımının " + (i + 1) + ". seçeneğinin yazısı boş.");
-        if (!hikaye.dugumler[s.hedef]) hatalar.push("[" + id + "] adımının " + (i + 1) + ". seçeneği olmayan bir adıma gidiyor.");
-      });
+  // Başlangıçtan ulaşılamayan (artık hiçbir seçeneğin götürmediği) adımlar
+  // kaydederken otomatik temizlenir.
+  function ulasilamayanlariTemizle() {
+    const ulasilan = new Set();
+    (function yuru(id) {
+      if (ulasilan.has(id) || !hikaye.dugumler[id]) return;
+      ulasilan.add(id);
+      hikaye.dugumler[id].secenekler.forEach((s) => yuru(s.hedef));
+    })(hikaye.baslangic);
+    Object.keys(hikaye.dugumler).forEach((id) => {
+      if (!ulasilan.has(id)) delete hikaye.dugumler[id];
     });
-    return hatalar;
+  }
+
+  // İlk sorunlu adıma giden yolu bulur ki oraya götürebilelim
+  function yolBul(hedefId) {
+    const onceki = { [hikaye.baslangic]: null };
+    const kuyruk = [hikaye.baslangic];
+    while (kuyruk.length) {
+      const id = kuyruk.shift();
+      if (id === hedefId) break;
+      hikaye.dugumler[id].secenekler.forEach((s) => {
+        if (hikaye.dugumler[s.hedef] && !(s.hedef in onceki)) {
+          onceki[s.hedef] = id;
+          kuyruk.push(s.hedef);
+        }
+      });
+    }
+    const yol = [];
+    let cur = hedefId;
+    while (cur) {
+      yol.unshift(cur);
+      cur = onceki[cur];
+    }
+    return yol[0] === hikaye.baslangic ? yol : [hikaye.baslangic];
+  }
+
+  function dogrula() {
+    for (const [id, d] of Object.entries(hikaye.dugumler)) {
+      if (!d.metin.trim()) return { id, t: "Bu adımın yazısı boş." };
+      for (const s of d.secenekler) {
+        if (!s.etiket.trim()) return { id, t: "Bu adımda yazısı boş bir seçenek var." };
+      }
+    }
+    return null;
   }
 
   saveBtn.addEventListener("click", async () => {
-    const hatalar = dogrula();
-    if (hatalar.length) {
-      setStatus("⚠️ Kaydedilemedi: " + hatalar[0] + (hatalar.length > 1 ? " (+" + (hatalar.length - 1) + " hata daha)" : ""));
+    ulasilamayanlariTemizle();
+    const hata = dogrula();
+    if (hata) {
+      gecmis = yolBul(hata.id);
+      ciz(true);
+      setStatus("⚠️ Kaydedilmedi: " + hata.t + " (Seni o adıma getirdim.)");
       return;
     }
     const temiz = window.SosyalHikaye.temizle(hikaye);
@@ -329,43 +308,31 @@
       setStatus("✅ Kaydedildi! Sosyal Hayat sayfası artık bu hikayeyi gösteriyor.");
     } catch (err) {
       console.error("Hikaye kaydedilemedi:", err.message);
-      setStatus("⚠️ Kaydedilemedi: " + err.message + " (Firestore kurallarına sosyal_hikaye eklendi mi? README'ye bak.)");
+      setStatus("⚠️ Kaydedilemedi: " + err.message);
     }
     saveBtn.disabled = false;
   });
 
-  resetBtn.addEventListener("click", () => {
+  $("seReset").addEventListener("click", () => {
     if (!confirm("Tüm hikaye varsayılan hale dönsün mü? (Kaydet'e basmadıkça yayına çıkmaz.)")) return;
     hikaye = window.SosyalHikaye.varsayilan();
-    seciliId = hikaye.baslangic;
+    gecmis = [hikaye.baslangic];
     degisti();
-    agacCiz();
-    formCiz();
-  });
-
-  addNodeBtn.addEventListener("click", () => {
-    const id = yeniId();
-    hikaye.dugumler[id] = { emoji: "", metin: "", secenekler: [] };
-    degisti();
-    sec(id);
+    ciz(true);
   });
 
   // ---------------- Berkay'ın resmi ----------------
   function resmiGoster(src) {
-    if (src) {
-      imgPreview.src = src;
-      imgPreview.hidden = false;
-      imgRemove.hidden = false;
-    } else {
-      imgPreview.hidden = true;
-      imgRemove.hidden = true;
-    }
+    avatarImg.hidden = !src;
+    avatarFallback.hidden = !!src;
+    imgRemove.hidden = !src;
+    if (src) avatarImg.src = src;
   }
 
   imgFile.addEventListener("change", async () => {
     const file = imgFile.files[0];
     if (!file) return;
-    imgStatus.textContent = "Yükleniyor...";
+    imgStatus.textContent = "Resim yükleniyor...";
     try {
       const dataUrl = await window.resizeImageToSquare(file, 400);
       await db.collection("sosyal_hikaye").doc("resim").set({ resim: dataUrl });
@@ -373,7 +340,7 @@
       imgStatus.textContent = "✅ Berkay'ın resmi güncellendi.";
     } catch (err) {
       console.error("Resim yüklenemedi:", err.message);
-      imgStatus.textContent = "⚠️ Yüklenemedi: " + err.message;
+      imgStatus.textContent = "⚠️ Resim yüklenemedi: " + err.message;
     }
     imgFile.value = "";
   });
@@ -390,27 +357,31 @@
   });
 
   // ---------------- Aç / kapat ----------------
-  openBtn.addEventListener("click", async () => {
-    const acik = !editor.hidden;
-    if (acik) {
-      if (kirli && !confirm("Kaydedilmemiş değişiklikler var, yine de kapatılsın mı?")) return;
-      editor.hidden = true;
-      openBtn.textContent = "👥 Sosyal Hayat Düzenle";
-      return;
-    }
-    editor.hidden = false;
-    openBtn.textContent = "✖ Düzenlemeyi kapat";
+  async function ac() {
+    overlay.hidden = false;
+    document.body.classList.add("se-open");
     if (!yuklendi) {
       setStatus("Yükleniyor...");
       const { hikaye: h, resim, kaynak } = await window.SosyalHikaye.yukle();
       hikaye = h;
-      seciliId = null;
       yuklendi = true;
       resmiGoster(resim);
+      gecmis = [hikaye.baslangic];
       setStatus(kaynak === "firestore" ? "" : "Şu an varsayılan hikaye gösteriliyor (henüz hiç kaydedilmedi).");
     }
-    agacCiz();
-    formCiz();
+    ciz(true);
+  }
+
+  function kapat() {
+    if (kirli && !confirm("Kaydedilmemiş değişiklikler var, yine de kapatılsın mı?")) return;
+    overlay.hidden = true;
+    document.body.classList.remove("se-open");
+  }
+
+  openBtn.addEventListener("click", ac);
+  $("seClose").addEventListener("click", kapat);
+  document.addEventListener("keydown", (e) => {
+    if (!overlay.hidden && e.key === "Escape") kapat();
   });
 
   window.addEventListener("beforeunload", (e) => {

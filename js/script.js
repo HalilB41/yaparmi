@@ -81,11 +81,16 @@ if (homeLink) {
 // ---------------- AI'dan cevap al (yedekli) ----------------
 
 async function getAnswer(question) {
+  // En fazla 40 saniye bekle; sunucu takılırsa kutu sonsuza kadar
+  // "düşünüyor" kalmasın, yedek cevaba geçilsin.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 40000);
   try {
     const res = await fetch("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question }),
+      signal: controller.signal,
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -97,6 +102,8 @@ async function getAnswer(question) {
   } catch (err) {
     console.warn("AI cevabı alınamadı, yedek cevap kullanılıyor:", err.message);
     return pickFallbackResponse();
+  } finally {
+    clearTimeout(timer);
   }
 }
 

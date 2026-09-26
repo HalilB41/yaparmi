@@ -55,30 +55,58 @@
             <button type="button" class="admin-btn publish" id="sosyalEditBtn">👥 Sosyal Hayat Düzenle</button>
           </div>
 
-          <div id="sosyalEditor" class="se-editor" hidden>
-            <div class="se-img-box">
-              <img id="seImgPreview" alt="Berkay" hidden />
-              <div>
-                <p class="muted" style="margin:0 0 6px;">Ortadaki Berkay resmi:</p>
-                <input type="file" id="seImgFile" accept="image/*" />
-                <button type="button" class="admin-btn reject se-small" id="seImgRemove" hidden>Resmi kaldır</button>
-                <p class="suggest-status" id="seImgStatus"></p>
+          <p class="muted" style="margin:10px 0 0; font-size:0.85rem;">Hikaye, oyundaki haliyle tam ekran açılır. Yazılara ve seçeneklere tıklayıp olduğu yerde düzenleyebilirsin.</p>
+        </div>
+
+        <!-- Tam ekran Sosyal Hayat editörü: oyunun birebir aynısı, yerinde düzenleme -->
+        <div id="sosyalEditor" class="se-overlay" hidden>
+          <header class="se-bar">
+            <strong class="se-bar-title">👥 Sosyal Hayat — Düzenleme</strong>
+            <span class="se-status" id="seStatus"></span>
+            <div class="se-bar-actions">
+              <label class="admin-btn reject se-img-btn" title="Ortadaki Berkay resmini değiştir">
+                <span>🖼️ Berkay resmi</span>
+                <input type="file" id="seImgFile" accept="image/*" hidden />
+              </label>
+              <button type="button" class="admin-btn reject" id="seImgRemove" hidden>Resmi kaldır</button>
+              <button type="button" class="admin-btn reject" id="seReset">↺ Varsayılana dön</button>
+              <button type="button" class="admin-btn publish" id="seSave">💾 Kaydet ve yayınla</button>
+              <button type="button" class="admin-btn reject" id="seClose">✖ Kapat</button>
+            </div>
+          </header>
+          <p class="se-img-status" id="seImgStatus"></p>
+
+          <div class="se-stage-wrap">
+            <div class="se-nav">
+              <button type="button" class="admin-btn reject se-small" id="seBack">◀ Geri</button>
+              <span class="se-path" id="sePath"></span>
+              <button type="button" class="admin-btn reject se-small" id="seHome">⟲ Başa dön</button>
+            </div>
+
+            <div class="panel card story-card se-live">
+              <h2 class="story-title">👥 Berkay'ın Sosyal Hayatı</h2>
+              <p class="muted story-sub">Berkay'ın kaderi senin elinde. Seç bakalım ne olacak.</p>
+
+              <div class="story-stage" id="seStage">
+                <div class="story-avatar">
+                  <img id="seAvatarImg" alt="Berkay" hidden />
+                  <span class="story-avatar-fallback" id="seAvatarFallback">🧍</span>
+                  <input class="story-emoji se-emoji-edit" id="seEmoji" maxlength="8" placeholder="+" title="Emoji (tıkla, değiştir)" />
+                </div>
+                <textarea class="story-text se-text-edit" id="seText" rows="2" maxlength="600" placeholder="Bu adımda ne oluyor? Buraya yaz..."></textarea>
+                <div class="story-choices se-choices" id="seChoices"></div>
+                <div class="se-end" id="seEnd" hidden>
+                  <p class="muted">🏁 Burası bir <strong>SON</strong>. Oyuncu burada "Baştan başla" görüyor.</p>
+                  <button type="button" class="admin-btn publish se-continue" id="seContinue">➕ Devam ettir</button>
+                </div>
+                <div class="story-footer">
+                  <span class="story-step muted" id="seStep"></span>
+                  <button type="button" class="link-btn se-danger" id="seDeleteNode">🗑️ Bu adımı sil</button>
+                </div>
               </div>
             </div>
 
-            <h3 class="se-sub">🧭 Algoritma şeması</h3>
-            <p class="muted se-hint">Başlangıçtan itibaren tüm yollar. Bir kutuya tıkla, altta düzenle. ↪ olan kutular zaten şemada başka yerde olan bir adıma geri bağlanıyor.</p>
-            <div class="se-tree-wrap"><div class="se-tree" id="seTree"></div></div>
-            <div id="seOrphans"></div>
-
-            <div class="se-form" id="seForm"></div>
-
-            <div class="se-row se-actions se-bottom">
-              <button type="button" class="admin-btn publish" id="seSave">💾 Kaydet ve yayınla</button>
-              <button type="button" class="admin-btn reject" id="seAddNode">+ Boş adım ekle</button>
-              <button type="button" class="admin-btn reject" id="seReset">↺ Varsayılana dön</button>
-            </div>
-            <p class="suggest-status" id="seStatus"></p>
+            <p class="se-help">✏️ Yazıya, emojiye ya da seçeneklerin yazısına tıklayıp direkt değiştir. <strong>Git ▶</strong> o seçeneğin açtığı adıma götürür. Bitirince yukarıdan <strong>Kaydet ve yayınla</strong>.</p>
           </div>
         </div>
 
