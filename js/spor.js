@@ -560,6 +560,7 @@
       araclar = [];
       kazaEkran.hidden = true;
       kazaEkran.innerHTML = "";
+      yol.classList.remove("is-kaza");
       buyuk.textContent = "";
       mesaj.textContent = "";
       moto.classList.remove("is-crash");
@@ -582,6 +583,8 @@
       moto.textContent = "💥";
       kazaEkran.hidden = false;
       kazaEkran.innerHTML = "";
+      yol.classList.add("is-kaza");
+      araclar.forEach((a) => (a.el.style.visibility = "hidden"));
       if (motorResim) {
         const img = el("img");
         img.src = motorResim;

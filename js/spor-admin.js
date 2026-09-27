@@ -34,7 +34,7 @@
     if (!f) return;
     durum.textContent = "Yükleniyor...";
     try {
-      const dataUrl = await window.resizeImageToSquare(f, 480);
+      const dataUrl = await window.resizeImageToSquare(f, 720);
       await db.collection("spor").doc("motor").set({ resim: dataUrl });
       goster(dataUrl);
       durum.textContent = "✅ Kaza resmi güncellendi.";
