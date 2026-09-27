@@ -193,7 +193,7 @@
       "metin": "\"Kartım bloke oldu kanka.\" Halil: \"Banka uygulamasını göster.\" Berkay: \"Uygulama da bloke.\" Kurban iç çekip 340 TL'yi ödedi: \"Memur olunca faiziyle alırım.\" Yemekte herkesin kendi derdi var: Alihan Enver Paşa anlatıyor, Kurban KPSS soruları soruyor, Burger üçüncü porsiyonda, Halil depo hikâyesine hazırlanıyor. Ama muhabbet her seferinde Berkay'a dönüyor.",
       "secenekler": [
         {
-          "etiket": "🦅 Alihan'ın Enver muhabbetine girsin",
+          "etiket": "🦅 Enver Paşa'yı eleştirsin",
           "hedef": "gk_P7_1"
         },
         {
@@ -207,7 +207,7 @@
       "metin": "\"Haftaya airdrop düşüyor, çıkınca iki katı.\" Masa sustu. Alihan: \"Bir yıl ZKsync kastın, sıfır geldi.\" Parayı sonunda Kurban ödedi, üstüne \"memur olunca faiziyle alırım\" dedi. Yemekte herkesin kendi derdi var: Alihan Enver Paşa anlatıyor, Kurban KPSS soruları soruyor, Burger üçüncü porsiyonda, Halil depo hikâyesine hazırlanıyor. Ama muhabbet her seferinde Berkay'a dönüyor.",
       "secenekler": [
         {
-          "etiket": "🦅 Alihan'ın Enver muhabbetine girsin",
+          "etiket": "🦅 Enver Paşa'yı eleştirsin",
           "hedef": "gk_P7_1"
         },
         {
@@ -218,7 +218,7 @@
     },
     "gk_P7_1": {
       "emoji": "📦",
-      "metin": "\"Enver Paşa aslında Sarıkamış'ta...\" diye başladı. Alihan çatalı bıraktı. 15 dakika boyunca bütün lokanta Alihan'ı dinledi, garson bile. Sonunda Alihan \"Berkay gibi cahiller yüzünden\" dedi ve kendi hesabını da Berkay'a yazdırmaya çalıştı. Burger dördüncü porsiyonu isterken Halil başladı: \"Kanka bugün Hepsiburada deposunda 3 ton klima indirdim.\" Berkay bir şekilde ikisine de karışmak zorunda.",
+      "metin": "\"Enver Paşa o kadar askeri neden kışın dağa yolladı? Beceriksiz! Adamın komutanlık yapmaya hakkı bile yoktu.\" Alihan çatalı bıraktı. Burger hayatında ilk kez burgerini bıraktı. İkisi aynı anda patladı: \"STRATEJİK SERİNLEME!\" \"DÖNEMİN ŞARTLARI!\" 15 dakika boyunca bütün lokanta onları dinledi, garson bile. Sonunda Alihan kendi hesabını da Berkay'a yazdırmaya çalıştı. Burger dördüncü porsiyonu isterken Halil başladı: \"Kanka bugün Hepsiburada deposunda 3 ton klima indirdim.\" Berkay bir şekilde ikisine de karışmak zorunda.",
       "secenekler": [
         {
           "etiket": "🍔 Burger'le yemek yarışsın",
@@ -330,7 +330,7 @@
     },
     "gk_P11_1": {
       "emoji": "🤬",
-      "metin": "Kolayı masanın dibine, yere koydu. 10 saniye sonra Halil kalkarken kolaya bastı, kaydı, Kurban'ın üstüne düştü. Kurban'ın KPSS kitabı çayın içine düştü. Yerde kola, yerde Halil, çayda KPSS kitabı. Dördü aynı anda Berkay'a döndü: \"MAL MISIN LAN!\" \"GERİZEKALI!\" \"Bu kafayla nasıl yaşıyorsun!\" \"Enver Paşa bile kolayı yere koymazdı!\"",
+      "metin": "Kolayı masanın dibine, yere koydu. 10 saniye sonra Halil kalkarken ayağıyla kolaya çarptı, kola devrildi ve bütün yere döküldü. Kola gölü akıp Kurban'ın yerdeki çantasına girdi, KPSS kitabı kolaya bulandı. Yerde kola gölü, çantada kolaya bulanmış KPSS kitabı. Dördü aynı anda Berkay'a döndü: \"MAL MISIN LAN!\" \"GERİZEKALI!\" \"Bu kafayla nasıl yaşıyorsun!\" \"Enver Paşa bile kolayı yere koymazdı!\"",
       "secenekler": [
         {
           "etiket": "😡 \"BENİM SUÇUM YOK!\" diye çıldırsın",
@@ -344,7 +344,7 @@
     },
     "gk_P11_2": {
       "emoji": "🤬",
-      "metin": "Kolayı sandalyenin kenarına koydu. Alihan oturunca kola devrildi; Burger dökülen kolaya basıp kaydı, Halil'i de alıp yere serildi. Kurban'ın KPSS kitabı çayın içine düştü. Yerde kola, yerde Halil, çayda KPSS kitabı. Dördü aynı anda Berkay'a döndü: \"MAL MISIN LAN!\" \"GERİZEKALI!\" \"Bu kafayla nasıl yaşıyorsun!\" \"Enver Paşa bile kolayı yere koymazdı!\"",
+      "metin": "Kolayı sandalyenin kenarına koydu. Halil çay almaya giderken sandalyeye çarptı, kola devrildi ve bütün yere döküldü. Kola gölü akıp Kurban'ın yerdeki çantasına girdi, KPSS kitabı kolaya bulandı. Yerde kola gölü, çantada kolaya bulanmış KPSS kitabı. Dördü aynı anda Berkay'a döndü: \"MAL MISIN LAN!\" \"GERİZEKALI!\" \"Bu kafayla nasıl yaşıyorsun!\" \"Enver Paşa bile kolayı yere koymazdı!\"",
       "secenekler": [
         {
           "etiket": "😡 \"BENİM SUÇUM YOK!\" diye çıldırsın",
@@ -554,7 +554,7 @@
     },
     "gk_GA2_1": {
       "emoji": "🧶",
-      "metin": "Alihan: \"Enver Paşa Sarıkamış'a yürüyerek gitti, sen otobüs mü bekleyemiyorsun?\" Berkay: \"Orada donmadılar mı?\" Hata. Alihan 40 dakika \"STRATEJİK SERİNLEME!\" diye bağırdı. Bu arada otobüs geldi, Berkay telefon kulağında bindi. Berkay en arkaya oturdu. Yanında örgü ören bir teyze var. Otobüs Gölcük'e doğru yola çıktı.",
+      "metin": "Alihan: \"Enver Paşa Sarıkamış'a yürüyerek gitti, sen otobüs mü bekleyemiyorsun?\" Berkay: \"Enver o kadar askeri kışın dağa yolladı, beceriksizin teki!\" Hata. Alihan 40 dakika bağırdı, Burger'i de hatta bağladı, ikisi birden Enver'i savundu. Bu arada otobüs geldi, Berkay telefon kulağında bindi. Berkay en arkaya oturdu. Yanında örgü ören bir teyze var. Otobüs Gölcük'e doğru yola çıktı.",
       "secenekler": [
         {
           "etiket": "🔊 Kurban'ı hoparlörden arasın",
@@ -1438,7 +1438,7 @@
     },
     "gk_G28_2": {
       "emoji": "🦅",
-      "metin": "Alihan: \"Kandıra mı? Geliyorum!\" Geldi ama direksiyona Berkay'ı geçirdi: \"Depoda da ben çalışmamıştım, alışkanlık.\" Berkay tek eliyle sürdü, Alihan yol boyunca Sarıkamış anlattı. Eve varınca Berkay \"donmadılar mı?\" dedi. Arabadan atıldı. SON.",
+      "metin": "Alihan: \"Kandıra mı? Geliyorum!\" Geldi ama direksiyona Berkay'ı geçirdi: \"Depoda da ben çalışmamıştım, alışkanlık.\" Berkay tek eliyle sürdü, Alihan yol boyunca Sarıkamış anlattı. Eve 1 km kala Berkay dayanamadı: \"Enver beceriksizdi, o askerleri soğuğa o yolladı.\" Alihan el frenini çekti, Berkay'ı indirdi. Son 1 km'yi seke seke yürüdü. SON.",
       "secenekler": []
     },
     "gk_G29_1": {

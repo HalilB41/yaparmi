@@ -310,8 +310,22 @@
   const golcukBanner = $("seGolcukBanner");
   function golcukBannerGuncelle() {
     if (!golcukBanner || !hikaye) return;
-    // gk_P1_1 sadece en güncel Gölcük sürümünde (Cuma + Cumartesi) var: yoksa ya Gölcük hiç yok ya da eski sürüm var
-    golcukBanner.hidden = !!hikaye.dugumler.gk_P1_1;
+    // Firestore'daki Gölcük adımları dosyadaki güncel sürümle birebir aynıysa butonu gizle;
+    // farklıysa (hiç yok, eski sürüm ya da güncelleme var) göster.
+    golcukBanner.hidden = golcukGuncelMi();
+  }
+  function golcukGuncelMi() {
+    const yeni = window.SosyalHikaye.golcuk().dugumler;
+    const mevcutIdler = Object.keys(hikaye.dugumler).filter((id) => /^gk/.test(id));
+    const yeniIdler = Object.keys(yeni);
+    if (mevcutIdler.length !== yeniIdler.length) return false;
+    return yeniIdler.every((id) => {
+      const a = hikaye.dugumler[id];
+      const b = yeni[id];
+      if (!a || a.metin !== b.metin || (a.emoji || "") !== (b.emoji || "")) return false;
+      if (a.secenekler.length !== b.secenekler.length) return false;
+      return b.secenekler.every((s, i) => a.secenekler[i].etiket === s.etiket && a.secenekler[i].hedef === s.hedef);
+    });
   }
   if (golcukBanner) {
     $("seGolcukAdd").addEventListener("click", () => {
