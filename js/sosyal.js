@@ -18,11 +18,15 @@
   const choicesEl = document.getElementById("storyChoices");
   const stepEl = document.getElementById("storyStep");
   const restartBtn = document.getElementById("storyRestart");
+  const backBtn = document.getElementById("storyBack");
 
   let hikaye = null;
-  let adim = 0;
+  let gecmis = []; // gezilen adımlar; "◀ Geri" bir öncekine döner
 
-  function goster(id) {
+  function goster(id, geriMi) {
+    if (!geriMi) gecmis.push(id);
+    const adim = gecmis.length;
+    if (backBtn) backBtn.hidden = gecmis.length < 2;
     const d = hikaye.dugumler[id];
     stage.classList.remove("is-in");
     void stage.offsetWidth;
@@ -36,7 +40,6 @@
       return;
     }
 
-    adim++;
     emojiEl.textContent = d.emoji || "";
     emojiEl.hidden = !d.emoji;
     textEl.textContent = d.metin;
@@ -64,11 +67,18 @@
   }
 
   function basla() {
-    adim = 0;
+    gecmis = [];
     goster(hikaye.baslangic);
   }
 
   restartBtn.addEventListener("click", basla);
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      if (gecmis.length < 2) return;
+      gecmis.pop();
+      goster(gecmis[gecmis.length - 1], true);
+    });
+  }
 
   window.SosyalHikaye.yukle().then(({ hikaye: h, resim }) => {
     hikaye = h;

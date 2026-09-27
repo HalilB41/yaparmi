@@ -27,1932 +27,1448 @@
 (function () {
   "use strict";
 
-  // ================= GÖLCÜK KOLU (v2 — uzun sürüm) =================
-  // Karakterler: Kurban (KPSS'ye 4 Ekim'de girecek, en mantıklısı), Alihan (kanzilerin
-  // lideri, Enver Paşa/Sarıkamış hassasiyeti), Burger King (burger delisi, Alihan'ın
+  // ================= GÖLCÜK KOLU (v3 — Cuma + Cumartesi) =================
+  // Karakterler: Kurban (KPSS'ye 4 Ekim'de girecek, en mantıklısı), Alihan (kanzilerin lideri,
+  // Enver Paşa/Sarıkamış hassasiyeti, depoda hiç çalışmadı), Burger (burger delisi, Alihan'ın
   // kahve haklarını bitirir), Halil (bedava stajyer, ULTRA MEGA DEPO AMELESİ).
-  // "KUBİİİ OTOBÜSTEYİM" sonu dışında hiçbir yol 20 adımdan önce bitmez.
-  // Her seçenek kendi sonucunu anlatan ayrı bir adıma gider ("__a"/"__b" adımları).
+  // Bu blok bir sahne listesinden otomatik üretildi: her ekran önce seçilen şeyin sonucunu,
+  // sonra yeni durumu anlatır. "KUBİİİ OTOBÜSTEYİM" sonu aynen korunur.
   const GOLCUK = {
     "gk1": {
+      "emoji": "⏰",
+      "metin": "Bu hikâye aslında bir gün önce, Cuma sabahı başladı. Saat 08:00. Beşli grup (Berkay, Kurban, Alihan, Burger, Halil) kütüphanede buluşacak; Kurban'ın KPSS'sine 1 hafta var. Berkay'ın alarmı çalıyor.",
+      "secenekler": [
+        {
+          "etiket": "⏰ Kalksın",
+          "hedef": "gk_P1_1"
+        },
+        {
+          "etiket": "😴 5 dakika daha",
+          "hedef": "gk_P1_2"
+        }
+      ]
+    },
+    "gk_P1_1": {
+      "emoji": "🏃",
+      "metin": "Kalktı... yani yatakta doğruldu, telefondaki 14 cevapsız aramaya baktı ve tekrar uyudu. \"Kalk\" komutu 3 saniye çalıştı. Saat 11:00'i geçti. Berkay kütüphaneye bir saat geç kalıyor, gruba bir şey yazması lazım.",
+      "secenekler": [
+        {
+          "etiket": "🌀 \"Trafik vardı\" desin",
+          "hedef": "gk_P2_1"
+        },
+        {
+          "etiket": "🙏 \"Uyuyakaldım\" desin",
+          "hedef": "gk_P2_2"
+        }
+      ]
+    },
+    "gk_P1_2": {
+      "emoji": "🏃",
+      "metin": "5 dakika, 2 saat 40 dakika sürdü. Grup mesajları: Kurban \"nerdesin lan\", Alihan \"Enver Paşa sabah 5'te kalkardı\". Saat 11:00'i geçti. Berkay kütüphaneye bir saat geç kalıyor, gruba bir şey yazması lazım.",
+      "secenekler": [
+        {
+          "etiket": "🌀 \"Trafik vardı\" desin",
+          "hedef": "gk_P2_1"
+        },
+        {
+          "etiket": "🙏 \"Uyuyakaldım\" desin",
+          "hedef": "gk_P2_2"
+        }
+      ]
+    },
+    "gk_P2_1": {
+      "emoji": "📚",
+      "metin": "\"Trafik vardı\" yazdı. Halil: \"Kanka yürüyerek geliyorsun, 400 metre.\" Berkay \"yaya trafiği\" diye düzeltti. Kurban ekran görüntüsü aldı. Kütüphanede herkes kendi âleminde: Kurban KPSS denemesine gömülmüş, Alihan tarih kitabının Sarıkamış sayfasına sinirle bakıyor, Burger gizlice kahve almaya gitmiş, Halil vardiya öncesi kestiriyor. Berkay oturdu, kitabını açtı.",
+      "secenekler": [
+        {
+          "etiket": "📖 Gerçekten çalışsın",
+          "hedef": "gk_P3_1"
+        },
+        {
+          "etiket": "📱 Telefonla oynasın",
+          "hedef": "gk_P3_2"
+        }
+      ]
+    },
+    "gk_P2_2": {
+      "emoji": "📚",
+      "metin": "\"Uyuyakaldım\" yazdı. Kurban: \"Şaşırmadık.\" Alihan: \"Dürüstlük güzel, Enver Paşa da dürüsttü.\" Halil: \"Sana yer tuttum ama Burger üstüne burger koydu.\" Kütüphanede herkes kendi âleminde: Kurban KPSS denemesine gömülmüş, Alihan tarih kitabının Sarıkamış sayfasına sinirle bakıyor, Burger gizlice kahve almaya gitmiş, Halil vardiya öncesi kestiriyor. Berkay oturdu, kitabını açtı.",
+      "secenekler": [
+        {
+          "etiket": "📖 Gerçekten çalışsın",
+          "hedef": "gk_P3_1"
+        },
+        {
+          "etiket": "📱 Telefonla oynasın",
+          "hedef": "gk_P3_2"
+        }
+      ]
+    },
+    "gk_P3_1": {
+      "emoji": "☕",
+      "metin": "4. sayfada yoruldu, 5. sayfada uyudu. Kurban'ın deneme kitabının üstüne salya aktı. Kurban fısıltıyla bağırdı: \"KPSS KİTABIM!\" Burger elinde kahvelerle döndü. Kahveler Alihan'ın kütüphane kahve hakkıyla alınmış, Alihan'ın haberi yok. Burger Berkay'a da bir tane uzattı.",
+      "secenekler": [
+        {
+          "etiket": "☕ Kahveyi alsın",
+          "hedef": "gk_P4_1"
+        },
+        {
+          "etiket": "🤫 Alihan'a ispiyonlasın",
+          "hedef": "gk_P4_2"
+        }
+      ]
+    },
+    "gk_P3_2": {
+      "emoji": "☕",
+      "metin": "Ses açık kalmış: oyunun giriş müziği bütün kütüphanede çaldı. Görevli \"SESSİZLİK!\" dedi, herkes Berkay'a döndü. Alihan \"tanımıyorum\" deyip masayı değiştirdi. Burger elinde kahvelerle döndü. Kahveler Alihan'ın kütüphane kahve hakkıyla alınmış, Alihan'ın haberi yok. Burger Berkay'a da bir tane uzattı.",
+      "secenekler": [
+        {
+          "etiket": "☕ Kahveyi alsın",
+          "hedef": "gk_P4_1"
+        },
+        {
+          "etiket": "🤫 Alihan'a ispiyonlasın",
+          "hedef": "gk_P4_2"
+        }
+      ]
+    },
+    "gk_P4_1": {
+      "emoji": "🍽️",
+      "metin": "Kahveyi aldı. Az sonra Alihan kahve almaya gitti: \"Hakkınız bitmiş.\" Alihan masaya döndü, Berkay'ın elindeki kahveyi gördü. Suçlu belliydi. Burger ıslık çalıyordu. Saat 13:00. Burger: \"Acıktım, gömelim.\" Beşli esnaf lokantasına daldı. Berkay cüzdanına baktı: 17 TL.",
+      "secenekler": [
+        {
+          "etiket": "🍛 En büyük tabağı söylesin",
+          "hedef": "gk_P5_1"
+        },
+        {
+          "etiket": "🥖 Sadece ekmek istesin",
+          "hedef": "gk_P5_2"
+        }
+      ]
+    },
+    "gk_P4_2": {
+      "emoji": "🍽️",
+      "metin": "Alihan'a fısıldadı: \"Burger senin kahve haklarını bitiriyor.\" Burger ağzı dolu: \"Berkay yalan söylüyor.\" Alihan kime inandı? Tabii ki Burger'e. Berkay'a kimse inanmaz. Saat 13:00. Burger: \"Acıktım, gömelim.\" Beşli esnaf lokantasına daldı. Berkay cüzdanına baktı: 17 TL.",
+      "secenekler": [
+        {
+          "etiket": "🍛 En büyük tabağı söylesin",
+          "hedef": "gk_P5_1"
+        },
+        {
+          "etiket": "🥖 Sadece ekmek istesin",
+          "hedef": "gk_P5_2"
+        }
+      ]
+    },
+    "gk_P5_1": {
+      "emoji": "💸",
+      "metin": "Kuru-pilav-cacık-künefe söyledi, hepsi geldi. Hesap: 340 TL. Cüzdanda: 17 TL. Borç istemesi lazım ama bir bahane gerekiyor. Tam o sırada telefon titredi: kız arkadaşı \"Yarın ne yapıyorsun? 😊\" yazmış. Berkay \"sonra yazarım\" dedi, önce borç meselesi.",
+      "secenekler": [
+        {
+          "etiket": "💳 \"Kartım bloke oldu\" desin",
+          "hedef": "gk_P6_1"
+        },
+        {
+          "etiket": "🪂 \"Airdrop gelince öderim\" desin",
+          "hedef": "gk_P6_2"
+        }
+      ]
+    },
+    "gk_P5_2": {
+      "emoji": "💸",
+      "metin": "Sadece ekmek istedi. 2 dakika sonra Kurban'ın köftesine, Alihan'ın pilavına göz dikti; 5 dakika sonra kendi tabağını söyletti. Hesap: 340 TL. Cüzdanda: 17 TL. Borç istemesi lazım ama bir bahane gerekiyor. Tam o sırada telefon titredi: kız arkadaşı \"Yarın ne yapıyorsun? 😊\" yazmış. Berkay \"sonra yazarım\" dedi, önce borç meselesi.",
+      "secenekler": [
+        {
+          "etiket": "💳 \"Kartım bloke oldu\" desin",
+          "hedef": "gk_P6_1"
+        },
+        {
+          "etiket": "🪂 \"Airdrop gelince öderim\" desin",
+          "hedef": "gk_P6_2"
+        }
+      ]
+    },
+    "gk_P6_1": {
+      "emoji": "🦅",
+      "metin": "\"Kartım bloke oldu kanka.\" Halil: \"Banka uygulamasını göster.\" Berkay: \"Uygulama da bloke.\" Kurban iç çekip 340 TL'yi ödedi: \"Memur olunca faiziyle alırım.\" Yemekte herkesin kendi derdi var: Alihan Enver Paşa anlatıyor, Kurban KPSS soruları soruyor, Burger üçüncü porsiyonda, Halil depo hikâyesine hazırlanıyor. Ama muhabbet her seferinde Berkay'a dönüyor.",
+      "secenekler": [
+        {
+          "etiket": "🦅 Alihan'ın Enver muhabbetine girsin",
+          "hedef": "gk_P7_1"
+        },
+        {
+          "etiket": "📚 Kurban'ın KPSS sorusunu cevaplasın",
+          "hedef": "gk_P7_2"
+        }
+      ]
+    },
+    "gk_P6_2": {
+      "emoji": "🦅",
+      "metin": "\"Haftaya airdrop düşüyor, çıkınca iki katı.\" Masa sustu. Alihan: \"Bir yıl ZKsync kastın, sıfır geldi.\" Parayı sonunda Kurban ödedi, üstüne \"memur olunca faiziyle alırım\" dedi. Yemekte herkesin kendi derdi var: Alihan Enver Paşa anlatıyor, Kurban KPSS soruları soruyor, Burger üçüncü porsiyonda, Halil depo hikâyesine hazırlanıyor. Ama muhabbet her seferinde Berkay'a dönüyor.",
+      "secenekler": [
+        {
+          "etiket": "🦅 Alihan'ın Enver muhabbetine girsin",
+          "hedef": "gk_P7_1"
+        },
+        {
+          "etiket": "📚 Kurban'ın KPSS sorusunu cevaplasın",
+          "hedef": "gk_P7_2"
+        }
+      ]
+    },
+    "gk_P7_1": {
+      "emoji": "📦",
+      "metin": "\"Enver Paşa aslında Sarıkamış'ta...\" diye başladı. Alihan çatalı bıraktı. 15 dakika boyunca bütün lokanta Alihan'ı dinledi, garson bile. Sonunda Alihan \"Berkay gibi cahiller yüzünden\" dedi ve kendi hesabını da Berkay'a yazdırmaya çalıştı. Burger dördüncü porsiyonu isterken Halil başladı: \"Kanka bugün Hepsiburada deposunda 3 ton klima indirdim.\" Berkay bir şekilde ikisine de karışmak zorunda.",
+      "secenekler": [
+        {
+          "etiket": "🍔 Burger'le yemek yarışsın",
+          "hedef": "gk_P8_1"
+        },
+        {
+          "etiket": "📦 \"Ben olsam 5 ton indirirdim\" desin",
+          "hedef": "gk_P8_2"
+        }
+      ]
+    },
+    "gk_P7_2": {
+      "emoji": "📦",
+      "metin": "Kurban: \"Türkiye'nin en uzun nehri?\" Berkay: \"Popeyes.\" Masa dondu. Kurban: \"Seninle aynı salonda girsem rahat olurdum, sıralamada birini geçmiş olurdum.\" Burger dördüncü porsiyonu isterken Halil başladı: \"Kanka bugün Hepsiburada deposunda 3 ton klima indirdim.\" Berkay bir şekilde ikisine de karışmak zorunda.",
+      "secenekler": [
+        {
+          "etiket": "🍔 Burger'le yemek yarışsın",
+          "hedef": "gk_P8_1"
+        },
+        {
+          "etiket": "📦 \"Ben olsam 5 ton indirirdim\" desin",
+          "hedef": "gk_P8_2"
+        }
+      ]
+    },
+    "gk_P8_1": {
+      "emoji": "🥊",
+      "metin": "Burger'e meydan okudu. Burger 4. porsiyonu 2 dakikada bitirdi; Berkay 2. porsiyonda boğuldu, Kurban sırtına vurdu. Berkay: \"Dişim ağrıyordu zaten.\" Yemekten çıktılar. Çarşıdaki boks makinesinin ekranında rekor yazıyor: 999. Burger: \"Bunu kimse geçemez.\" Berkay'ın gözleri parladı.",
+      "secenekler": [
+        {
+          "etiket": "🥊 Tüm gücüyle vursun",
+          "hedef": "gk_P9_1"
+        },
+        {
+          "etiket": "🔥 Önce ısınsın, sonra vursun",
+          "hedef": "gk_P9_2"
+        }
+      ]
+    },
+    "gk_P8_2": {
+      "emoji": "🥊",
+      "metin": "Halil: \"Geçen sene Alihan'la depo yevmiyesine gelmiştiniz. Sen 1 koli kaldırıp 3 saat mola verdin.\" Alihan: \"Ben hiç kaldırmadım ama.\" Masa güldü. Berkay: \"O gün griptim.\" Yemekten çıktılar. Çarşıdaki boks makinesinin ekranında rekor yazıyor: 999. Burger: \"Bunu kimse geçemez.\" Berkay'ın gözleri parladı.",
+      "secenekler": [
+        {
+          "etiket": "🥊 Tüm gücüyle vursun",
+          "hedef": "gk_P9_1"
+        },
+        {
+          "etiket": "🔥 Önce ısınsın, sonra vursun",
+          "hedef": "gk_P9_2"
+        }
+      ]
+    },
+    "gk_P9_1": {
+      "emoji": "🤕",
+      "metin": "Koştu, zıpladı, vurdu. Makine: 312. Elinden \"çıt\" diye bir ses geldi, parmakları tuhaf bir açıyla duruyor. Berkay: \"Makine bozuk.\" Eli şişiyor. Kurban eczaneden sargı aldı, Halil depo usulü koli bandıyla sabitledi. Diğer elinde Burger'in aldığı kola var.",
+      "secenekler": [
+        {
+          "etiket": "😎 \"Acımıyor\" desin",
+          "hedef": "gk_P10_1"
+        },
+        {
+          "etiket": "🏥 Hastaneye gitsin",
+          "hedef": "gk_P10_2"
+        }
+      ]
+    },
+    "gk_P9_2": {
+      "emoji": "🤕",
+      "metin": "5 dakika ısındı, şınav çekti, gölge boksu yaptı, etrafa kalabalık toplandı. Vurdu. Makine: 312. Elinden \"çıt\" diye bir ses geldi. Kalabalık dağıldı. Berkay: \"Makine bozuk.\" Eli şişiyor. Kurban eczaneden sargı aldı, Halil depo usulü koli bandıyla sabitledi. Diğer elinde Burger'in aldığı kola var.",
+      "secenekler": [
+        {
+          "etiket": "😎 \"Acımıyor\" desin",
+          "hedef": "gk_P10_1"
+        },
+        {
+          "etiket": "🏥 Hastaneye gitsin",
+          "hedef": "gk_P10_2"
+        }
+      ]
+    },
+    "gk_P10_1": {
+      "emoji": "🥤",
+      "metin": "\"Acımıyor\" dedi ve göstermek için sargılı elini salladı. Acıdı. Öyle bir bağırdı ki çarşıdaki güvercinler havalandı. Kütüphaneye dönerken bir çay bahçesinde oturdular. Masa bardaklarla dolu. Berkay'ın elindeki kolayı bir yere koyması lazım.",
+      "secenekler": [
+        {
+          "etiket": "⬇️ Yere koysun",
+          "hedef": "gk_P11_1"
+        },
+        {
+          "etiket": "🪑 Sandalyenin kenarına koysun",
+          "hedef": "gk_P11_2"
+        }
+      ]
+    },
+    "gk_P10_2": {
+      "emoji": "🥤",
+      "metin": "Röntgen: parmakta çatlak. Doktor: \"Boks makinesi mi? Bu ay dördüncü vaka.\" Eline alçı yaptılar. Arkadaşlar dışarıda beklerken Burger bir burger daha yedi. Kütüphaneye dönerken bir çay bahçesinde oturdular. Masa bardaklarla dolu. Berkay'ın elindeki kolayı bir yere koyması lazım.",
+      "secenekler": [
+        {
+          "etiket": "⬇️ Yere koysun",
+          "hedef": "gk_P11_1"
+        },
+        {
+          "etiket": "🪑 Sandalyenin kenarına koysun",
+          "hedef": "gk_P11_2"
+        }
+      ]
+    },
+    "gk_P11_1": {
+      "emoji": "🤬",
+      "metin": "Kolayı masanın dibine, yere koydu. 10 saniye sonra Halil kalkarken kolaya bastı, kaydı, Kurban'ın üstüne düştü. Kurban'ın KPSS kitabı çayın içine düştü. Yerde kola, yerde Halil, çayda KPSS kitabı. Dördü aynı anda Berkay'a döndü: \"MAL MISIN LAN!\" \"GERİZEKALI!\" \"Bu kafayla nasıl yaşıyorsun!\" \"Enver Paşa bile kolayı yere koymazdı!\"",
+      "secenekler": [
+        {
+          "etiket": "😡 \"BENİM SUÇUM YOK!\" diye çıldırsın",
+          "hedef": "gk_P12_1"
+        },
+        {
+          "etiket": "🌀 Suçu kolaya atsın",
+          "hedef": "gk_P12_2"
+        }
+      ]
+    },
+    "gk_P11_2": {
+      "emoji": "🤬",
+      "metin": "Kolayı sandalyenin kenarına koydu. Alihan oturunca kola devrildi; Burger dökülen kolaya basıp kaydı, Halil'i de alıp yere serildi. Kurban'ın KPSS kitabı çayın içine düştü. Yerde kola, yerde Halil, çayda KPSS kitabı. Dördü aynı anda Berkay'a döndü: \"MAL MISIN LAN!\" \"GERİZEKALI!\" \"Bu kafayla nasıl yaşıyorsun!\" \"Enver Paşa bile kolayı yere koymazdı!\"",
+      "secenekler": [
+        {
+          "etiket": "😡 \"BENİM SUÇUM YOK!\" diye çıldırsın",
+          "hedef": "gk_P12_1"
+        },
+        {
+          "etiket": "🌀 Suçu kolaya atsın",
+          "hedef": "gk_P12_2"
+        }
+      ]
+    },
+    "gk_P12_1": {
+      "emoji": "💌",
+      "metin": "\"BENİM SUÇUM YOK! BU MASAYI KİM BU KADAR KÜÇÜK YAPTI!\" Sandalyeyi tekmeledi, sargılı eli masaya çarptı, bir daha bağırdı. Çay bahçesindeki amcalar okeyi bıraktı. Kütüphaneye geri döndüler. Berkay kız arkadaşının öğlen attığı mesajı hatırladı: \"Yarın ne yapıyorsun? 😊\" Hâlâ cevap vermemiş.",
+      "secenekler": [
+        {
+          "etiket": "😍 \"Seninle buluşuyorum\" yazsın",
+          "hedef": "gk_P13_1"
+        },
+        {
+          "etiket": "🤔 Önce arkadaşlarına danışsın",
+          "hedef": "gk_P13_2"
+        }
+      ]
+    },
+    "gk_P12_2": {
+      "emoji": "💌",
+      "metin": "\"Kola kaygan üretilmiş, dava açacağım.\" Kimse gülmedi. Kurban ıslak kitabı güneşe tuttu: \"Bu sayfada Anayasa vardı, şimdi yok.\" Berkay 10 kere \"benim suçum yok\" dedi. Kütüphaneye geri döndüler. Berkay kız arkadaşının öğlen attığı mesajı hatırladı: \"Yarın ne yapıyorsun? 😊\" Hâlâ cevap vermemiş.",
+      "secenekler": [
+        {
+          "etiket": "😍 \"Seninle buluşuyorum\" yazsın",
+          "hedef": "gk_P13_1"
+        },
+        {
+          "etiket": "🤔 Önce arkadaşlarına danışsın",
+          "hedef": "gk_P13_2"
+        }
+      ]
+    },
+    "gk_P13_1": {
+      "emoji": "⚽",
+      "metin": "Tek eliyle \"Seninle buluşuyorum\" yazdı, heyecandan 3 kere gönderdi. Kız arkadaşı: \"Yarın Gölcük'e gel, Popeyes'a gideriz ❤️\" Berkay kütüphanede ayağa kalkıp \"EVET!\" diye bağırdı. Görevli: \"SESSİZLİK!\" Akşam 21:00. Halil depoya vardiyaya gitti; Berkay, Kurban, Alihan ve Burger halı sahada. Berkay'ın bir eli sargılı ama \"ayakla oynanıyor zaten\" diyor.",
+      "secenekler": [
+        {
+          "etiket": "⚽ Forvet oynasın",
+          "hedef": "gk_P14_1"
+        },
+        {
+          "etiket": "🧤 Kaleye geçsin",
+          "hedef": "gk_P14_2"
+        }
+      ]
+    },
+    "gk_P13_2": {
+      "emoji": "⚽",
+      "metin": "Kurban: \"Git ama otobüsü öğren.\" Alihan: \"Enver Paşa aşk için...\" \"Sus Alihan.\" Burger: \"Gölcük'te Burger King var mı?\" Halil: \"Oraya Ekol'ün kamyonu gidiyor.\" Berkay yazdı, kız arkadaşı: \"Yarın Gölcük'e gel, Popeyes'a gideriz ❤️\" Akşam 21:00. Halil depoya vardiyaya gitti; Berkay, Kurban, Alihan ve Burger halı sahada. Berkay'ın bir eli sargılı ama \"ayakla oynanıyor zaten\" diyor.",
+      "secenekler": [
+        {
+          "etiket": "⚽ Forvet oynasın",
+          "hedef": "gk_P14_1"
+        },
+        {
+          "etiket": "🧤 Kaleye geçsin",
+          "hedef": "gk_P14_2"
+        }
+      ]
+    },
+    "gk_P14_1": {
+      "emoji": "🥅",
+      "metin": "Forvet oynadı: 11 pozisyon, 11 kaçan gol. Birinde kaleci bile yoktu, top direkten döndü. Alihan: \"Enver Paşa atardı.\" Maç bitti. Skor 18-4. Berkay'ın golü: 0. Takım arkadaşları ona bakıyor.",
+      "secenekler": [
+        {
+          "etiket": "🌀 \"Zemin ıslaktı\" desin",
+          "hedef": "gk_P15_1"
+        },
+        {
+          "etiket": "😤 Topu tekmeleyip gitsin",
+          "hedef": "gk_P15_2"
+        }
+      ]
+    },
+    "gk_P14_2": {
+      "emoji": "🥅",
+      "metin": "Kaleye geçti. Sargılı eliyle topa çıkamadı, 14 gol yedi. \"Forvete geçeyim\" dedi, orada da 1 gol bile atamadı. Burger kenarda burger yiyerek izledi. Maç bitti. Skor 18-4. Berkay'ın golü: 0. Takım arkadaşları ona bakıyor.",
+      "secenekler": [
+        {
+          "etiket": "🌀 \"Zemin ıslaktı\" desin",
+          "hedef": "gk_P15_1"
+        },
+        {
+          "etiket": "😤 Topu tekmeleyip gitsin",
+          "hedef": "gk_P15_2"
+        }
+      ]
+    },
+    "gk_P15_1": {
+      "emoji": "🌙",
+      "metin": "\"Zemin ıslaktı, top yamuktu, ayakkabım kaydı.\" Kurban: \"Top yamuk olsa biz de atamazdık.\" Berkay: \"Benim suçum yok.\" Bugün üçüncü kez. Gece eve döndü. Yarın büyük gün: Gölcük, kız arkadaşı, Popeyes. Alarm kurması lazım.",
+      "secenekler": [
+        {
+          "etiket": "⏰ 09:00'a kursun",
+          "hedef": "gk_P16_1"
+        },
+        {
+          "etiket": "😴 Alarmsız uyusun",
+          "hedef": "gk_P16_2"
+        }
+      ]
+    },
+    "gk_P15_2": {
+      "emoji": "🌙",
+      "metin": "Topu hırsla tekmeledi. Top tellere çarpıp kendi yüzüne döndü. Kurban gülmekten yere yattı. Günün tek isabetli şutu buydu. Gece eve döndü. Yarın büyük gün: Gölcük, kız arkadaşı, Popeyes. Alarm kurması lazım.",
+      "secenekler": [
+        {
+          "etiket": "⏰ 09:00'a kursun",
+          "hedef": "gk_P16_1"
+        },
+        {
+          "etiket": "😴 Alarmsız uyusun",
+          "hedef": "gk_P16_2"
+        }
+      ]
+    },
+    "gk_P16_1": {
       "emoji": "🚏",
-      "metin": "Kız arkadaşı Gölcük'te, bugün buluşacaklar! Berkay yarım saat saçını düzeltti (düzelmedi), durağa geldi. Tek bir sorun var: hangi otobüse bineceğini bilmiyor.",
+      "metin": "09:00'a kurdu, sonra \"10:00 da olur\" dedi, sonra 11:00. Uyandığında saat 12:30. Neyse ki buluşma akşamüstü 5'te. Cumartesi. Yarım saat saçını düzeltti (düzelmedi), sargılı eliyle ayakkabı bağlamak 20 dakika sürdü. Durağa geldi. Bir sorun var: hangi otobüse bineceğini bilmiyor.",
       "secenekler": [
         {
           "etiket": "📞 Kurban'a sorsun",
-          "hedef": "gk2"
+          "hedef": "gk_G1_1"
         },
         {
           "etiket": "🧍 Sokaktan rastgele birine sorsun",
-          "hedef": "gk_amca"
+          "hedef": "gk_G1_2"
         }
       ]
     },
-    "gk_amca": {
-      "emoji": "👴",
-      "metin": "Duraktaki amcaya sordu. Amca \"Gölcük mü? Ben orada askerlik yaptım evladım...\" diye başladı. 45 dakika geçti, hikâye hâlâ 1989'da.",
+    "gk_P16_2": {
+      "emoji": "🚏",
+      "metin": "\"Nasılsa uyanırım\" dedi. Uyandığında saat 13:00, onun için sabahın köründe. Kız arkadaşından mesaj: \"Akşam 5'te Gölcük sahilde 😊\" Cumartesi. Yarım saat saçını düzeltti (düzelmedi), sargılı eliyle ayakkabı bağlamak 20 dakika sürdü. Durağa geldi. Bir sorun var: hangi otobüse bineceğini bilmiyor.",
       "secenekler": [
         {
-          "etiket": "👂 Sonuna kadar dinlesin",
-          "hedef": "gk_amca2"
+          "etiket": "📞 Kurban'a sorsun",
+          "hedef": "gk_G1_1"
         },
         {
-          "etiket": "📞 Kaçıp Kurban'ı arasın, Popeyes sözü versin",
-          "hedef": "gk3"
+          "etiket": "🧍 Sokaktan rastgele birine sorsun",
+          "hedef": "gk_G1_2"
         }
       ]
     },
-    "gk_amca2": {
-      "emoji": "⏰",
-      "metin": "Amca hikâyeyi bitirdi: \"Gölcük otobüsü mü? O az önce kalktı evladım.\" Bir sonraki bir saat sonra. Berkay'ın canı sıkıldı, birini arayıp dertleşmesi lazım.",
-      "secenekler": [
-        {
-          "etiket": "🦅 Alihan'ı arasın",
-          "hedef": "gk_al1"
-        },
-        {
-          "etiket": "🍔 Burger King'i arasın",
-          "hedef": "gk_bk1"
-        }
-      ]
-    },
-    "gk_al1": {
-      "emoji": "🦅",
-      "metin": "Alihan açtı: \"Otobüs mü bekliyorsun? Kardeşim Enver Paşa Sarıkamış'a yürüyerek gitti, sen 1 saat otobüs bekleyemiyor musun?\"",
-      "secenekler": [
-        {
-          "etiket": "🥶 \"Orada donmadılar mı?\" desin",
-          "hedef": "gk_al_kriz"
-        },
-        {
-          "etiket": "🫡 Alihan'a hak verip yürüsün",
-          "hedef": "gk_al_yuru"
-        }
-      ]
-    },
-    "gk_al_kriz": {
-      "emoji": "🤬",
-      "metin": "Hata. Alihan sanki ailesine sövülmüş gibi 40 dakika bağırdı: \"O facia değil, STRATEJİK SERİNLEME!\" Berkay telefonu kulağından uzak tutarken otobüs geldi; fark etmeden bindi, uyudu, Gölcük'te uyandı. Alihan hâlâ hatta.",
-      "secenekler": [
-        {
-          "etiket": "📴 Kapatıp yürümeye başlasın",
-          "hedef": "gk_al_kriz__a"
-        },
-        {
-          "etiket": "🙄 Alihan'ı açık bırakıp yürüsün",
-          "hedef": "gk_al_kriz__b"
-        }
-      ]
-    },
-    "gk_al_yuru": {
-      "emoji": "🚶",
-      "metin": "Enver Paşa ruhuyla yürümeye başladı. 2 km sonra bitti. Alihan'dan mesaj: \"Enver Paşa yorulmazdı.\" Tam o sırada yanında bir otobüs durdu: GÖLCÜK. Bindi, uyudu, Gölcük'te indi.",
-      "secenekler": [
-        {
-          "etiket": "🚶 Yürümeye devam etsin",
-          "hedef": "gk_al_yuru__a"
-        },
-        {
-          "etiket": "📱 Alihan'a \"Enver otobüse binerdi\" yazsın",
-          "hedef": "gk_al_yuru__b"
-        }
-      ]
-    },
-    "gk_bk1": {
-      "emoji": "🍔",
-      "metin": "Burger King kütüphaneden fısıldayarak açtı: \"Kanka Alihan'ın kahve haklarını bitiriyorum, çabuk söyle.\" Berkay durumu anlattı. BK: \"Gölcük'te Burger King var mı?\"",
-      "secenekler": [
-        {
-          "etiket": "✅ \"Var\" desin",
-          "hedef": "gk_bk2"
-        },
-        {
-          "etiket": "❌ \"Popeyes var\" desin",
-          "hedef": "gk_bk3"
-        }
-      ]
-    },
-    "gk_bk2": {
-      "emoji": "🚌",
-      "metin": "BK kütüphaneden fırladı, elinde Alihan'ın hakkıyla alınmış iki kahve. Birlikte Gölcük otobüsüne bindiler; BK ders çalıştı, Berkay horladı. Gölcük'te inerken basamağı kaçırdı, ayağı yamuldu: \"kıtır.\" BK Burger King'e gitti, Berkay seke seke buluşmaya.",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke yola koyulsun",
-          "hedef": "gk_bk2__a"
-        },
-        {
-          "etiket": "☕ Kahveyi bitirip seksin",
-          "hedef": "gk_bk2__b"
-        }
-      ]
-    },
-    "gk_bk3": {
-      "emoji": "💔",
-      "metin": "BK: \"Popeyes mi? İhanet!\" dedi ve kapattı. 5 dakika sonra geri aradı: \"Tamam kızmadım, 7'yle başlayan kırmızıya bin.\" Bindi, uyudu, Gölcük'te inerken basamağı kaçırdı: \"kıtır.\" Ayak yamuldu.",
-      "secenekler": [
-        {
-          "etiket": "🙏 BK'ya teşekkür edip seksin",
-          "hedef": "gk_bk3__a"
-        },
-        {
-          "etiket": "🍗 \"Popeyes daha iyi\" yazıp seksin",
-          "hedef": "gk_bk3__b"
-        }
-      ]
-    },
-    "gk2": {
+    "gk_G1_1": {
       "emoji": "📞",
-      "metin": "Kurban 7. çalışta açtı: \"Ne var lan? KPSS'ye bir hafta var, 4 Ekim'e kadar telefon yasak. 1 dakikan var.\" Berkay: \"Gölcük'e hangi otobüs gidiyor kanka?\" Kurban derin bir iç çekti.",
+      "metin": "Kurban 7. çalışta açtı: \"Ne var lan? KPSS'ye bir hafta var, dün kitabımı kolayla ıslattın. 1 dakikan var.\" Berkay: \"Gölcük'e hangi otobüs gidiyor kanka?\" Kurban derin bir iç çekti.",
       "secenekler": [
         {
           "etiket": "🙏 Yalvarsın",
-          "hedef": "gk_yalvar"
+          "hedef": "gk_G2_1"
         },
         {
           "etiket": "🍗 \"Popeyes ısmarlarım\" desin",
-          "hedef": "gk3"
+          "hedef": "gk_G2_2"
         }
       ]
     },
-    "gk_yalvar": {
-      "emoji": "🥺",
-      "metin": "Kurban 5 dakika yalvarttı, sonra: \"Ben de bilmiyorum. Halil'e sor, bütün depoların bütün araçları ondan sorulur.\" Ve KPSS paragraf sorularına geri döndü.",
+    "gk_G1_2": {
+      "emoji": "👴",
+      "metin": "Duraktaki amcaya sordu. Amca \"Gölcük mü? Ben orada askerlik yaptım evladım...\" diye başladı. 45 dakika geçti, amcanın hikâyesi hâlâ 1989'da. Otobüsler gelip geçiyor.",
       "secenekler": [
         {
-          "etiket": "📦 Halil'i arasın",
-          "hedef": "gk_h1"
+          "etiket": "👂 Sonuna kadar dinlesin",
+          "hedef": "gk_GA1_1"
         },
         {
-          "etiket": "🤷 Kendisi bulsun",
-          "hedef": "gk_sapanca"
+          "etiket": "📞 Kaçıp Kurban'ı arasın",
+          "hedef": "gk_GA1_2"
         }
       ]
     },
-    "gk_h1": {
-      "emoji": "📦",
-      "metin": "Halil forklift sesinin arasından açtı: \"Kanka hepsijet deposundayım, 5 ay bedava stajdayım, çok konuşamam. Ekol'ün kamyonu şimdi Gölcük'e çıkıyor, arkaya atla.\"",
+    "gk_GA1_1": {
+      "emoji": "⏳",
+      "metin": "Amca bitirdi: \"Gölcük otobüsü mü? O az önce kalktı evladım.\" Bir sonraki bir saat sonra. Bir saat beklemesi lazım. Birini arayıp dertleşmeli.",
       "secenekler": [
         {
-          "etiket": "🚛 Kamyona atlasın",
-          "hedef": "gk_h2"
+          "etiket": "🦅 Alihan'ı arasın",
+          "hedef": "gk_GA2_1"
         },
         {
-          "etiket": "🚌 \"Otobüs olsun\" desin",
-          "hedef": "gk_h_otobus"
+          "etiket": "🍔 Burger'i arasın",
+          "hedef": "gk_GA2_2"
         }
       ]
     },
-    "gk_h_otobus": {
+    "gk_GA1_2": {
       "emoji": "🚌",
-      "metin": "Halil: \"Kırmızı, 7'yle başlıyor. Kanka bir de klima deposuna yevmiye lazım, gelir misin?\" Berkay \"hıı\" deyip kapattı, otobüse bindi, uyudu, Gölcük'te indi.",
-      "secenekler": [
-        {
-          "etiket": "🚶 Yürümeye başlasın",
-          "hedef": "gk_h_otobus__a"
-        },
-        {
-          "etiket": "🧾 Yürürken Halil'e yevmiyeyi sorsun",
-          "hedef": "gk_h_otobus__b"
-        }
-      ]
-    },
-    "gk_h2": {
-      "emoji": "🚛",
-      "metin": "Kamyonun kasasında klima kutularının arasında yola çıktı. Kamyon her depoda duruyor, şoför Berkay'a bakıp \"hazır buradasın\" diyor.",
-      "secenekler": [
-        {
-          "etiket": "💪 Koli taşısın",
-          "hedef": "gk_h3"
-        },
-        {
-          "etiket": "💤 Kolilerin arasında uyusun",
-          "hedef": "gk_h3b"
-        }
-      ]
-    },
-    "gk_h3": {
-      "emoji": "💵",
-      "metin": "12 koli taşıdı, şoför 50 TL verdi. Berkay hayatında ilk kez alnının teriyle para kazandı. Gölcük'te kamyondan atlarken ayağı yamuldu: \"kıtır.\" 50 TL'yi Popeyes'a ayırdı.",
-      "secenekler": [
-        {
-          "etiket": "📸 Parayı gruba atsın",
-          "hedef": "gk_h3__a"
-        },
-        {
-          "etiket": "🦵 Seke seke yola koyulsun",
-          "hedef": "gk_h3__b"
-        }
-      ]
-    },
-    "gk_h3b": {
-      "emoji": "📦",
-      "metin": "Kolilerin arasında uyudu. Gölcük'te boşaltırken işçiler \"bu koli neden horluyor?\" diye açtılar. İçinden Berkay çıktı, kasadan atlarken ayağı yamuldu: \"kıtır.\"",
-      "secenekler": [
-        {
-          "etiket": "🙋 \"Kargo benim\" desin",
-          "hedef": "gk_h3b__a"
-        },
-        {
-          "etiket": "🏃 Seke seke kaçsın",
-          "hedef": "gk_h3b__b"
-        }
-      ]
-    },
-    "gk_sapanca": {
-      "emoji": "🏞️",
-      "metin": "Yanlış otobüs. 40 dakika sonra tabela: Sapanca. Göl var ama Gölcük değil, salak. Kurban'a konum attı. Kurban: \"KPSS'ye 7 gün var ve ben seninle uğraşıyorum.\"",
-      "secenekler": [
-        {
-          "etiket": "🔁 Geri dönen otobüse binsin",
-          "hedef": "gk_sap2"
-        },
-        {
-          "etiket": "🍔 Burger King'i arasın",
-          "hedef": "gk_bk1"
-        }
-      ]
-    },
-    "gk_sap2": {
-      "emoji": "🍀",
-      "metin": "Geri dönen otobüste yine uyudu. Ama bu sefer mucize: gözünü açtığında Gölcük'teydi. Şans da bir yetenektir.",
-      "secenekler": [
-        {
-          "etiket": "🙌 Şükretsin",
-          "hedef": "gk_sap2__a"
-        },
-        {
-          "etiket": "📱 Kurban'a \"planım buydu\" yazsın",
-          "hedef": "gk_sap2__b"
-        }
-      ]
-    },
-    "gk3": {
-      "emoji": "🚌",
-      "metin": "Popeyes lafını duyan Kurban anında uyandı: \"Kırmızı otobüs, 7'yle başlıyor. Sen yaparsın Berkay, sen bu işin hocasısın!\" (Kurban da inanmıyor.) Durağa aynı anda iki kırmızı otobüs yanaştı.",
+      "metin": "Amcaya \"telefon geldi\" deyip kaçtı. Kurban'a Popeyes sözü verdi. Kurban: \"Kırmızı otobüs, 7'yle başlıyor. Sen yaparsın Berkay!\" (Kurban da inanmıyor.) Durağa aynı anda iki kırmızı otobüs yanaştı, ikisi de 7'yle başlıyor.",
       "secenekler": [
         {
           "etiket": "🏃 İlk gelene atlasın",
-          "hedef": "gk_sapanca"
+          "hedef": "gk_G3_1"
         },
         {
           "etiket": "🧐 Şoföre sorsun",
-          "hedef": "gk4"
+          "hedef": "gk_G3_2"
         }
       ]
     },
-    "gk4": {
-      "emoji": "🧑‍✈️",
-      "metin": "Şoför \"Gölcük, bin\" dedi. Kart bip etti, Berkay en arkaya oturdu. Yanında örgü ören bir teyze var.",
+    "gk_GA2_1": {
+      "emoji": "🧶",
+      "metin": "Alihan: \"Enver Paşa Sarıkamış'a yürüyerek gitti, sen otobüs mü bekleyemiyorsun?\" Berkay: \"Orada donmadılar mı?\" Hata. Alihan 40 dakika \"STRATEJİK SERİNLEME!\" diye bağırdı. Bu arada otobüs geldi, Berkay telefon kulağında bindi. Berkay en arkaya oturdu. Yanında örgü ören bir teyze var. Otobüs Gölcük'e doğru yola çıktı.",
       "secenekler": [
         {
           "etiket": "🔊 Kurban'ı hoparlörden arasın",
-          "hedef": "gk_son_hoparlor"
+          "hedef": "gk_G4_1"
         },
         {
           "etiket": "🎧 Kulaklık takıp uyusun",
-          "hedef": "gk5"
+          "hedef": "gk_G4_2"
         }
       ]
     },
-    "gk_son_hoparlor": {
+    "gk_GA2_2": {
+      "emoji": "🧶",
+      "metin": "Burger kütüphaneden fısıldadı: \"Alihan'ın kahve haklarını bitiriyorum, çabuk.\" Durumu dinleyince: \"Gölcük'te Burger King var mı? Geliyorum.\" 20 dakikada iki kahveyle geldi. Birlikte otobüse bindiler, Burger ön koltukta kitabını açtı. Berkay en arkaya oturdu. Yanında örgü ören bir teyze var. Otobüs Gölcük'e doğru yola çıktı.",
+      "secenekler": [
+        {
+          "etiket": "🔊 Kurban'ı hoparlörden arasın",
+          "hedef": "gk_G4_1"
+        },
+        {
+          "etiket": "🎧 Kulaklık takıp uyusun",
+          "hedef": "gk_G4_2"
+        }
+      ]
+    },
+    "gk_G2_1": {
+      "emoji": "📦",
+      "metin": "5 dakika yalvardı. Kurban: \"Ben de bilmiyorum. Halil'e sor, bütün depoların bütün araçları ondan sorulur.\" Halil forklift sesinin arasından açtı: \"Kanka Hepsijet deposundayım, bedava stajdayım, çok konuşamam. Ekol'ün kamyonu Gölcük'e çıkıyor, arkaya atla. Ya da kırmızı otobüs, 7'yle başlıyor.\"",
+      "secenekler": [
+        {
+          "etiket": "🚛 Kamyona atlasın",
+          "hedef": "gk_GH1_1"
+        },
+        {
+          "etiket": "🚌 Otobüse binsin",
+          "hedef": "gk_GH1_2"
+        }
+      ]
+    },
+    "gk_G2_2": {
+      "emoji": "🚌",
+      "metin": "Popeyes lafını duyan Kurban anında uyandı: \"Kırmızı otobüs, 7'yle başlıyor. Sen yaparsın Berkay, sen bu işin hocasısın!\" (Kurban da inanmıyor.) Durağa aynı anda iki kırmızı otobüs yanaştı, ikisi de 7'yle başlıyor.",
+      "secenekler": [
+        {
+          "etiket": "🏃 İlk gelene atlasın",
+          "hedef": "gk_G3_1"
+        },
+        {
+          "etiket": "🧐 Şoföre sorsun",
+          "hedef": "gk_G3_2"
+        }
+      ]
+    },
+    "gk_GH1_1": {
+      "emoji": "🚛",
+      "metin": "Kamyonun kasasında klima kutularının arasına kuruldu. Kamyon her depoda duruyor, şoför Berkay'a bakıp \"hazır buradasın\" diyor. Kamyon bir depoya daha yanaştı. Şoför: \"Şu 12 koliyi indirirsen 50 lira.\"",
+      "secenekler": [
+        {
+          "etiket": "💪 Tek eliyle koli taşısın",
+          "hedef": "gk_GH2_1"
+        },
+        {
+          "etiket": "💤 Kolilerin arasında uyusun",
+          "hedef": "gk_GH2_2"
+        }
+      ]
+    },
+    "gk_GH1_2": {
+      "emoji": "🧶",
+      "metin": "7'yle başlayan kırmızı otobüsü buldu. Şoföre sordu: \"Gölcük, bin.\" Kart bip etti. Berkay en arkaya oturdu. Yanında örgü ören bir teyze var. Otobüs Gölcük'e doğru yola çıktı.",
+      "secenekler": [
+        {
+          "etiket": "🔊 Kurban'ı hoparlörden arasın",
+          "hedef": "gk_G4_1"
+        },
+        {
+          "etiket": "🎧 Kulaklık takıp uyusun",
+          "hedef": "gk_G4_2"
+        }
+      ]
+    },
+    "gk_GH2_1": {
+      "emoji": "🕳️",
+      "metin": "Sargılı eli yüzünden tek elle 12 koli taşıdı, 3 saat sürdü. Şoför 50 TL verdi. Berkay hayatında ilk kez alnının teriyle para kazandı. Halil'e yazdı: \"Ben de ameleyim artık.\" Kamyon Gölcük'te indirdi. Gölcük sokaklarında yürüyor. Telefonda harita açık, ileride kaldırımda bir çukur var.",
+      "secenekler": [
+        {
+          "etiket": "📱 Telefona bakmaya devam etsin",
+          "hedef": "gk_G6_1"
+        },
+        {
+          "etiket": "👀 Etrafa baksın",
+          "hedef": "gk_G6_2"
+        }
+      ]
+    },
+    "gk_GH2_2": {
+      "emoji": "🕳️",
+      "metin": "Kolilerin arasında uyudu. Gölcük'te boşaltırken işçiler \"bu koli neden horluyor?\" diye açtılar. İçinden Berkay çıktı, \"kargo benim\" deyip kaçtı. Gölcük sokaklarında yürüyor. Telefonda harita açık, ileride kaldırımda bir çukur var.",
+      "secenekler": [
+        {
+          "etiket": "📱 Telefona bakmaya devam etsin",
+          "hedef": "gk_G6_1"
+        },
+        {
+          "etiket": "👀 Etrafa baksın",
+          "hedef": "gk_G6_2"
+        }
+      ]
+    },
+    "gk_G3_1": {
+      "emoji": "🏞️",
+      "metin": "İlk gelene atladı. 40 dakika sonra tabelayı okudu: Sapanca. Göl var ama Gölcük değil, salak. Sapanca gölünün kenarında. Kurban'a konum attı. Kurban: \"KPSS'ye 7 gün var ve ben seninle uğraşıyorum.\"",
+      "secenekler": [
+        {
+          "etiket": "🔁 Geri dönen otobüse binsin",
+          "hedef": "gk_GS1_1"
+        },
+        {
+          "etiket": "🦆 Ördeklere simit atsın",
+          "hedef": "gk_GS1_2"
+        }
+      ]
+    },
+    "gk_G3_2": {
+      "emoji": "🧶",
+      "metin": "Şoför: \"Gölcük, bin.\" Kart bip etti. Berkay en arkaya oturdu. Yanında örgü ören bir teyze var. Otobüs Gölcük'e doğru yola çıktı.",
+      "secenekler": [
+        {
+          "etiket": "🔊 Kurban'ı hoparlörden arasın",
+          "hedef": "gk_G4_1"
+        },
+        {
+          "etiket": "🎧 Kulaklık takıp uyusun",
+          "hedef": "gk_G4_2"
+        }
+      ]
+    },
+    "gk_GS1_1": {
+      "emoji": "🕳️",
+      "metin": "Geri dönen otobüste yine uyudu. Ama bu sefer mucize: gözünü açtığında Gölcük'teydi. Şans da bir yetenektir. Gölcük sokaklarında yürüyor. Telefonda harita açık, ileride kaldırımda bir çukur var.",
+      "secenekler": [
+        {
+          "etiket": "📱 Telefona bakmaya devam etsin",
+          "hedef": "gk_G6_1"
+        },
+        {
+          "etiket": "👀 Etrafa baksın",
+          "hedef": "gk_G6_2"
+        }
+      ]
+    },
+    "gk_GS1_2": {
+      "emoji": "🕳️",
+      "metin": "Simit alıp ördeklere attı. Ördekler simidi değil Berkay'ı kovaladı. Kaçarken bir minibüse atladı; minibüs Gölcük'e gidiyormuş. Ördekler de şans getirir. Gölcük sokaklarında yürüyor. Telefonda harita açık, ileride kaldırımda bir çukur var.",
+      "secenekler": [
+        {
+          "etiket": "📱 Telefona bakmaya devam etsin",
+          "hedef": "gk_G6_1"
+        },
+        {
+          "etiket": "👀 Etrafa baksın",
+          "hedef": "gk_G6_2"
+        }
+      ]
+    },
+    "gk_G4_1": {
       "emoji": "📢",
       "metin": "\"KUBİİİ OTOBÜSTEYİM KANKA!\" Şoför otobüsü sağa çekti, Berkay'ı indirdi. Yolcular alkışladı, teyze örgüsüne devam etti. SON.",
       "secenekler": []
     },
-    "gk5": {
-      "emoji": "💤",
-      "metin": "Horladı. Teyze dürttü: \"Oğlum Gölcük'e geldik, horlamandan örgümü üç kere söktüm.\" İndi. Buluşmaya 20 dakika, konuma 1,5 km var.",
+    "gk_G4_2": {
+      "emoji": "🗺️",
+      "metin": "Uyudu, horladı. Teyze dürttü: \"Oğlum Gölcük'e geldik, horlamandan örgümü üç kere söktüm.\" İndi. Gölcük! Buluşmaya 1 saat var, sahile 2 km.",
       "secenekler": [
         {
           "etiket": "🚶 Yürüsün",
-          "hedef": "gk6"
+          "hedef": "gk_G5_1"
         },
         {
           "etiket": "🛴 Martı kiralasın",
-          "hedef": "gk_marti"
+          "hedef": "gk_G5_2"
         }
       ]
     },
-    "gk_marti": {
+    "gk_G5_1": {
+      "emoji": "🕳️",
+      "metin": "Haritayı açıp yürümeye başladı. Gölcük sokaklarında yürüyor. Telefonda harita açık, ileride kaldırımda bir çukur var.",
+      "secenekler": [
+        {
+          "etiket": "📱 Telefona bakmaya devam etsin",
+          "hedef": "gk_G6_1"
+        },
+        {
+          "etiket": "👀 Etrafa baksın",
+          "hedef": "gk_G6_2"
+        }
+      ]
+    },
+    "gk_G5_2": {
       "emoji": "🛴",
-      "metin": "Martı'ya bindi: \"Kubiii 85'i göreceğim!\" Scooter 25'ten fazla gitmedi. Hırsından gaza asıldı, ön teker çukura girdi, Berkay uçtu. İndiği yer: kendi ayağı. \"Kıtır.\"",
+      "metin": "Martı'ya bindi: \"Kubiii 85'i göreceğim!\" Scooter 25'ten fazla gitmedi. Hırsından gaza asıldı, ön teker çukura girdi, Berkay uçtu. Yerde. Scooter devrik, Berkay devrik, sargılı eli havada.",
       "secenekler": [
         {
           "etiket": "📞 Martı'yı arayıp şikâyet etsin",
-          "hedef": "gk_marti2"
+          "hedef": "gk_GM1_1"
         },
         {
-          "etiket": "🦵 Kalkıp seksin",
-          "hedef": "gk7"
+          "etiket": "🦵 Hemen kalksın",
+          "hedef": "gk_GM1_2"
         }
       ]
     },
-    "gk_marti2": {
-      "emoji": "☎️",
-      "metin": "Müşteri hizmetleri: \"Hız sınırını aşmaya çalışan müşterimiz, 85 için uçağa binmeniz gerekir.\" 20 dakika beklemede kaldı, bu arada ayağı portakal oldu. Seke seke bir apartmanın önüne kadar geldi.",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam",
-          "hedef": "gk_marti2__a"
-        },
-        {
-          "etiket": "😤 Scooter'ı tekmelesin",
-          "hedef": "gk_marti2__b"
-        }
-      ]
-    },
-    "gk6": {
+    "gk_GM1_1": {
       "emoji": "🦶",
-      "metin": "Telefona bakarak yürürken çukuru görmedi. Ayağı yamuldu, \"kıtır\" diye bir ses geldi. Bilek bir anda portakal boyutunda.",
+      "metin": "Müşteri hizmetleri: \"Hız sınırını aşmaya çalışan müşterimiz, 85 için uçağa binmeniz gerekir.\" 20 dakika beklemede kaldı, sonra kalkmaya çalıştı: ayağı \"kıtır.\" Ayağı portakal gibi şişti. Dünden kalma sargılı el, bugünden yamuk ayak. Buluşmaya 40 dakika var.",
       "secenekler": [
         {
           "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
+          "hedef": "gk_G7_1"
         },
         {
           "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
+          "hedef": "gk_G7_2"
         }
       ]
     },
-    "gk_amb": {
-      "emoji": "🚑",
-      "metin": "Ambulans geldi, görevli 3 saniye baktı: \"Burkulma, buz koy.\" Ve gitti. Buz yok. Berkay aklına gelen ilk soğuk şeyi aradı: Burger King.",
+    "gk_GM1_2": {
+      "emoji": "🦶",
+      "metin": "Hızlı kalktı. Çok hızlı: ayağı \"kıtır\" diye yamuldu. Ayağı portakal gibi şişti. Dünden kalma sargılı el, bugünden yamuk ayak. Buluşmaya 40 dakika var.",
       "secenekler": [
         {
-          "etiket": "🍔 BK'dan buzlu kola istesin",
-          "hedef": "gk_amb2"
+          "etiket": "🦵 Seke seke devam etsin",
+          "hedef": "gk_G7_1"
         },
         {
-          "etiket": "🦅 Alihan'dan tavsiye istesin",
-          "hedef": "gk_amb3"
+          "etiket": "🚑 Ambulans çağırsın",
+          "hedef": "gk_G7_2"
         }
       ]
     },
-    "gk_amb2": {
-      "emoji": "🥤",
-      "metin": "BK tesadüfen Gölcük'teki Burger King'deymiş. Buzlu kolayı getirdi ama yarısını yolda içmiş. Kalan buzları Berkay'ın bileğine döktü: \"Kanka bir burger ye, iyileşirsin.\"",
+    "gk_G6_1": {
+      "emoji": "🦶",
+      "metin": "Bakmaya devam etti. Çukur da ona bakmaya devam etti. Ayağı yamuldu: \"kıtır.\" Ayağı portakal gibi şişti. Dünden kalma sargılı el, bugünden yamuk ayak. Buluşmaya 40 dakika var.",
       "secenekler": [
         {
-          "etiket": "🍔 Bir burger yesin",
-          "hedef": "gk_amb2__a"
+          "etiket": "🦵 Seke seke devam etsin",
+          "hedef": "gk_G7_1"
         },
         {
-          "etiket": "🙅 \"Popeyes'a yer açıyorum\" desin",
-          "hedef": "gk_amb2__b"
+          "etiket": "🚑 Ambulans çağırsın",
+          "hedef": "gk_G7_2"
         }
       ]
     },
-    "gk_amb3": {
-      "emoji": "🦅",
-      "metin": "Alihan: \"Sarıkamış'ta askerler buzla yaşadı, sen buz mu bulamıyorsun?\" Berkay \"orada donmadılar mı?\" dedi. Alihan 15 dakika bağırdı. Kar yok, buz yok, ama köşede bir çeşme var.",
+    "gk_G6_2": {
+      "emoji": "🦶",
+      "metin": "Etrafa baktı, çukuru gördü, etrafından dolaştı ve tam o sırada ikinci çukura bastı: \"kıtır.\" Gölcük'te çukur bol. Ayağı portakal gibi şişti. Dünden kalma sargılı el, bugünden yamuk ayak. Buluşmaya 40 dakika var.",
       "secenekler": [
         {
-          "etiket": "🚰 Çeşmede soğutsun",
-          "hedef": "gk_amb3__a"
+          "etiket": "🦵 Seke seke devam etsin",
+          "hedef": "gk_G7_1"
         },
         {
-          "etiket": "📴 Alihan'ı kapatsın",
-          "hedef": "gk_amb3__b"
+          "etiket": "🚑 Ambulans çağırsın",
+          "hedef": "gk_G7_2"
         }
       ]
     },
-    "gk7": {
+    "gk_G7_1": {
       "emoji": "🦩",
-      "metin": "Tek ayak üstünde seke seke ilerliyor, flamingo gibi. Mahallenin çocukları arkasından \"flamingo abi!\" diye bağırıp taklidini yapıyor.",
+      "metin": "Tek ayak üstünde seke seke ilerliyor, flamingo gibi. Mahallenin çocukları arkasından \"flamingo abi!\" diye bağırıp taklidini yapıyor. Her sokakta çocukların sayısı artıyor, arkasında artık koca bir kalabalık var.",
       "secenekler": [
         {
           "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
+          "hedef": "gk_G8_1"
         },
         {
           "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
+          "hedef": "gk_G8_2"
         }
       ]
     },
-    "gk_cocuk": {
-      "emoji": "⚽",
-      "metin": "\"Ne bakıyonuz lan!\" Çocuklar top attı. Berkay topa vurmaya kalktı, sakat ayakla ıskaladı ve yere yapıştı. Çocuklar toplandı: \"Abi kalk, seni götürelim.\"",
+    "gk_G7_2": {
+      "emoji": "🧊",
+      "metin": "Ambulans geldi, görevli 3 saniye baktı: \"Burkulma, buz koy. El de mi? Boks makinesi mi? Bu ay beşinci vaka.\" Ve gitti. Buz yok. Buz lazım. Aklına iki kişi geliyor.",
       "secenekler": [
         {
-          "etiket": "🛒 Bakkalın el arabasına binsin",
-          "hedef": "gk_cocuk2"
+          "etiket": "🍔 Burger'den buzlu kola istesin",
+          "hedef": "gk_GAMB_1"
         },
         {
-          "etiket": "😤 Gururuna yediremesin",
-          "hedef": "gk_cocuk3"
+          "etiket": "🦅 Alihan'dan tavsiye istesin",
+          "hedef": "gk_GAMB_2"
         }
       ]
     },
-    "gk_cocuk2": {
-      "emoji": "🛒",
-      "metin": "Çocuklar Berkay'ı bakkalın el arabasına koyup \"flamingo abi geliyor!\" diye bağırarak buluşma noktasına kadar götürdü. Bakkal arabasını geri istedi, 20 TL de kira istedi.",
-      "secenekler": [
-        {
-          "etiket": "💸 Parayı versin",
-          "hedef": "gk_cocuk2__a"
-        },
-        {
-          "etiket": "🌀 Manifestten zoktay gibi kıvırsın",
-          "hedef": "gk_cocuk2__b"
-        }
-      ]
-    },
-    "gk_cocuk3": {
-      "emoji": "🦩",
-      "metin": "Gurur yaptı, kendi başına seke seke devam etti. Çocuklar arkasından ritimli alkışla eşlik etti, Berkay buluşma noktasına düğün alayı gibi vardı.",
-      "secenekler": [
-        {
-          "etiket": "👋 Seyircilere el sallasın",
-          "hedef": "gk_cocuk3__a"
-        },
-        {
-          "etiket": "🙈 Başını önüne eğsin",
-          "hedef": "gk_cocuk3__b"
-        }
-      ]
-    },
-    "gk8": {
+    "gk_GAMB_1": {
       "emoji": "📱",
-      "metin": "Bir apartman önünde soluklandı. 800 metre kaldı. Kız arkadaşından mesaj: \"Geliyor musun? 😊\"",
+      "metin": "Burger tesadüfen Gölcük'teki Burger King'deymiş. Buzlu kolayı getirdi ama yarısını yolda içmiş, kalan buzları Berkay'ın bileğine döktü: \"Bir burger ye, iyileşirsin.\" Berkay yedi, Burger gururla gitti. Kız arkadaşından mesaj: \"Geldin mi? Ben sahildeyim 😊\" Sahile 500 metre var.",
       "secenekler": [
         {
-          "etiket": "📸 Şiş ayağının fotoğrafını çeksin",
-          "hedef": "gk_foto"
+          "etiket": "📸 Ayağının fotoğrafını atsın",
+          "hedef": "gk_G9_1"
         },
         {
-          "etiket": "😎 \"Geliyorum\" yazsın",
-          "hedef": "gk9"
+          "etiket": "😎 \"Geldim\" yazsın",
+          "hedef": "gk_G9_2"
         }
       ]
     },
-    "gk_foto": {
-      "emoji": "🤳",
-      "metin": "Fotoğrafı çekti ve yanlışlıkla arkadaş grubuna attı. Grup patladı. Alihan: \"Sarıkamış'ta bile kimsenin ayağı böyle şişmedi.\" BK: \"Burger ye geçer.\" Halil: \"Depoda klima kutusu düşse bu kadar ezilmez.\" Kurban: \"KPSS'ye 7 gün var, rahatsız etmeyin.\"",
+    "gk_GAMB_2": {
+      "emoji": "📱",
+      "metin": "Alihan: \"Sarıkamış'ta askerler buzla yaşadı, sen buz mu bulamıyorsun?\" Berkay ayağını mahalle çeşmesine soktu. Çeşmedeki amca: \"Abdest mi alıyon evlat?\" Kız arkadaşından mesaj: \"Geldin mi? Ben sahildeyim 😊\" Sahile 500 metre var.",
       "secenekler": [
         {
-          "etiket": "💬 Gruba \"siz de gelin\" yazsın",
-          "hedef": "gk_foto2"
+          "etiket": "📸 Ayağının fotoğrafını atsın",
+          "hedef": "gk_G9_1"
         },
         {
-          "etiket": "🔕 Grubu sessize alsın",
-          "hedef": "gk_foto3"
+          "etiket": "😎 \"Geldim\" yazsın",
+          "hedef": "gk_G9_2"
         }
       ]
     },
-    "gk_foto2": {
-      "emoji": "💬",
-      "metin": "Kurban: \"KPSS.\" Alihan: \"Enver Paşa gelirdi ama ben gelmem.\" BK: \"Burger varsa gelirim.\" Halil: \"Hepsiburada deposundayım, çıkamam.\" Kimse gelmiyor.",
+    "gk_G8_1": {
+      "emoji": "📱",
+      "metin": "\"Ne bakıyonuz lan!\" Çocuklar top attı. Berkay topa vurmaya kalktı, sakat ayakla ıskalayıp yere yapıştı. Dünkü halı saha gibi. Çocuklar acıyıp onu bakkalın el arabasıyla sahile kadar götürdü. Kız arkadaşından mesaj: \"Geldin mi? Ben sahildeyim 😊\" Sahile 500 metre var.",
       "secenekler": [
         {
-          "etiket": "😔 Gruba küssün",
-          "hedef": "gk_foto2__a"
+          "etiket": "📸 Ayağının fotoğrafını atsın",
+          "hedef": "gk_G9_1"
         },
         {
-          "etiket": "🦅 Alihan'a \"Enver de gelmezdi\" yazsın",
-          "hedef": "gk_foto2__b"
+          "etiket": "😎 \"Geldim\" yazsın",
+          "hedef": "gk_G9_2"
         }
       ]
     },
-    "gk_foto3": {
-      "emoji": "🔕",
-      "metin": "Grubu sessize aldı. Telefon yine de 47 kere titredi: Alihan Enver Paşa'nın yürüyüş rotasını, BK en yakın Burger King'in konumunu, Halil de klima deposu için yevmiye ilanını atmış.",
+    "gk_G8_2": {
+      "emoji": "📱",
+      "metin": "Umursamadı. Çocuklar sıkılıp dağıldı. Tek başına seke seke ilerledi. Kız arkadaşından mesaj: \"Geldin mi? Ben sahildeyim 😊\" Sahile 500 metre var.",
       "secenekler": [
         {
-          "etiket": "📍 BK'nın konumuna baksın",
-          "hedef": "gk_foto3__a"
+          "etiket": "📸 Ayağının fotoğrafını atsın",
+          "hedef": "gk_G9_1"
         },
         {
-          "etiket": "🙄 Telefonu cebe koysun",
-          "hedef": "gk_foto3__b"
+          "etiket": "😎 \"Geldim\" yazsın",
+          "hedef": "gk_G9_2"
         }
       ]
     },
-    "gk9": {
-      "emoji": "🥵",
-      "metin": "\"Geliyorum 😎\" yazdı ama 800 metreyi seke seke 25 dakikada aldı. Buluşma köşesine vardı: ter içinde, tek ayak havada.",
-      "secenekler": [
-        {
-          "etiket": "🧻 Önce terini silsin",
-          "hedef": "gk10__ter"
-        },
-        {
-          "etiket": "🏃 Direkt yanına seksin",
-          "hedef": "gk_kopek"
-        }
-      ]
-    },
-    "gk_kopek": {
-      "emoji": "🐕",
-      "metin": "Sekerken köşedeki köpeğin kuyruğuna bastı. Köpek kovaladı, Berkay tek ayakla hayatının en hızlı koşusunu yaptı ve bir burgerciye sığındı. İçeride tanıdık bir yüz: Burger King!",
-      "secenekler": [
-        {
-          "etiket": "🍔 BK'nın masasına otursun",
-          "hedef": "gk_kopek2"
-        },
-        {
-          "etiket": "🏃 \"Acelem var\" deyip çıksın",
-          "hedef": "gk10"
-        }
-      ]
-    },
-    "gk_kopek2": {
-      "emoji": "🍔",
-      "metin": "BK ağzı dolu: \"Kanka Gölcük'ün burgerlerini test ediyorum.\" Berkay'a bir ısırık verdi, sonra geri aldı. Saat geçiyor, Berkay 10 dakika geç kaldı bile.",
-      "secenekler": [
-        {
-          "etiket": "🏃 Buluşmaya yetişsin",
-          "hedef": "gk_kopek2__a"
-        },
-        {
-          "etiket": "🍟 BK'nın patatesini kapıp kaçsın",
-          "hedef": "gk_kopek2__b"
-        }
-      ]
-    },
-    "gk10": {
+    "gk_G9_1": {
       "emoji": "💞",
-      "metin": "Kız arkadaşı geldi. Ayağını görünce \"Ne oldu sana?\" diye sordu. Berkay bir cevap vermeli.",
+      "metin": "Fotoğrafı çekti, yanlışlıkla arkadaş grubuna attı. Alihan: \"Sarıkamış'ta bile böyle şişmedi.\" Burger: \"Burger ye geçer.\" Halil: \"Depoda klima düşse bu kadar ezilmez.\" Kurban: \"KPSS'ye 7 gün var.\" Sonra kız arkadaşına \"geliyorum\" yazıp seke seke sahile vardı. Sahildeler: Berkay ter içinde, tek ayak havada, bir eli sargılı. Kız arkadaşı baştan aşağı baktı: \"Ne oldu sana böyle?\"",
       "secenekler": [
         {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
+          "etiket": "🦸 \"Kavga ettim\" desin",
+          "hedef": "gk_G10_1"
         },
         {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
+          "etiket": "😅 Dürüstçe anlatsın",
+          "hedef": "gk_G10_2"
         }
       ]
     },
-    "gk_durust": {
-      "emoji": "😇",
-      "metin": "Dürüst oldu. Kız arkadaşı \"geçmiş olsun\" deyip koluna girdi: \"Hadi bir şeyler yiyelim, Popeyes?\" Berkay'ın hayatında aldığı ilk doğru karar, ödülü de hemen geldi.",
+    "gk_G9_2": {
+      "emoji": "💞",
+      "metin": "\"Geldim 😎\" yazdı. 500 metreyi seke seke 25 dakikada aldı. Sahildeler: Berkay ter içinde, tek ayak havada, bir eli sargılı. Kız arkadaşı baştan aşağı baktı: \"Ne oldu sana böyle?\"",
       "secenekler": [
         {
-          "etiket": "🍗 \"EVET!\" desin",
-          "hedef": "gk_durust__a"
+          "etiket": "🦸 \"Kavga ettim\" desin",
+          "hedef": "gk_G10_1"
         },
         {
-          "etiket": "🥹 Duygulansın",
-          "hedef": "gk_durust__b"
+          "etiket": "😅 Dürüstçe anlatsın",
+          "hedef": "gk_G10_2"
         }
       ]
     },
-    "gk11": {
-      "emoji": "🤥",
-      "metin": "\"Beş kişiydiler.\" Tam o sırada mahallenin çocukları \"flamingo abi!\" diye bağırarak yanlarından geçti. Yalan tam 3 saniye yaşadı.",
+    "gk_G10_1": {
+      "emoji": "🌊",
+      "metin": "\"Beş kişiydiler.\" Tam o sırada mahallenin çocukları \"flamingo abi!\" diye bağırarak geçti. Yalan tam 3 saniye yaşadı. Kız arkadaşı gülümsedi: \"Tamam kahraman.\" Kız arkadaşı koluna girdi: \"Yemekten önce sahilde biraz takılalım mı?\"",
       "secenekler": [
         {
-          "etiket": "🌀 Yalanı büyütsün",
-          "hedef": "gk_yalan"
+          "etiket": "🌊 Sahilde yürüsünler",
+          "hedef": "gk_G11_1"
         },
         {
-          "etiket": "😔 İtiraf etsin",
-          "hedef": "gk12__itiraf"
+          "etiket": "🍦 Önce dondurma alsın",
+          "hedef": "gk_G11_2"
         }
       ]
     },
-    "gk_yalan": {
-      "emoji": "🌀",
-      "metin": "\"Beş değil on kişilerdi, hepsi kemer kuşak.\" Manifestten zoktay gibi kıvırdı. Kanıt olarak Alihan'ı aradı: \"Söyle, kavga ettim değil mi?\"",
+    "gk_G10_2": {
+      "emoji": "🌊",
+      "metin": "Boks makinesini, kolayı, halı sahayı, çukuru tek tek anlattı. Kız arkadaşı gülmemek için dudağını ısırdı: \"Geçmiş olsun... hepsi iki günde mi?\" Kız arkadaşı koluna girdi: \"Yemekten önce sahilde biraz takılalım mı?\"",
       "secenekler": [
         {
-          "etiket": "📞 Alihan'ı hoparlöre alsın",
-          "hedef": "gk_yalan2"
+          "etiket": "🌊 Sahilde yürüsünler",
+          "hedef": "gk_G11_1"
         },
         {
-          "etiket": "🍗 Konuyu Popeyes'a getirsin",
-          "hedef": "gk13"
+          "etiket": "🍦 Önce dondurma alsın",
+          "hedef": "gk_G11_2"
         }
       ]
     },
-    "gk_yalan2": {
-      "emoji": "🦅",
-      "metin": "Alihan: \"Berkay mı? Kavga mı? Bu adam depoda koli bile kaldırmadı, ben de kaldırmadım ama o başka. Asıl kahraman Enver Paşa'dır...\" Berkay kapattı. Kız arkadaşı gülmemek için dudağını ısırıp \"hadi yemeğe\" dedi. Popeyes'a girdiler, Berkay 1000 TL'lik 6 kişilik menüyü kartla aldı.",
+    "gk_G11_1": {
+      "emoji": "📸",
+      "metin": "Sahilde yürüdüler. Berkay seke seke, kız arkadaşı yavaş yavaş. Martılar Berkay'ın etrafında dönüyor, sanki bir şey biliyorlar. İskeleye geldiler, manzara çok güzel. Kız arkadaşı: \"Bir fotoğraf çekelim mi?\"",
       "secenekler": [
         {
-          "etiket": "🍗 Masaya otursunlar",
-          "hedef": "gk_yalan2__a"
+          "etiket": "🤳 Selfie çeksinler",
+          "hedef": "gk_G12_1"
         },
         {
-          "etiket": "😳 Kızararak otursun",
-          "hedef": "gk_yalan2__b"
+          "etiket": "🙋 Birine çektirsinler",
+          "hedef": "gk_G12_2"
         }
       ]
     },
-    "gk_salata": {
-      "emoji": "🥗",
-      "metin": "\"Salata\" derken kendi sesine yabancılaştı. Popeyes'ın önünden geçerken gözünden bir damla yaş süzüldü. Kız arkadaşı durumu anladı: \"Hadi Popeyes'a gidelim.\" Berkay kasaya koştu, 1000 TL'lik 6 kişilik menüyü kartla aldı.",
+    "gk_G11_2": {
+      "emoji": "🍦",
+      "metin": "Maraş dondurmacısına gitti: \"İki top.\" Dondurmacı şov yaptı, külahı 4 kere geri çekti. Berkay sargılı eliyle yakalamaya çalışırken dondurma yere düştü. Dondurma yerde. Dondurmacı gülüyor, kız arkadaşı gülüyor, bir martı dondurmayı yiyor.",
       "secenekler": [
         {
-          "etiket": "🥹 Duygulansın",
-          "hedef": "gk_salata__a"
+          "etiket": "😤 Dondurmacıya çıkışsın",
+          "hedef": "gk_GD1_1"
         },
         {
-          "etiket": "🍗 Tepsiyi kapsın",
-          "hedef": "gk_salata__b"
+          "etiket": "🐦 Martıyla kavga etsin",
+          "hedef": "gk_GD1_2"
         }
       ]
     },
-    "gk13": {
+    "gk_GD1_1": {
+      "emoji": "📸",
+      "metin": "\"Paramı geri ver!\" Dondurmacı: \"Şov dahil fiyat.\" Berkay: \"Benim suçum yok.\" (Dünden beri dördüncü kez.) Dondurmacı acıyıp bir top bedava verdi. İskeleye geldiler, manzara çok güzel. Kız arkadaşı: \"Bir fotoğraf çekelim mi?\"",
+      "secenekler": [
+        {
+          "etiket": "🤳 Selfie çeksinler",
+          "hedef": "gk_G12_1"
+        },
+        {
+          "etiket": "🙋 Birine çektirsinler",
+          "hedef": "gk_G12_2"
+        }
+      ]
+    },
+    "gk_GD1_2": {
+      "emoji": "📸",
+      "metin": "Martıya \"O benim!\" diye bağırdı. Martı Berkay'a baktı, kalan dondurmayı da alıp uçtu. Kız arkadaşı kendi dondurmasını Berkay'la paylaştı. İskeleye geldiler, manzara çok güzel. Kız arkadaşı: \"Bir fotoğraf çekelim mi?\"",
+      "secenekler": [
+        {
+          "etiket": "🤳 Selfie çeksinler",
+          "hedef": "gk_G12_1"
+        },
+        {
+          "etiket": "🙋 Birine çektirsinler",
+          "hedef": "gk_G12_2"
+        }
+      ]
+    },
+    "gk_G12_1": {
+      "emoji": "😋",
+      "metin": "Tek eliyle selfie çekmeye çalıştı. Telefon kaydı, iskeleden aşağı sallandı, son anda sargılı eliyle yakaladı: \"kıtır.\" Fotoğrafta Berkay acıdan buruşmuş, kız arkadaşı gülüyor. Yine de güzel çıktı. Saat 18:00. İkisi de acıktı. Berkay'ın gözleri Popeyes tabelasını çoktan görmüştü.",
+      "secenekler": [
+        {
+          "etiket": "🍗 \"Popeyes!\" desin",
+          "hedef": "gk_G13_1"
+        },
+        {
+          "etiket": "🥗 \"Salata yiyelim\" desin",
+          "hedef": "gk_G13_2"
+        }
+      ]
+    },
+    "gk_G12_2": {
+      "emoji": "😋",
+      "metin": "Yoldan geçen amcaya uzattı. Amca 40 fotoğraf çekti, hepsinde parmağı var. Amca \"Ben burada askerlik yaptım...\" diye başlamadan kaçtılar. Saat 18:00. İkisi de acıktı. Berkay'ın gözleri Popeyes tabelasını çoktan görmüştü.",
+      "secenekler": [
+        {
+          "etiket": "🍗 \"Popeyes!\" desin",
+          "hedef": "gk_G13_1"
+        },
+        {
+          "etiket": "🥗 \"Salata yiyelim\" desin",
+          "hedef": "gk_G13_2"
+        }
+      ]
+    },
+    "gk_G13_1": {
       "emoji": "🧾",
-      "metin": "Popeyes. Kasaya abandı: \"En büyük menü hangisi?\" Kasiyer: \"1000 TL'lik aile menüsü var ama 6 kişilik.\" Berkay: \"Yeter.\"",
+      "metin": "\"POPEYES!\" diye öyle bağırdı ki iskeledeki martılar havalandı. Popeyes. Kasaya abandı: \"En büyük menü hangisi?\" Kasiyer: \"1000 TL'lik aile menüsü var ama 6 kişilik.\" Berkay: \"Yeter.\" Dün lokantada bile borç almıştı...",
       "secenekler": [
         {
           "etiket": "💳 Kartla ödesin",
-          "hedef": "gk14"
+          "hedef": "gk_G14_1"
         },
         {
-          "etiket": "💵 Nakit versin",
-          "hedef": "gk_nakit"
+          "etiket": "📞 Kurban'dan borç istesin",
+          "hedef": "gk_G14_2"
         }
       ]
     },
-    "gk_nakit": {
-      "emoji": "💵",
-      "metin": "Cebinden 3 buruşuk 100'lük, bir otobüs bileti, 2 sakız ve Kurban'ın çakmağı çıktı. 700 TL eksik. Kasiyer bekliyor, kuyruk uzuyor.",
+    "gk_G13_2": {
+      "emoji": "🧾",
+      "metin": "\"Salata\" derken kendi sesine yabancılaştı. Popeyes'ın önünden geçerken gözünden bir damla yaş süzüldü. Kız arkadaşı anladı: \"Hadi Popeyes'a gidelim.\" Popeyes. Kasaya abandı: \"En büyük menü hangisi?\" Kasiyer: \"1000 TL'lik aile menüsü var ama 6 kişilik.\" Berkay: \"Yeter.\" Dün lokantada bile borç almıştı...",
       "secenekler": [
         {
-          "etiket": "📦 Halil'den istesin",
-          "hedef": "gk_nakit_h"
+          "etiket": "💳 Kartla ödesin",
+          "hedef": "gk_G14_1"
         },
         {
-          "etiket": "📚 Kurban'dan istesin",
-          "hedef": "gk_nakit_k"
+          "etiket": "📞 Kurban'dan borç istesin",
+          "hedef": "gk_G14_2"
         }
       ]
     },
-    "gk_nakit_h": {
-      "emoji": "📦",
-      "metin": "Halil: \"Kanka 5 aydır bedava stajdayım, param yok. Ama ekol deposunda 2 saat koli taşırsan...\" Berkay kapattı, kartı bastı: 1000 TL gitti. 6 kişilik tepsi geldi, ilk hedef patates kovası.",
-      "secenekler": [
-        {
-          "etiket": "🍟 Kovaya saldırsın",
-          "hedef": "gk_nakit_h__a"
-        },
-        {
-          "etiket": "🙏 Tepsiye dua etsin",
-          "hedef": "gk_nakit_h__b"
-        }
-      ]
-    },
-    "gk_nakit_k": {
-      "emoji": "📚",
-      "metin": "Kurban: \"Paramı KPSS kitaplarına verdim. Ama memur olunca sana ilk maaşımdan...\" Berkay kapattı, kartı bastı: 1000 TL gitti. 6 kişilik tepsi geldi, ilk hedef patates kovası.",
-      "secenekler": [
-        {
-          "etiket": "🍟 Kovaya saldırsın",
-          "hedef": "gk_nakit_k__a"
-        },
-        {
-          "etiket": "📚 Kurban'a KPSS'de başarı dilesin",
-          "hedef": "gk_nakit_k__b"
-        }
-      ]
-    },
-    "gk14": {
+    "gk_G14_1": {
       "emoji": "🍗",
-      "metin": "1000 TL gitti, ayın geri kalanı bismillah. Garson 6 kişilik tepsiyi getirirken iki kere mola verdi.",
+      "metin": "Kartı bastı. Bip. 1000 TL gitti, ay sonuna kadar bismillah. Garson 6 kişilik tepsiyi getirirken iki kere mola verdi. Masada tavuklar ve 3 kova patates. Kız arkadaşı bir parça aldı, Berkay'ın gözleri büyüdü.",
       "secenekler": [
         {
           "etiket": "🍗 Tavukla başlasın",
-          "hedef": "gk_tavuk"
+          "hedef": "gk_G15_1"
         },
         {
           "etiket": "🍟 Patatesle başlasın",
-          "hedef": "gk15"
+          "hedef": "gk_G15_2"
         }
       ]
     },
-    "gk_tavuk": {
-      "emoji": "🥵",
-      "metin": "İlk tavuğu ısırdı, dili yandı. Çalışan buzlu su getirdi; Berkay buzları ayak bileğine koydu: iki sorun, tek hamle. Sonra birinci kova patatesi 40 saniyede bitirip ikinciye geçti.",
+    "gk_G14_2": {
+      "emoji": "🍗",
+      "metin": "Kurban: \"Dün 340 verdim, kitabımı ıslattın, bugün 1000 mi?\" Berkay: \"Airdrop gelince...\" Kurban kapattı. Berkay kartı bastı: 1000 TL gitti. Garson 6 kişilik tepsiyi getirirken iki kere mola verdi. Masada tavuklar ve 3 kova patates. Kız arkadaşı bir parça aldı, Berkay'ın gözleri büyüdü.",
       "secenekler": [
         {
-          "etiket": "🍟 İkinci kovayı gömsün",
-          "hedef": "gk_tavuk__a"
+          "etiket": "🍗 Tavukla başlasın",
+          "hedef": "gk_G15_1"
         },
         {
-          "etiket": "📸 Buz fikrini gruba anlatsın",
-          "hedef": "gk_tavuk__b"
+          "etiket": "🍟 Patatesle başlasın",
+          "hedef": "gk_G15_2"
         }
       ]
     },
-    "gk15": {
+    "gk_G15_1": {
       "emoji": "🍟",
-      "metin": "Birinci kova patates. Bitti. Kız arkadaşı daha 3 tane yemişti.",
+      "metin": "İlk tavuğu ısırdı, dili yandı. Çalışan buzlu su getirdi; Berkay buzları ayak bileğine koydu: iki sorun, tek hamle. Sonra birinci kova patatese daldı, 40 saniyede bitirdi. Kız arkadaşı şaşkın. Masada iki kova daha duruyor.",
       "secenekler": [
         {
           "etiket": "🛑 Dursun artık",
-          "hedef": "gk_dur"
+          "hedef": "gk_G16_1"
         },
         {
           "etiket": "🍟 İkinci kovaya geçsin",
-          "hedef": "gk16"
+          "hedef": "gk_G16_2"
         }
       ]
     },
-    "gk_dur": {
-      "emoji": "⚠️",
-      "metin": "\"Dur\" kelimesi Berkay'ın sisteminde tanımlı değil. Beyni 30 saniye donup yeniden başladı. İlk sözü: \"Bir kova daha.\" İkinciyi de bitirdi, üçüncüyü istedi. Kasiyer mutfağa \"rekor kırılıyor!\" diye seslendi.",
-      "secenekler": [
-        {
-          "etiket": "🍟 Üçüncüye başlasın",
-          "hedef": "gk_dur__a"
-        },
-        {
-          "etiket": "🔄 Bir daha dursun (başaramaz)",
-          "hedef": "gk_dur__b"
-        }
-      ]
-    },
-    "gk16": {
+    "gk_G15_2": {
       "emoji": "🍟",
-      "metin": "İkinci kova da bitti. Parmaklar tuzdan kurudu, göz bebekleri büyüdü. Garson uzaktan endişeyle izliyor.",
+      "metin": "Birinci kova patates: 40 saniye. Bitti. Kız arkadaşı daha 3 tane yemişti. Kız arkadaşı şaşkın. Masada iki kova daha duruyor.",
       "secenekler": [
         {
-          "etiket": "🍟 Üçüncü kovayı istesin",
-          "hedef": "gk17"
+          "etiket": "🛑 Dursun artık",
+          "hedef": "gk_G16_1"
         },
         {
-          "etiket": "🥤 Kolayla bastırsın",
-          "hedef": "gk_kola"
+          "etiket": "🍟 İkinci kovaya geçsin",
+          "hedef": "gk_G16_2"
         }
       ]
     },
-    "gk_kola": {
-      "emoji": "🥤",
-      "metin": "1 litre kolayı tek nefeste içti, öyle bir geğirdi ki yan masadaki bebek ağladı. Müdür geldi: \"Sen şu rekor denemesi yapan mısın?\" Üçüncü kovayı bizzat getirdi, bütün çalışanlar toplandı.",
-      "secenekler": [
-        {
-          "etiket": "💪 Rekor için bitirsin",
-          "hedef": "gk_kola__a"
-        },
-        {
-          "etiket": "🙇 Önce bebekten özür dilesin",
-          "hedef": "gk_kola__b"
-        }
-      ]
-    },
-    "gk17": {
+    "gk_G16_1": {
       "emoji": "🏆",
-      "metin": "Üçüncü kova masada. Kasiyer mutfağa \"rekor kırılıyor!\" diye seslendi, bütün Popeyes çalışanları masanın başına toplandı.",
+      "metin": "\"Dur\" kelimesi Berkay'ın sisteminde tanımlı değil. Beyni 30 saniye donup yeniden başladı. İlk sözü: \"Bir kova daha.\" İkinciyi de bitirdi. Üçüncü kova masada. Kasiyer mutfağa \"rekor kırılıyor!\" diye seslendi, bütün çalışanlar toplandı. Tam o sırada telefon titredi: Burger görüntülü arıyor.",
       "secenekler": [
         {
-          "etiket": "💪 Rekor için bitirsin",
-          "hedef": "gk18"
+          "etiket": "📹 Burger'i açıp canlı yayın yapsın",
+          "hedef": "gk_G17_1"
         },
         {
-          "etiket": "🤢 Yarısında bıraksın",
-          "hedef": "gk_yarim"
+          "etiket": "🥤 Önce kolayla bastırsın",
+          "hedef": "gk_G17_2"
         }
       ]
     },
-    "gk_yarim": {
-      "emoji": "📲",
-      "metin": "Yarısında bıraktı. Telefon titredi, BK: \"Burger King'e ihanet ettin, şimdi Popeyes'a da mı? Sen neye sadıksın?\" Berkay kendini toparladı, kalanı bitirdi. Çalışanlar alkışladı, pantolon düğmesi uçup sos standına çarptı.",
+    "gk_G16_2": {
+      "emoji": "🏆",
+      "metin": "İkinci kova da bitti. Parmaklar tuzdan kurudu, göz bebekleri büyüdü. Garson uzaktan endişeyle izliyor. Üçüncü kova masada. Kasiyer mutfağa \"rekor kırılıyor!\" diye seslendi, bütün çalışanlar toplandı. Tam o sırada telefon titredi: Burger görüntülü arıyor.",
       "secenekler": [
         {
-          "etiket": "🚶 Kalkmaya çalışsın",
-          "hedef": "gk_yarim__a"
+          "etiket": "📹 Burger'i açıp canlı yayın yapsın",
+          "hedef": "gk_G17_1"
         },
         {
-          "etiket": "🙏 BK'ya teşekkür etsin",
-          "hedef": "gk_yarim__b"
+          "etiket": "🥤 Önce kolayla bastırsın",
+          "hedef": "gk_G17_2"
         }
       ]
     },
-    "gk18": {
-      "emoji": "👏",
-      "metin": "Bitirdi! Çalışanlar alkışladı. Karnı körfez gibi şişti, pantolon düğmesi uçup sos standına çarptı.",
-      "secenekler": [
-        {
-          "etiket": "📸 Çalışanlarla fotoğraf çektirsin",
-          "hedef": "gk_pano"
-        },
-        {
-          "etiket": "🚶 Kalkıp çıksınlar",
-          "hedef": "gk19"
-        }
-      ]
-    },
-    "gk_pano": {
+    "gk_G17_1": {
       "emoji": "🖼️",
-      "metin": "Fotoğraf \"Ayın Müşterisi\" panosuna asıldı. Altına küçük harflerle yazdılar: \"Bu kişiye ikinci kova verilmez.\" Berkay gururla kalktı: \"kıtır.\" Kız arkadaşı koluna girdi, durağa doğru yola çıktılar.",
+      "metin": "Burger ekranda: \"Popeyes'ta mı rekor kırıyorsun? İhanet! ...Ama bitir.\" Burger'in gazıyla üçüncü kovayı bitirdi. Çalışanlar alkışladı, pantolon düğmesi uçup sos standına çarptı. Rekor kırıldı. Müdür yanına geldi: \"Ayın Müşterisi panosuna fotoğrafını asalım mı?\"",
       "secenekler": [
         {
-          "etiket": "📲 Fotoğrafı gruba atsın",
-          "hedef": "gk_pano__a"
+          "etiket": "📸 Fotoğraf çektirsin",
+          "hedef": "gk_G18_1"
         },
         {
-          "etiket": "🦩 Seke seke yürüsün",
-          "hedef": "gk_pano__b"
+          "etiket": "🙅 \"Mahremiyetim var\" desin",
+          "hedef": "gk_G18_2"
         }
       ]
     },
-    "gk19": {
-      "emoji": "🧍",
-      "metin": "Kalkmaya çalıştı, kalkamadı. İkinci denemede kalktı ama sakat ayak hatırlattı: \"kıtır.\" Kız arkadaşı koluna girdi.",
+    "gk_G17_2": {
+      "emoji": "🖼️",
+      "metin": "1 litre kolayı tek nefeste içti, öyle bir geğirdi ki yan masadaki bebek ağladı. Gidip bebekten özür diledi; bebek Berkay'ın yüzüne bakıp daha çok ağladı. Masaya dönüp üçüncü kovayı bitirdi. Çalışanlar alkışladı, pantolon düğmesi uçtu. Rekor kırıldı. Müdür yanına geldi: \"Ayın Müşterisi panosuna fotoğrafını asalım mı?\"",
       "secenekler": [
         {
-          "etiket": "🚕 Taksi çağırsın",
-          "hedef": "gk_taksi"
+          "etiket": "📸 Fotoğraf çektirsin",
+          "hedef": "gk_G18_1"
         },
         {
-          "etiket": "🚏 Durağa yürüsünler",
-          "hedef": "gk20"
+          "etiket": "🙅 \"Mahremiyetim var\" desin",
+          "hedef": "gk_G18_2"
         }
       ]
     },
-    "gk_taksi": {
-      "emoji": "🚕",
-      "metin": "Kız arkadaşını evine yolladı, kendisi taksiye bindi. Taksimetre 150'yi geçince kartında 0 lira kaldığını hatırladı. Taksici Değirmendere'de indirdi.",
+    "gk_G18_1": {
+      "emoji": "🎡",
+      "metin": "Fotoğraf panoya asıldı. Altına küçük harflerle yazdılar: \"Bu kişiye ikinci kova verilmez.\" Gruba attı, Kurban: \"KPSS'de bu kadar soru çözsen...\" Dışarı çıktılar. Sahilde küçük bir lunapark kurulmuş. Kız arkadaşı: \"Hadi bir şeye binelim!\"",
       "secenekler": [
         {
-          "etiket": "📞 Halil'i arasın",
-          "hedef": "gk_taksi2"
+          "etiket": "🎡 Dönme dolaba binsinler",
+          "hedef": "gk_G19_1"
         },
         {
-          "etiket": "🦩 Seke seke yürüsün",
-          "hedef": "gk_son_taksi"
+          "etiket": "🎯 Balon patlatıp ayı kazansın",
+          "hedef": "gk_G19_2"
         }
       ]
     },
-    "gk_taksi2": {
-      "emoji": "🚐",
-      "metin": "Halil: \"Hepsijet aracı oradan geçiyor, atla.\" Berkay atladı. Araç eve gidene kadar 40 paket dağıttı, Berkay her kapıda seke seke paket taşıdı.",
+    "gk_G18_2": {
+      "emoji": "🎡",
+      "metin": "\"Mahremiyetim var\" dedi. Müdür yine de gizlice çekti. Berkay kalkarken ayağı \"kıtır\" dedi, kız arkadaşı koluna girdi. Dışarı çıktılar. Sahilde küçük bir lunapark kurulmuş. Kız arkadaşı: \"Hadi bir şeye binelim!\"",
       "secenekler": [
         {
-          "etiket": "📦 Paketleri taşısın",
-          "hedef": "gk_taksi2__a"
+          "etiket": "🎡 Dönme dolaba binsinler",
+          "hedef": "gk_G19_1"
         },
         {
-          "etiket": "💤 Araçta uyusun",
-          "hedef": "gk_taksi2__b"
+          "etiket": "🎯 Balon patlatıp ayı kazansın",
+          "hedef": "gk_G19_2"
         }
       ]
     },
-    "gk_son_taksi": {
-      "emoji": "🗺️",
-      "metin": "Değirmendere'den seke seke yola çıktı. Hâlâ yolda. Arada bir durup \"kubiii 1 km'yi gördüm\" diye bağırıyor. SON.",
-      "secenekler": []
-    },
-    "gk20": {
-      "emoji": "🚶",
-      "metin": "Durağa doğru yürüyorlar. Berkay seke seke; her sekişte karnından bir \"hık\" geliyor.",
+    "gk_G19_1": {
+      "emoji": "🌆",
+      "metin": "Dönme dolap en tepede durdu. Berkay korkudan titremeye başladı, kız arkadaşının elini sıktı, sargılı eliyle: \"kıtır.\" İnince \"rüzgâr gözüme kaçtı\" dedi. Hava karardı, kız arkadaşının eve dönmesi lazım. Durağa doğru yürüyorlar; Berkay seke seke, her sekişte karnından bir \"hık\" geliyor.",
       "secenekler": [
         {
           "etiket": "👋 Durakta vedalaşsınlar",
-          "hedef": "gk21"
+          "hedef": "gk_G20_1"
         },
         {
-          "etiket": "🏃 Otobüs görünce koşsun",
-          "hedef": "gk_son_kos"
+          "etiket": "🚕 Onu taksiye bindirsin",
+          "hedef": "gk_G20_2"
         }
       ]
     },
-    "gk_son_kos": {
-      "emoji": "💨",
-      "metin": "Otobüsü görünce tek ayakla depar attı. Otobüs gitti, Berkay kaldırıma yapıştı. Hayatındaki en kısa koşu: 2 metre. SON.",
-      "secenekler": []
+    "gk_G19_2": {
+      "emoji": "🌆",
+      "metin": "10 atış, 0 isabet. Balon hariç her yeri vurdu, bir dart tezgâhtarın şapkasına saplandı. Tezgâhtar acıyıp teselli ödülü verdi: minicik bir ayı. Berkay ayıyı kız arkadaşına verip \"kazandım\" dedi. Hava karardı, kız arkadaşının eve dönmesi lazım. Durağa doğru yürüyorlar; Berkay seke seke, her sekişte karnından bir \"hık\" geliyor.",
+      "secenekler": [
+        {
+          "etiket": "👋 Durakta vedalaşsınlar",
+          "hedef": "gk_G20_1"
+        },
+        {
+          "etiket": "🚕 Onu taksiye bindirsin",
+          "hedef": "gk_G20_2"
+        }
+      ]
     },
-    "gk21": {
-      "emoji": "👋",
-      "metin": "Vedalaştılar. Kız arkadaşı \"Eve varınca yaz\" dedi ve gitti. Berkay durakta tek başına, otobüse 15 dakika var.",
+    "gk_G20_1": {
+      "emoji": "🪫",
+      "metin": "Vedalaştılar. Kız arkadaşı \"Eve varınca yaz, bugün çok güldüm\" dedi ve gitti. Berkay \"çok güldüm\" kısmını 12 kere okudu. Berkay durakta tek başına. Otobüse 15 dakika var, telefon %8.",
       "secenekler": [
         {
           "etiket": "🎮 Telefonda oyun oynasın",
-          "hedef": "gk_oyun"
+          "hedef": "gk_G21_1"
         },
         {
           "etiket": "🪑 Banka otursun",
-          "hedef": "gk22"
+          "hedef": "gk_G21_2"
         }
       ]
     },
-    "gk_oyun": {
-      "emoji": "🎮",
-      "metin": "Oyuna daldı, 3 otobüs kaçırdı, şarj %2. Son gücüyle gruba yazdı: \"Beni kurtarın.\"",
+    "gk_G20_2": {
+      "emoji": "🪫",
+      "metin": "Kız arkadaşını taksiyle evine yolladı, çok centilmen. Kendine de taksi çağıracaktı, cüzdana baktı: 12 TL. Taksi iptal. Berkay durakta tek başına. Otobüse 15 dakika var, telefon %8.",
       "secenekler": [
         {
-          "etiket": "📚 Kurban cevap versin",
-          "hedef": "gk_son_oyun_k"
+          "etiket": "🎮 Telefonda oyun oynasın",
+          "hedef": "gk_G21_1"
         },
         {
-          "etiket": "🦅 Alihan cevap versin",
-          "hedef": "gk_son_oyun_a"
+          "etiket": "🪑 Banka otursun",
+          "hedef": "gk_G21_2"
         }
       ]
     },
-    "gk_son_oyun_k": {
-      "emoji": "📚",
-      "metin": "Kurban: \"KPSS'ye 7 gün var, ben oyunu bile bıraktım, sen oyun yüzünden mi kaldın?\" Şarj bitti. Berkay sabahı durak lambasının altında geçirdi. SON.",
-      "secenekler": []
-    },
-    "gk_son_oyun_a": {
-      "emoji": "🦅",
-      "metin": "Alihan: \"Enver Paşa gece yürürdü.\" Şarj bitti. Berkay Enver Paşa gibi yürümeye başladı, 400 metre sonra bir bankta uyudu. SON.",
-      "secenekler": []
-    },
-    "gk22": {
-      "emoji": "🤕",
-      "metin": "Banka oturmak için elini dayadı. Bank ıslaktı, eli kaydı, bileğinin üstüne düştü: bu sefer de eli yamuldu. Ayak sakat, el sakat, mide 3 kova.",
-      "secenekler": [
-        {
-          "etiket": "📞 Kurban'ı arasın",
-          "hedef": "gk23"
-        },
-        {
-          "etiket": "😭 Ağlasın",
-          "hedef": "gk_son_aglama"
-        }
-      ]
-    },
-    "gk_son_aglama": {
-      "emoji": "😭",
-      "metin": "Lunaparktaki gibi hüngür hüngür ağladı. Bir teyze mendil verdi, bir amca 20 TL. Berkay bu işin ekonomisini hesaplamaya başladı, yarın yine geliyor. SON.",
-      "secenekler": []
-    },
-    "gk23": {
+    "gk_G21_1": {
       "emoji": "☎️",
-      "metin": "Kurban açtı: \"Popeyes'ım nerede?\" Berkay: \"Elim yamuldu kanka.\" Kurban: \"Elin yamuldu da benim Popeyes'ımın ne suçu var?\"",
+      "metin": "Oyuna daldı, bir otobüs kaçırdı. Sinirle telefonu cebine koyarken kaldırıma takıldı, sargılı elinin üstüne düştü: \"kıtır.\" Aynı el, ikinci hasar. Ayak şiş, el iki kere hasarlı, mide 3 kova. Birini araması lazım.",
       "secenekler": [
         {
-          "etiket": "🤝 \"Yarın iki menü\" desin",
-          "hedef": "gk24__menu"
+          "etiket": "📚 Kurban'ı arasın",
+          "hedef": "gk_G22_1"
         },
         {
-          "etiket": "📴 Yüzüne kapatsın",
-          "hedef": "gk_son_kurban"
+          "etiket": "📦 Halil'i arasın",
+          "hedef": "gk_G22_2"
         }
       ]
     },
-    "gk_son_kurban": {
-      "emoji": "🚪",
-      "metin": "Telefonu Kurban'ın yüzüne kapattı. Kurban onu arkadaş grubundan attı ve grubun adını \"Berkaysız Huzur\" yaptı. Alihan, BK ve Halil beğendi. SON.",
-      "secenekler": []
+    "gk_G21_2": {
+      "emoji": "☎️",
+      "metin": "Banka oturmak için sargılı elini dayadı. Bank ıslaktı, eli kaydı, bileğinin üstüne düştü: \"kıtır.\" Aynı el, ikinci hasar. Ayak şiş, el iki kere hasarlı, mide 3 kova. Birini araması lazım.",
+      "secenekler": [
+        {
+          "etiket": "📚 Kurban'ı arasın",
+          "hedef": "gk_G22_1"
+        },
+        {
+          "etiket": "📦 Halil'i arasın",
+          "hedef": "gk_G22_2"
+        }
+      ]
     },
-    "gk_son_bozuk": {
+    "gk_G22_1": {
+      "emoji": "🚌",
+      "metin": "Kurban: \"Popeyes'ım nerede?\" Berkay: \"Elim yine yamuldu kanka.\" Kurban: \"Elin yamuldu da benim Popeyes'ımın ne suçu var?\" Berkay \"yarın iki menü\" dedi. Kurban: \"Yazılı söz istiyorum.\" Otobüs geldi! Berkay yamuk eliyle kartı aradı. Kart cüzdanın en dibinde, Popeyes fişlerinin arasında.",
+      "secenekler": [
+        {
+          "etiket": "🪙 Bozuk parayla ödesin",
+          "hedef": "gk_G23_1"
+        },
+        {
+          "etiket": "💳 Kartı çıkarsın",
+          "hedef": "gk_G23_2"
+        }
+      ]
+    },
+    "gk_G22_2": {
+      "emoji": "🚌",
+      "metin": "Halil depodan: \"Kanka yarın klima deposuna gelirsen 800 TL.\" Berkay sargılı elini düşündü: \"Gelirim.\" Halil: \"Tek elle mi?\" \"Tek elle.\" Halil listeye yazdı. Otobüs geldi! Berkay yamuk eliyle kartı aradı. Kart cüzdanın en dibinde, Popeyes fişlerinin arasında.",
+      "secenekler": [
+        {
+          "etiket": "🪙 Bozuk parayla ödesin",
+          "hedef": "gk_G23_1"
+        },
+        {
+          "etiket": "💳 Kartı çıkarsın",
+          "hedef": "gk_G23_2"
+        }
+      ]
+    },
+    "gk_G23_1": {
       "emoji": "🪙",
       "metin": "Şoföre avuç dolusu bozukluk uzattı. Şoför: \"1998'den mi geldin sen?\" Kapı kapandı, Berkay bozukluklarıyla durakta kaldı. SON.",
       "secenekler": []
     },
-    "gk25": {
+    "gk_G23_2": {
       "emoji": "💳",
-      "metin": "Kartı çıkardı, yamuk eliyle okuyucuya bastırdı. Bip yok. Bir daha bastırdı. Bip yok. Arkadaki kuyruk söylenmeye başladı.",
+      "metin": "Kartı çıkardı, yamuk eliyle okuyucuya bastırdı. Bip yok. Bir daha. Bip yok. Arkadaki kuyruk söylenmeye başladı. Kuyruk büyüyor, şoför bekliyor, kart okuyucuya yapışık.",
       "secenekler": [
         {
           "etiket": "💪 Bütün gücüyle bassın",
-          "hedef": "gk26"
+          "hedef": "gk_G24_1"
         },
         {
           "etiket": "🔄 Kartı ters çevirsin",
-          "hedef": "gk_son_sadakat"
+          "hedef": "gk_G24_2"
         }
       ]
     },
-    "gk_son_sadakat": {
+    "gk_G24_1": {
+      "emoji": "😠",
+      "metin": "ÇIT! Kart ikiye bölündü: yarısı elinde, yarısı okuyucunun içinde. Otobüs sustu. Şoför yavaşça başını çevirdi: \"Okuyucumu kim bozdu?\" Arkadan yolcular: \"Hadi be kardeşim!\"",
+      "secenekler": [
+        {
+          "etiket": "😇 \"Kart zaten bozuktu abi\" desin",
+          "hedef": "gk_G25_1"
+        },
+        {
+          "etiket": "🏃 Kaçsın",
+          "hedef": "gk_G25_2"
+        }
+      ]
+    },
+    "gk_G24_2": {
       "emoji": "🍗",
       "metin": "Ters çevirdi: BİP! Ama o otobüs kartı değil, Popeyes sadakat kartıymış. Okuyucu \"1 bedava patates kazandınız\" yazdı, şoför Berkay'ı indirdi. SON.",
       "secenekler": []
     },
-    "gk26": {
-      "emoji": "💥",
-      "metin": "ÇIT! Kart ikiye bölündü: yarısı elinde, yarısı okuyucunun içinde. Otobüs sustu. Şoför yavaşça başını çevirdi.",
+    "gk_G25_1": {
+      "emoji": "💺",
+      "metin": "\"Kart zaten bozuktu abi, benim suçum yok.\" (Beşinci kez.) Şoför derin bir nefes aldı. Arkadaki abla acıdı: \"Benden bas.\" Otobüste! Tek ayak, iki kere hasarlı el, dolu mide, yarım kart. Tek boş koltuk en arkada.",
       "secenekler": [
         {
-          "etiket": "😇 \"Kart zaten bozuktu abi\" desin",
-          "hedef": "gk27"
+          "etiket": "🧍 Ayakta dursun",
+          "hedef": "gk_G26_1"
         },
         {
-          "etiket": "🏃 Kaçsın",
-          "hedef": "gk_son_kacis"
+          "etiket": "🧎 Emekleyerek arkaya gitsin",
+          "hedef": "gk_G26_2"
         }
       ]
     },
-    "gk_son_kacis": {
+    "gk_G25_2": {
       "emoji": "🐢",
       "metin": "Seke seke kaçmaya çalıştı. Otobüs 2 metre ileride durup bekledi. Kaçış 4 saniye sürdü, şoför ve yolcular hâlâ gülüyor. SON.",
       "secenekler": []
     },
-    "gk27": {
-      "emoji": "😠",
-      "metin": "Şoför: \"Kart bozuktu da okuyucumu kim bozdu?\" Arkadan yolcular: \"Hadi be kardeşim!\"",
-      "secenekler": [
-        {
-          "etiket": "🤑 Şoförle pazarlık etsin",
-          "hedef": "gk_son_pazarlik"
-        },
-        {
-          "etiket": "🙋 Birinden kart bastırsın",
-          "hedef": "gk28"
-        }
-      ]
-    },
-    "gk_son_pazarlik": {
-      "emoji": "🚪",
-      "metin": "\"Abi 12 liram var, yarısı senin.\" Şoför kapıyı açtı: \"Buyur in.\" Berkay yarım kartıyla durakta baş başa kaldı. SON.",
-      "secenekler": []
-    },
-    "gk28": {
-      "emoji": "🙏",
-      "metin": "Arkadaki abla acıdı: \"Benden bas.\" Berkay otobüste! Tek ayak, tek el, 6 kişilik menü dolu mide, yarım kart.",
-      "secenekler": [
-        {
-          "etiket": "🪑 Oturacak yer arasın",
-          "hedef": "gk29"
-        },
-        {
-          "etiket": "🧍 Ayakta dursun",
-          "hedef": "gk_son_fren"
-        }
-      ]
-    },
-    "gk_son_fren": {
+    "gk_G26_1": {
       "emoji": "🩰",
       "metin": "İlk frende tek ayak üstünde bale yaptı, üç kişinin ayağına bastı, birinin çantasına tutundu. Çantanın sahibi sivil polis çıktı. SON.",
       "secenekler": []
     },
-    "gk29": {
-      "emoji": "💺",
-      "metin": "Tek boş koltuk en arkada. Otobüs hareket etti, oraya bir şekilde varması lazım.",
-      "secenekler": [
-        {
-          "etiket": "🦘 Seksin",
-          "hedef": "gk_son_kucak"
-        },
-        {
-          "etiket": "🧎 Emekleyerek gitsin",
-          "hedef": "gk30"
-        }
-      ]
-    },
-    "gk_son_kucak": {
-      "emoji": "😳",
-      "metin": "Otobüs virajı aldı, Berkay sekerken bir amcanın kucağına oturdu. Amca \"rahat mısın evlat?\" dedi. Durak boyunca kalkamadı. SON.",
-      "secenekler": []
-    },
-    "gk30": {
-      "emoji": "🧎",
-      "metin": "Emekleyerek koltuğa ulaştı, yolcular alkışladı. Oturur oturmaz 3 kova patates harekete geçti.",
+    "gk_G26_2": {
+      "emoji": "🤢",
+      "metin": "Emekleyerek koltuğa ulaştı, yolcular alkışladı. Oturur oturmaz 3 kova patates harekete geçti. Mide isyanda, otobüs sallanıyor.",
       "secenekler": [
         {
           "etiket": "🪟 Pencereyi açsın",
-          "hedef": "gk_son_pencere"
+          "hedef": "gk_G27_1"
         },
         {
           "etiket": "😴 Uyusun, geçer",
-          "hedef": "gk31"
+          "hedef": "gk_G27_2"
         }
       ]
     },
-    "gk_son_pencere": {
+    "gk_G27_1": {
       "emoji": "🌬️",
       "metin": "Pencereyi açtı, rüzgâr suratına vurdu, patatesler \"merhaba\" dedi. Detaylara girmiyoruz. Otobüs direkt yıkamaya gitti. SON.",
       "secenekler": []
     },
-    "gk31": {
-      "emoji": "😴",
-      "metin": "Uyudu. Kendi durağını tabii ki kaçırdı. Son durakta şoför dürttü: \"Kalk, Kandıra'dayız.\"",
+    "gk_G27_2": {
+      "emoji": "🌃",
+      "metin": "Uyudu. Kendi durağını tabii ki kaçırdı. Son durakta şoför dürttü: \"Kalk, Kandıra'dayız.\" Kandıra. Gece 23:00. Cepte 12 TL, yarım kart, şarj %1.",
       "secenekler": [
         {
           "etiket": "📚 Kurban'ı arasın",
-          "hedef": "gk32"
+          "hedef": "gk_G28_1"
         },
         {
           "etiket": "🦅 Alihan'ı arasın",
-          "hedef": "gk_son_alihan"
+          "hedef": "gk_G28_2"
         }
       ]
     },
-    "gk_son_alihan": {
-      "emoji": "🦅",
-      "metin": "Alihan: \"Kandıra mı? Geliyorum!\" Geldi ama arabayı Berkay'a sürdürdü: \"Depoda da ben çalışmamıştım, alışkanlık.\" Yol boyunca Sarıkamış anlattı. Eve varınca Berkay \"donmadılar mı?\" dedi. Arabadan atıldı. SON.",
-      "secenekler": []
-    },
-    "gk32": {
+    "gk_G28_1": {
       "emoji": "🚗",
-      "metin": "Kurban: \"KANDIRA MI? KPSS'ye 7 gün var!.. Tamam geliyorum ama bedeli ağır olacak.\" Berkay'ın cebinde 12 TL var.",
+      "metin": "Kurban: \"KANDIRA MI? KPSS'ye 7 gün var!.. Tamam geliyorum ama bedeli ağır olacak.\" Kurban yolda. Bedel konuşulacak.",
       "secenekler": [
         {
           "etiket": "💸 \"Maaş gelince öderim\" desin",
-          "hedef": "gk_son_maas"
+          "hedef": "gk_G29_1"
         },
         {
           "etiket": "🎮 Oyun hesabını teklif etsin",
-          "hedef": "gk33"
+          "hedef": "gk_G29_2"
         }
       ]
     },
-    "gk_son_maas": {
+    "gk_G28_2": {
+      "emoji": "🦅",
+      "metin": "Alihan: \"Kandıra mı? Geliyorum!\" Geldi ama direksiyona Berkay'ı geçirdi: \"Depoda da ben çalışmamıştım, alışkanlık.\" Berkay tek eliyle sürdü, Alihan yol boyunca Sarıkamış anlattı. Eve varınca Berkay \"donmadılar mı?\" dedi. Arabadan atıldı. SON.",
+      "secenekler": []
+    },
+    "gk_G29_1": {
       "emoji": "🫖",
       "metin": "Kurban: \"Senin maaşın mı var lan? Memur olacak olan benim.\" Telefon kapandı. Berkay Kandıra'da bir çay ocağında iş buldu, ilk maaşı 3 ay sonra. SON.",
       "secenekler": []
     },
-    "gk33": {
-      "emoji": "🚗",
-      "metin": "Kurban: \"KPSS'ye kadar oyun oynamıyorum ama 5 Ekim'de hesap benim.\" 20 dakikada geldi. Arabada herkes var: Alihan Enver Paşa anlatıyor, BK burger yiyor, Halil depo yeleğiyle uyuyor. Berkay'ı eve bıraktılar.",
+    "gk_G29_2": {
+      "emoji": "🏠",
+      "metin": "Kurban: \"KPSS'ye kadar oyun oynamıyorum ama 5 Ekim'de hesap benim.\" 20 dakikada geldi. Arabada herkes var: Alihan Enver Paşa anlatıyor, Burger burger yiyor, Halil depo yeleğiyle uyuyor. Berkay'ı eve bıraktılar. Kapıda kız arkadaşına \"Vardım ❤️\" yazdı. İki günün sonu geldi.",
       "secenekler": [
         {
           "etiket": "🛌 Direkt yatsın",
-          "hedef": "gk_son_final1"
+          "hedef": "gk_G30_1"
         },
         {
-          "etiket": "📝 Günün hesabını yapsın",
-          "hedef": "gk_son_final2"
+          "etiket": "📝 İki günün hesabını yapsın",
+          "hedef": "gk_G30_2"
         }
       ]
     },
-    "gk_son_final1": {
+    "gk_G30_1": {
       "emoji": "🛌",
-      "metin": "Yatağa uzandı: ayak şiş, el şiş, kart kırık, 1000 TL gitti, oyun hesabı Kurban'da. Ama kız arkadaşını gördü ve 3 kova patates yedi. Berkay'ın kariyerindeki en başarılı gün. SON.",
+      "metin": "Yatağa uzandı: el alçıda, ayak şiş, kart kırık, 1000 TL gitti, oyun hesabı Kurban'da, yarın klima deposu var. Ama kız arkadaşını gördü ve 3 kova patates yedi. Berkay'ın kariyerindeki en başarılı iki gün. SON.",
       "secenekler": []
     },
-    "gk_son_final2": {
+    "gk_G30_2": {
       "emoji": "📝",
-      "metin": "Deftere yazdı. Kayıplar: 1 ayak, 1 el, 1 kart, 1000 TL, 1 oyun hesabı. Kazançlar: 3 kova patates, 1 güzel gün. Altına \"değdi\" yazıp uyudu. SON.",
+      "metin": "Deftere yazdı. Kayıplar: 1 el, 1 ayak, 1 kart, 1340 TL, 1 KPSS kitabı (Kurban'ın), 1 oyun hesabı, 0 gol. Kazançlar: 3 kova patates, 1 minik ayı, 1 güzel gün. Altına \"değdi\" yazıp uyudu. SON.",
       "secenekler": []
-    },
-    "gk_al_kriz__a": {
-      "emoji": "🦶",
-      "metin": "Alihan'ı cümlenin ortasında kapattı. 3 saniye sonra 14 mesaj geldi, hepsi Enver Paşa. Mesajları okuyarak yürürken çukuru görmedi: ayağı yamuldu, \"kıtır.\" Bilek bir anda portakal boyutunda.",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
-        },
-        {
-          "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
-        }
-      ]
-    },
-    "gk_al_kriz__b": {
-      "emoji": "🦶",
-      "metin": "Telefonu açık halde cebine koydu, Alihan cepten bağırmaya devam etti. Yoldan geçen amca \"evladım cebin Sarıkamış anlatıyor\" dedi. Berkay dönüp bakarken çukura bastı: \"kıtır.\" Bilek portakal boyutunda.",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
-        },
-        {
-          "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
-        }
-      ]
-    },
-    "gk_al_yuru__a": {
-      "emoji": "🦶",
-      "metin": "Enver Paşa ruhu devam ediyor. 300 metre sonra ruh da yoruldu. Gözü telefondaki haritadaydı, çukuru görmedi: \"kıtır.\" Ayağı yamuldu, bilek portakal oldu.",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
-        },
-        {
-          "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
-        }
-      ]
-    },
-    "gk_al_yuru__b": {
-      "emoji": "🦶",
-      "metin": "Mesajı gönderdi. Alihan'da \"yazıyor...\" 4 dakika gitmedi. Berkay ekrana bakarak yürürken çukuru görmedi: \"kıtır.\" Ayağı yamuldu. Sonunda Alihan'ın cevabı geldi: \"ASLA.\"",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
-        },
-        {
-          "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
-        }
-      ]
-    },
-    "gk_h_otobus__a": {
-      "emoji": "🦶",
-      "metin": "Haritayı açıp yürümeye başladı. 200 metre sonra gözü ekranda, ayağı çukurda: \"kıtır.\" Bilek bir anda portakal boyutunda.",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
-        },
-        {
-          "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
-        }
-      ]
-    },
-    "gk_h_otobus__b": {
-      "emoji": "🦶",
-      "metin": "Halil: \"Günlüğü 800, sabah 7'de başlıyor...\" Berkay \"sabah 7\"yi duyunca şoka girdi ve çukuru görmedi: \"kıtır.\" Ayağı yamuldu. Halil hâlâ anlatıyor: \"...öğle yemeği de var.\"",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
-        },
-        {
-          "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
-        }
-      ]
-    },
-    "gk_sap2__a": {
-      "emoji": "🦶",
-      "metin": "Ellerini açıp gözleri kapalı şükretti, gözleri kapalı yürümeye devam etti. Gözleri kapalı olduğu için çukuru görmedi: \"kıtır.\" Ayağı yamuldu. Şükür kısa sürdü.",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
-        },
-        {
-          "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
-        }
-      ]
-    },
-    "gk_sap2__b": {
-      "emoji": "🦶",
-      "metin": "Kurban: \"Planın Sapanca'yı görmek miydi?\" Berkay cevap yazarken çukura bastı: \"kıtır.\" Ayağı yamuldu, bilek portakal oldu. Kurban: \"Bu da mı plandı?\"",
-      "secenekler": [
-        {
-          "etiket": "🦵 Seke seke devam etsin",
-          "hedef": "gk7"
-        },
-        {
-          "etiket": "🚑 Ambulans çağırsın",
-          "hedef": "gk_amb"
-        }
-      ]
-    },
-    "gk_bk2__a": {
-      "emoji": "🦩",
-      "metin": "BK'ya el salladı, seke seke yola koyuldu, flamingo gibi. Mahallenin çocukları arkasından \"flamingo abi!\" diye bağırıp taklidini yapıyor.",
-      "secenekler": [
-        {
-          "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
-        },
-        {
-          "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
-        }
-      ]
-    },
-    "gk_bk2__b": {
-      "emoji": "🦩",
-      "metin": "Alihan'ın hakkıyla alınmış kahveyi dikti, kafein vurdu, sekme hızı ikiye katlandı. Tek ayakla deli gibi sekerken mahallenin çocukları peşine takıldı: \"flamingo abi!\"",
-      "secenekler": [
-        {
-          "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
-        },
-        {
-          "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
-        }
-      ]
-    },
-    "gk_bk3__a": {
-      "emoji": "🦩",
-      "metin": "BK'ya \"sağ ol kanka\" yazdı. BK: \"Bir burger borcun var.\" Berkay seke seke yola koyuldu; mahallenin çocukları arkasından \"flamingo abi!\" diye bağırıp taklidini yapmaya başladı.",
-      "secenekler": [
-        {
-          "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
-        },
-        {
-          "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
-        }
-      ]
-    },
-    "gk_bk3__b": {
-      "emoji": "🦩",
-      "metin": "\"Popeyes daha iyi\" yazdı. BK engelledi, 1 dakika sonra engeli kaldırıp \"yine de dikkat et\" yazdı. Berkay seke seke yola koyuldu; mahallenin çocukları \"flamingo abi!\" diye peşine düştü.",
-      "secenekler": [
-        {
-          "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
-        },
-        {
-          "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
-        }
-      ]
-    },
-    "gk_h3__a": {
-      "emoji": "🦩",
-      "metin": "50 TL'nin fotoğrafını gruba attı. Halil: \"Ameleliğe hoş geldin kanka.\" Alihan: \"Ben olsam çalışmadan alırdım.\" Berkay gururla seke seke yola koyuldu; mahallenin çocukları \"flamingo abi!\" diye peşine takıldı.",
-      "secenekler": [
-        {
-          "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
-        },
-        {
-          "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
-        }
-      ]
-    },
-    "gk_h3__b": {
-      "emoji": "🦩",
-      "metin": "50 TL cebinde, tek ayak havada, seke seke yola koyuldu. Mahallenin çocukları arkasından \"flamingo abi!\" diye bağırıp taklidini yapıyor.",
-      "secenekler": [
-        {
-          "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
-        },
-        {
-          "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
-        }
-      ]
-    },
-    "gk_h3b__a": {
-      "emoji": "🦩",
-      "metin": "\"Kargo benim\" dedi. İşçiler barkodunu aradı, bulamadı, \"iade\" diye kenara koydular. Berkay fırsatını bulup seke seke kaçtı; mahallenin çocukları \"flamingo abi!\" diye arkasından bağırıyor.",
-      "secenekler": [
-        {
-          "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
-        },
-        {
-          "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
-        }
-      ]
-    },
-    "gk_h3b__b": {
-      "emoji": "🦩",
-      "metin": "Tek ayakla depodan kaçtı. İşçiler kovalamaya gerek duymadı, zaten yavaştı. Sokağa çıkınca mahallenin çocukları \"flamingo abi!\" diye taklidini yapmaya başladı.",
-      "secenekler": [
-        {
-          "etiket": "😡 Çocuklara bağırsın",
-          "hedef": "gk_cocuk"
-        },
-        {
-          "etiket": "🤫 Umursamadan seksin",
-          "hedef": "gk8"
-        }
-      ]
-    },
-    "gk_marti2__a": {
-      "emoji": "📱",
-      "metin": "Scooter'ı kaldırımda bırakıp seke seke devam etti. Bir apartman önünde soluklandı. 800 metre kaldı. Kız arkadaşından mesaj: \"Geliyor musun? 😊\"",
-      "secenekler": [
-        {
-          "etiket": "📸 Şiş ayağının fotoğrafını çeksin",
-          "hedef": "gk_foto"
-        },
-        {
-          "etiket": "😎 \"Geliyorum\" yazsın",
-          "hedef": "gk9"
-        }
-      ]
-    },
-    "gk_marti2__b": {
-      "emoji": "📱",
-      "metin": "Sağlam ayağıyla scooter'ı tekmeledi. Scooter devrilmedi, Berkay devrildi. Kalkıp seke seke bir apartman önüne geldi, soluklandı. 800 metre kaldı. Kız arkadaşından mesaj: \"Geliyor musun? 😊\"",
-      "secenekler": [
-        {
-          "etiket": "📸 Şiş ayağının fotoğrafını çeksin",
-          "hedef": "gk_foto"
-        },
-        {
-          "etiket": "😎 \"Geliyorum\" yazsın",
-          "hedef": "gk9"
-        }
-      ]
-    },
-    "gk_amb2__a": {
-      "emoji": "🥵",
-      "metin": "Burgeri iki ısırıkta bitirdi, BK gurur duydu. Tam o sırada kız arkadaşından mesaj: \"Geliyor musun? 😊\" \"Geliyorum 😎\" yazdı ama 800 metreyi seke seke, ağzı burgerli 25 dakikada aldı. Buluşma köşesine vardı: ter içinde, tek ayak havada.",
-      "secenekler": [
-        {
-          "etiket": "🧻 Önce terini silsin",
-          "hedef": "gk10__ter"
-        },
-        {
-          "etiket": "🏃 Direkt yanına seksin",
-          "hedef": "gk_kopek"
-        }
-      ]
-    },
-    "gk_amb2__b": {
-      "emoji": "🥵",
-      "metin": "BK: \"Popeyes'a yer açıyorsun ha? Hain.\" Burgeri kendisi yedi. Kız arkadaşından mesaj geldi: \"Geliyor musun? 😊\" \"Geliyorum 😎\" yazdı, 800 metreyi seke seke 25 dakikada aldı. Buluşma köşesine vardı: ter içinde, tek ayak havada.",
-      "secenekler": [
-        {
-          "etiket": "🧻 Önce terini silsin",
-          "hedef": "gk10__ter"
-        },
-        {
-          "etiket": "🏃 Direkt yanına seksin",
-          "hedef": "gk_kopek"
-        }
-      ]
-    },
-    "gk_amb3__a": {
-      "emoji": "🥵",
-      "metin": "Ayağını mahalle çeşmesine soktu. Çeşmenin başındaki amca \"abdest mi alıyon evlat?\" dedi. Kız arkadaşından mesaj: \"Geliyor musun? 😊\" \"Geliyorum 😎\" yazdı, ıslak ayakla şapır şapır sekerek 25 dakikada buluşma köşesine vardı: ter içinde, tek ayak havada.",
-      "secenekler": [
-        {
-          "etiket": "🧻 Önce terini silsin",
-          "hedef": "gk10__ter"
-        },
-        {
-          "etiket": "🏃 Direkt yanına seksin",
-          "hedef": "gk_kopek"
-        }
-      ]
-    },
-    "gk_amb3__b": {
-      "emoji": "🥵",
-      "metin": "Alihan'ı kapattı. Alihan geri aradı, yine kapattı. Üçüncüde uçak moduna aldı. Açınca kız arkadaşından mesaj: \"Geliyor musun? 😊\" \"Geliyorum 😎\" yazdı, 800 metreyi seke seke 25 dakikada aldı. Buluşma köşesine vardı: ter içinde, tek ayak havada.",
-      "secenekler": [
-        {
-          "etiket": "🧻 Önce terini silsin",
-          "hedef": "gk10__ter"
-        },
-        {
-          "etiket": "🏃 Direkt yanına seksin",
-          "hedef": "gk_kopek"
-        }
-      ]
-    },
-    "gk_cocuk2__a": {
-      "emoji": "💞",
-      "metin": "20 TL'yi verdi, bakkal arabasını alıp gitti. Berkay arabadan iner inmez kız arkadaşı köşeden çıktı. Ayağına baktı: \"Ne oldu sana?\" Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk_cocuk2__b": {
-      "emoji": "💞",
-      "metin": "\"Abi aslında ben size reklam yaptım, bütün mahalle sizi konuşuyor\" dedi. Bakkal ikna oldu, üstüne bir su verdi. Tam o sırada kız arkadaşı geldi, ayağına baktı: \"Ne oldu sana?\" Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk_cocuk3__a": {
-      "emoji": "💞",
-      "metin": "Çocuklara el salladı, çocuklar \"flamingo abi!\" diye tezahürat yaptı. Kız arkadaşı bu tezahüratın ortasında geldi, ayağına baktı: \"Ne oldu sana?\" Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk_cocuk3__b": {
-      "emoji": "💞",
-      "metin": "Başını önüne eğip sekmeye devam etti ve kafasını buluşma noktasındaki direğe çarptı. Kız arkadaşı tam o anda geldi: \"Ne oldu sana? Ayağın da mı?\" Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk_foto2__a": {
-      "emoji": "💞",
-      "metin": "\"Ben de sizi sevmiyom\" yazıp gruptan çıktı. 10 saniye sonra Halil geri ekledi: \"Kanka yevmiye var.\" Bu arada buluşma noktasına varmıştı. Kız arkadaşı geldi, ayağına baktı: \"Ne oldu sana?\" Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk_foto2__b": {
-      "emoji": "💞",
-      "metin": "\"Enver de gelmezdi\" yazdı. Alihan 3 sesli mesaj attı, toplam 11 dakika. Berkay dinlemeden buluşma noktasına sekti. Kız arkadaşı geldi, ayağına baktı: \"Ne oldu sana?\" Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk_foto3__a": {
-      "emoji": "💞",
-      "metin": "BK'nın attığı konuma baktı: en yakın Burger King 300 metrede. İçinden geçti ama direndi. Buluşma noktasına vardı. Kız arkadaşı geldi, ayağına baktı: \"Ne oldu sana?\" Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk_foto3__b": {
-      "emoji": "💞",
-      "metin": "Telefonu cebe koydu. Cep titremeye devam etti, bacağı bedava masaj aldı. Buluşma noktasına vardı, kız arkadaşı ayağına bakıp \"Ne oldu sana?\" dedi. Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk_kopek2__a": {
-      "emoji": "🤥",
-      "metin": "Seke seke 10 dakika geç vardı. Kız arkadaşı ayağına bakıp \"Ne oldu sana?\" dedi. Berkay düşünmeden: \"Kavga ettim, beş kişiydiler.\" Tam o sırada mahallenin çocukları \"flamingo abi!\" diye bağırarak geçti. Yalan tam 3 saniye yaşadı.",
-      "secenekler": [
-        {
-          "etiket": "🌀 Yalanı büyütsün",
-          "hedef": "gk_yalan"
-        },
-        {
-          "etiket": "😔 İtiraf etsin",
-          "hedef": "gk12__itiraf"
-        }
-      ]
-    },
-    "gk_kopek2__b": {
-      "emoji": "🤥",
-      "metin": "BK'nın patatesini kapıp kaçtı, BK arkadan \"HAİN!\" diye bağırdı. Buluşmaya ağzı patatesli vardı. \"Ne oldu sana?\" \"Kavga ettim, beş kişiydiler.\" Tam o sırada mahallenin çocukları \"flamingo abi!\" diye geçti. Yalan 3 saniye yaşadı.",
-      "secenekler": [
-        {
-          "etiket": "🌀 Yalanı büyütsün",
-          "hedef": "gk_yalan"
-        },
-        {
-          "etiket": "😔 İtiraf etsin",
-          "hedef": "gk12__itiraf"
-        }
-      ]
-    },
-    "gk_durust__a": {
-      "emoji": "🧾",
-      "metin": "\"EVET!\" diye öyle bağırdı ki sokaktaki güvercinler havalandı. Popeyes'a girdiler. Kasaya abandı: \"En büyük menü hangisi?\" Kasiyer: \"1000 TL'lik aile menüsü var ama 6 kişilik.\" Berkay: \"Yeter.\"",
-      "secenekler": [
-        {
-          "etiket": "💳 Kartla ödesin",
-          "hedef": "gk14"
-        },
-        {
-          "etiket": "💵 Nakit versin",
-          "hedef": "gk_nakit"
-        }
-      ]
-    },
-    "gk_durust__b": {
-      "emoji": "🧾",
-      "metin": "Gözleri doldu: \"Beni benden iyi tanıyorsun.\" Popeyes'a girdiler. Kasaya abandı: \"En büyük menü hangisi?\" Kasiyer: \"1000 TL'lik aile menüsü var ama 6 kişilik.\" Berkay: \"Yeter.\"",
-      "secenekler": [
-        {
-          "etiket": "💳 Kartla ödesin",
-          "hedef": "gk14"
-        },
-        {
-          "etiket": "💵 Nakit versin",
-          "hedef": "gk_nakit"
-        }
-      ]
-    },
-    "gk_yalan2__a": {
-      "emoji": "🍗",
-      "metin": "Masaya oturdular. 1000 TL gitti, ayın geri kalanı bismillah. Garson 6 kişilik tepsiyi getirirken iki kere mola verdi.",
-      "secenekler": [
-        {
-          "etiket": "🍗 Tavukla başlasın",
-          "hedef": "gk_tavuk"
-        },
-        {
-          "etiket": "🍟 Patatesle başlasın",
-          "hedef": "gk15"
-        }
-      ]
-    },
-    "gk_yalan2__b": {
-      "emoji": "🍗",
-      "metin": "Domates gibi kızarmış halde oturdu. Garson \"iyi misiniz, acılı sos mu döküldü?\" diye sordu, sonra 6 kişilik tepsiyi getirdi; getirirken iki kere mola verdi. 1000 TL gitti.",
-      "secenekler": [
-        {
-          "etiket": "🍗 Tavukla başlasın",
-          "hedef": "gk_tavuk"
-        },
-        {
-          "etiket": "🍟 Patatesle başlasın",
-          "hedef": "gk15"
-        }
-      ]
-    },
-    "gk_salata__a": {
-      "emoji": "🍗",
-      "metin": "Popeyes'ın kokusunu alınca bir kez daha duygulandı, kasiyer peçete uzattı. 1000 TL gitti. Garson 6 kişilik tepsiyi getirirken iki kere mola verdi.",
-      "secenekler": [
-        {
-          "etiket": "🍗 Tavukla başlasın",
-          "hedef": "gk_tavuk"
-        },
-        {
-          "etiket": "🍟 Patatesle başlasın",
-          "hedef": "gk15"
-        }
-      ]
-    },
-    "gk_salata__b": {
-      "emoji": "🍗",
-      "metin": "Garson daha tepsiyi masaya koymadan Berkay kaptı, garson boş elle kaldı. 1000 TL'lik 6 kişilik menü artık Berkay'ın kucağında.",
-      "secenekler": [
-        {
-          "etiket": "🍗 Tavukla başlasın",
-          "hedef": "gk_tavuk"
-        },
-        {
-          "etiket": "🍟 Patatesle başlasın",
-          "hedef": "gk15"
-        }
-      ]
-    },
-    "gk_nakit_h__a": {
-      "emoji": "🍟",
-      "metin": "Kovaya elini daldırdı, çıkardığında kova boştu. Birinci kova patates: bitti. Kız arkadaşı daha 3 tane yemişti.",
-      "secenekler": [
-        {
-          "etiket": "🛑 Dursun artık",
-          "hedef": "gk_dur"
-        },
-        {
-          "etiket": "🍟 İkinci kovaya geçsin",
-          "hedef": "gk16"
-        }
-      ]
-    },
-    "gk_nakit_h__b": {
-      "emoji": "🍟",
-      "metin": "Tepsiye bakıp \"Bismillah\" dedi, \"Halil'in stajı da hayırlı olsun\" diye ekledi. Dua bitince birinci kova da bitti. Kız arkadaşı daha 3 tane yemişti.",
-      "secenekler": [
-        {
-          "etiket": "🛑 Dursun artık",
-          "hedef": "gk_dur"
-        },
-        {
-          "etiket": "🍟 İkinci kovaya geçsin",
-          "hedef": "gk16"
-        }
-      ]
-    },
-    "gk_nakit_k__a": {
-      "emoji": "🍟",
-      "metin": "İlk kovaya saldırdı. 40 saniye sonra kova boştu. Kız arkadaşı daha 3 tane yemişti.",
-      "secenekler": [
-        {
-          "etiket": "🛑 Dursun artık",
-          "hedef": "gk_dur"
-        },
-        {
-          "etiket": "🍟 İkinci kovaya geçsin",
-          "hedef": "gk16"
-        }
-      ]
-    },
-    "gk_nakit_k__b": {
-      "emoji": "🍟",
-      "metin": "\"Kanka KPSS'de başarılar, memur olunca beni de al\" yazdı. Kurban: \"Seni alan kurum kapanır.\" Mesajı yazana kadar birinci kova bitmişti bile. Kız arkadaşı daha 3 tane yemişti.",
-      "secenekler": [
-        {
-          "etiket": "🛑 Dursun artık",
-          "hedef": "gk_dur"
-        },
-        {
-          "etiket": "🍟 İkinci kovaya geçsin",
-          "hedef": "gk16"
-        }
-      ]
-    },
-    "gk_tavuk__a": {
-      "emoji": "🍟",
-      "metin": "İkinci kovaya kafasını gömdü, çıktığında kova bitmişti. Parmaklar tuzdan kurudu, göz bebekleri büyüdü. Garson uzaktan endişeyle izliyor.",
-      "secenekler": [
-        {
-          "etiket": "🍟 Üçüncü kovayı istesin",
-          "hedef": "gk17"
-        },
-        {
-          "etiket": "🥤 Kolayla bastırsın",
-          "hedef": "gk_kola"
-        }
-      ]
-    },
-    "gk_tavuk__b": {
-      "emoji": "🍟",
-      "metin": "Gruba yazdı: \"Buzlu suyu hem içtim hem ayağıma koydum.\" Halil: \"Depoda buna verimlilik denir.\" Yazarken ikinci kovayı da bitirmişti. Parmaklar tuzdan kurudu, göz bebekleri büyüdü. Garson endişeyle izliyor.",
-      "secenekler": [
-        {
-          "etiket": "🍟 Üçüncü kovayı istesin",
-          "hedef": "gk17"
-        },
-        {
-          "etiket": "🥤 Kolayla bastırsın",
-          "hedef": "gk_kola"
-        }
-      ]
-    },
-    "gk_dur__a": {
-      "emoji": "🏆",
-      "metin": "Üçüncü kova masada. Bütün Popeyes çalışanları masanın başına toplandı, biri telefonla video çekiyor.",
-      "secenekler": [
-        {
-          "etiket": "💪 Rekor için bitirsin",
-          "hedef": "gk18"
-        },
-        {
-          "etiket": "🤢 Yarısında bıraksın",
-          "hedef": "gk_yarim"
-        }
-      ]
-    },
-    "gk_dur__b": {
-      "emoji": "🏆",
-      "metin": "Durmaya çalıştı, eli kendiliğinden kovaya gitti. Bir daha denedi, ağzı kendiliğinden açıldı. Vazgeçti. Üçüncü kova masada, çalışanlar etrafında toplandı.",
-      "secenekler": [
-        {
-          "etiket": "💪 Rekor için bitirsin",
-          "hedef": "gk18"
-        },
-        {
-          "etiket": "🤢 Yarısında bıraksın",
-          "hedef": "gk_yarim"
-        }
-      ]
-    },
-    "gk_kola__a": {
-      "emoji": "👏",
-      "metin": "Müdürün gözlerinin içine bakarak üçüncü kovayı bitirdi. Çalışanlar alkışladı! Karnı körfez gibi şişti, pantolon düğmesi uçup sos standına çarptı.",
-      "secenekler": [
-        {
-          "etiket": "📸 Çalışanlarla fotoğraf çektirsin",
-          "hedef": "gk_pano"
-        },
-        {
-          "etiket": "🚶 Kalkıp çıksınlar",
-          "hedef": "gk19"
-        }
-      ]
-    },
-    "gk_kola__b": {
-      "emoji": "👏",
-      "metin": "Yan masaya gidip bebekten özür diledi. Bebek ağlamayı kesti, Berkay'ın yüzüne bakıp bir daha başladı. Annesi \"siz rekorunuza dönün\" dedi. Berkay masaya dönüp üçüncü kovayı bitirdi. Çalışanlar alkışladı, pantolon düğmesi uçup sos standına çarptı.",
-      "secenekler": [
-        {
-          "etiket": "📸 Çalışanlarla fotoğraf çektirsin",
-          "hedef": "gk_pano"
-        },
-        {
-          "etiket": "🚶 Kalkıp çıksınlar",
-          "hedef": "gk19"
-        }
-      ]
-    },
-    "gk_yarim__a": {
-      "emoji": "🧍",
-      "metin": "Kalkmaya çalıştı, kalkamadı. İkinci denemede kalktı ama sakat ayak hatırlattı: \"kıtır.\" Kız arkadaşı koluna girdi.",
-      "secenekler": [
-        {
-          "etiket": "🚕 Taksi çağırsın",
-          "hedef": "gk_taksi"
-        },
-        {
-          "etiket": "🚏 Durağa yürüsünler",
-          "hedef": "gk20"
-        }
-      ]
-    },
-    "gk_yarim__b": {
-      "emoji": "🧍",
-      "metin": "BK'ya \"Sayende bitirdim kanka\" yazdı. BK: \"Popeyes'ta bitirdin, sayılmaz.\" Berkay kalkmaya çalıştı, kalkamadı. İkincide kalktı: \"kıtır.\" Kız arkadaşı koluna girdi.",
-      "secenekler": [
-        {
-          "etiket": "🚕 Taksi çağırsın",
-          "hedef": "gk_taksi"
-        },
-        {
-          "etiket": "🚏 Durağa yürüsünler",
-          "hedef": "gk20"
-        }
-      ]
-    },
-    "gk_pano__a": {
-      "emoji": "🚶",
-      "metin": "Fotoğrafı gruba attı. Kurban: \"KPSS'de bu kadar soru çözsen...\" BK: \"Ben olsam 4 kova.\" Durağa doğru yürüyorlar; Berkay seke seke, her sekişte karnından bir \"hık\" geliyor.",
-      "secenekler": [
-        {
-          "etiket": "👋 Durakta vedalaşsınlar",
-          "hedef": "gk21"
-        },
-        {
-          "etiket": "🏃 Otobüs görünce koşsun",
-          "hedef": "gk_son_kos"
-        }
-      ]
-    },
-    "gk_pano__b": {
-      "emoji": "🚶",
-      "metin": "Durağa doğru yürüyorlar. Berkay seke seke; her sekişte karnından bir \"hık\" geliyor, kız arkadaşı her \"hık\"ta \"iyi misin?\" diye soruyor.",
-      "secenekler": [
-        {
-          "etiket": "👋 Durakta vedalaşsınlar",
-          "hedef": "gk21"
-        },
-        {
-          "etiket": "🏃 Otobüs görünce koşsun",
-          "hedef": "gk_son_kos"
-        }
-      ]
-    },
-    "gk_taksi2__a": {
-      "emoji": "📦",
-      "metin": "40 paketin hepsini seke seke taşıdı. Gece 2'de eve vardı. Halil ertesi sabah yazdı: \"Kanka performansın süperdi, yarın klima deposuna yazdırdım seni.\" Berkay telefonu kapattı. SON.",
-      "secenekler": []
-    },
-    "gk_taksi2__b": {
-      "emoji": "📦",
-      "metin": "Araçta uyudu, şoför her durakta \"kalk koli taşı\" diye dürttü. Gece 2'de eve vardı. Halil sabah yazdı: \"Şoför seni şikâyet etti ama yarın klima deposuna yine de yazdırdım.\" SON.",
-      "secenekler": []
-    },
-    "gk10__ter": {
-      "emoji": "💞",
-      "metin": "Terini sildi, saçını düzeltti (düzelmedi). Tam o sırada kız arkadaşı geldi. Ayağını görünce \"Ne oldu sana?\" diye sordu. Berkay bir cevap vermeli.",
-      "secenekler": [
-        {
-          "etiket": "🦸 \"Yolda kavga ettim\" desin",
-          "hedef": "gk11"
-        },
-        {
-          "etiket": "😅 \"Çukura düştüm\" desin",
-          "hedef": "gk_durust"
-        }
-      ]
-    },
-    "gk12__itiraf": {
-      "emoji": "😋",
-      "metin": "\"Tamam... çukura düştüm.\" Kız arkadaşı güldü: \"Biliyordum.\" Neyse ki ikisi de acıkmıştı. \"Nereye gidelim?\" Berkay'ın gözleri parladı.",
-      "secenekler": [
-        {
-          "etiket": "🍗 \"Popeyes!\"",
-          "hedef": "gk13"
-        },
-        {
-          "etiket": "🥗 \"Salata yiyelim\" desin",
-          "hedef": "gk_salata"
-        }
-      ]
-    },
-    "gk24__menu": {
-      "emoji": "🚌",
-      "metin": "Kurban: \"Anlaştık. KPSS'den sonra, 5 Ekim, iki menü. Yazılı söz istiyorum.\" Berkay yamuk eliyle sözleşmeyi mesaj attı. Tam o sırada otobüs geldi! Kart cüzdanın en dibinde, Popeyes fişlerinin arasında.",
-      "secenekler": [
-        {
-          "etiket": "🪙 Bozuk parayla ödesin",
-          "hedef": "gk_son_bozuk"
-        },
-        {
-          "etiket": "💳 Kartı çıkarsın",
-          "hedef": "gk25"
-        }
-      ]
     }
   };
 
