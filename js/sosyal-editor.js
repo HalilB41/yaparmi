@@ -310,8 +310,8 @@
   const golcukBanner = $("seGolcukBanner");
   function golcukBannerGuncelle() {
     if (!golcukBanner || !hikaye) return;
-    // gk_h1 sadece uzun (v2) sürümde var: yoksa ya Gölcük hiç yok ya da eski kısa sürüm var
-    golcukBanner.hidden = !!hikaye.dugumler.gk_h1;
+    // gk10__ter sadece en güncel Gölcük sürümünde var: yoksa ya Gölcük hiç yok ya da eski sürüm var
+    golcukBanner.hidden = !!hikaye.dugumler.gk10__ter;
   }
   if (golcukBanner) {
     $("seGolcukAdd").addEventListener("click", () => {
