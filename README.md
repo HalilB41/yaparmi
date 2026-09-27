@@ -17,7 +17,8 @@ için kayıt olmak zorunlu değil.
 ```
 yaparmi-site/
 ├─ index.html
-├─ spor.html, oyun.html   <- spor "çok yakında", oyun sayfası
+├─ spor.html       <- boks makinesi, penaltı, kasksız 85, spor karnesi, Berkay olimpiyatı
+├─ oyun.html       <- oyun sayfası
 ├─ ders.html        <- şakadan optik form: telefonu karekoda tut, 85-99 arası rastgele puan
 ├─ sosyal.html      <- "hikaye seç" oyunu (İzmir'e gitsin / evde kalsın ...)
 ├─ galeri.html      <- yatay kaydırmalı fotoğraf galerisi + fotoğraf öner
@@ -31,6 +32,7 @@ yaparmi-site/
 ├─ js/ders.js       <- sadece ders.html (sahte karekod, deklanşör sesi, rastgele puan)
 ├─ js/sosyal-hikaye.js  <- Sosyal Hayat hikayesinin varsayılan hali + Firestore'dan okuma
 ├─ js/sosyal.js     <- sadece sosyal.html (hikaye oynatıcı)
+├─ js/spor.js       <- sadece spor.html (5 bölüm)
 ├─ js/sosyal-editor.js  <- admin.html'deki "Sosyal Hayat Düzenle" (algoritma şeması + editör)
 ├─ api/ask.js              <- Vercel serverless function, Nous Research'e soru gönderir
 ├─ audio/
@@ -194,6 +196,28 @@ service cloud.firestore {
 
     // Galeri fotoğraf önerileri — giriş yapmış (anonim de olsa) herkes
     // önerebilir, sadece admin görüp onaylayabilir/silebilir.
+    // Spor sayfası: "karne" (Berkay'ın spor istatistikleri) ve "olimpiyat"
+    // (haftanın rezilliği adayları + geçmiş kazananlar). Herkes okur, admin yazar.
+    match /spor/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId in ['karne', 'olimpiyat'];
+    }
+
+    // Olimpiyat oyları: belge ID'si = hafta + "_" + uid, yani herkes her hafta
+    // TEK oy verebilir, oyunu değiştiremez/silemez.
+    match /spor_oylar/{oyId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['hafta', 'secim', 'uid'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.hafta is string
+        && oyId == request.resource.data.hafta + '_' + request.auth.uid
+        && request.resource.data.secim is int
+        && request.resource.data.secim >= 0
+        && request.resource.data.secim < 10;
+      allow update, delete: if false;
+    }
+
     match /galeri_oneriler/{oneriId} {
       allow read, update, delete: if isAdmin();
       allow create: if request.auth != null
