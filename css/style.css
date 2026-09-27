@@ -1628,3 +1628,88 @@ body.se-open { overflow: hidden; }
 .sp-input-emoji { flex: 0 0 48px; text-align: center; }
 .sp-input-deger { flex: 0 1 90px; }
 .sp-kaydet { border-color: var(--accent); }
+
+/* ---- Spor v2: boks barı, dönen ok, motor şeritleri ---- */
+.sp-bar-boks .sp-bar-dolgu { background: linear-gradient(90deg, #e05252, #f0a030 45%, #ffd66b 70%, #4ade80); background-size: 460px 100%; }
+.sp-tablo-satir.is-sen { color: var(--accent-3); font-weight: 700; }
+
+.sp-kaleci {
+  position: absolute;
+  top: 58px;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  z-index: 2;
+}
+.sp-ok {
+  position: absolute;
+  width: 70px;
+  height: 4px;
+  margin-top: -2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.3), #fff);
+  border-radius: 2px;
+  transform-origin: 0 50%;
+  z-index: 3;
+  pointer-events: none;
+}
+.sp-ok::after {
+  content: "";
+  position: absolute;
+  right: -8px;
+  top: -6px;
+  border-left: 12px solid #fff;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+.sp-top { z-index: 4; transition: left 0.45s ease-out, top 0.45s ease-out; }
+.sp-saha.is-gol { box-shadow: 0 0 0 4px var(--accent-3), 0 0 30px rgba(255,214,107,0.6); }
+
+.sp-motor-ust { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.sp-motor-mesafe { font-weight: 700; color: var(--accent-3); }
+.sp-yol2 {
+  --kay: 0px;
+  position: relative;
+  height: 180px;
+  margin-top: 8px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #2b2b33;
+  border: 2px solid #3a3450;
+}
+.sp-yol2.is-fast { animation: sp-titre 0.12s infinite; --titreme: 2px; }
+.sp-serit-cizgi {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  margin-top: -2px;
+  background-image: linear-gradient(90deg, rgba(245,243,255,0.8) 0 30px, transparent 30px 60px);
+  background-size: 60px 4px;
+  background-position-x: var(--kay);
+}
+.sp-moto2, .sp-arac, .sp-tarla {
+  position: absolute;
+  transform: translate(-50%, -50%) scaleX(-1);
+  font-size: 2.1rem;
+  line-height: 1;
+}
+.sp-moto2 { left: 16%; transition: top 0.12s; z-index: 3; }
+.sp-moto2.is-crash { transform: translate(-50%, -50%) rotate(160deg); }
+.sp-arac { z-index: 2; }
+.sp-tarla { top: 50%; font-size: 4rem; transform: translate(-10%, -50%); z-index: 1; }
+.sp-kaza {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.65);
+  animation: story-in 0.25s ease-out;
+}
+.sp-kaza img { max-width: 80%; max-height: 130px; border-radius: 10px; border: 2px solid var(--accent-3); object-fit: contain; }
+.sp-kaza-emoji { font-size: 4rem; }
+.sp-kaza-yazi { margin-top: 6px; font-weight: 900; color: #ff6b6b; letter-spacing: 0.05em; }
+.sp-motor-kontrol { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+.sp-yon-dikey { display: flex; flex-direction: column; gap: 6px; }
+.sp-kare { padding: 8px 14px; font-size: 1.1rem; }

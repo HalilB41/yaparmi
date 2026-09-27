@@ -33,6 +33,7 @@ yaparmi-site/
 ├─ js/sosyal-hikaye.js  <- Sosyal Hayat hikayesinin varsayılan hali + Firestore'dan okuma
 ├─ js/sosyal.js     <- sadece sosyal.html (hikaye oynatıcı)
 ├─ js/spor.js       <- sadece spor.html (5 bölüm)
+├─ js/spor-admin.js <- admin.html: motor oyunu kaza resmi
 ├─ js/sosyal-editor.js  <- admin.html'deki "Sosyal Hayat Düzenle" (algoritma şeması + editör)
 ├─ api/ask.js              <- Vercel serverless function, Nous Research'e soru gönderir
 ├─ audio/
@@ -196,11 +197,12 @@ service cloud.firestore {
 
     // Galeri fotoğraf önerileri — giriş yapmış (anonim de olsa) herkes
     // önerebilir, sadece admin görüp onaylayabilir/silebilir.
-    // Spor sayfası: "karne" (Berkay'ın spor istatistikleri) ve "olimpiyat"
-    // (haftanın rezilliği adayları + geçmiş kazananlar). Herkes okur, admin yazar.
+    // Spor sayfası: "karne" (Berkay'ın spor istatistikleri), "olimpiyat"
+    // (haftanın rezilliği adayları + geçmiş kazananlar) ve "motor" (Kasksız 85
+    // oyununda kaza anında çıkan resim). Herkes okur, admin yazar.
     match /spor/{docId} {
       allow read: if true;
-      allow write: if isAdmin() && docId in ['karne', 'olimpiyat'];
+      allow write: if isAdmin() && docId in ['karne', 'olimpiyat', 'motor'];
     }
 
     // Olimpiyat oyları: belge ID'si = hafta + "_" + uid, yani herkes her hafta

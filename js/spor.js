@@ -1,8 +1,8 @@
 // ============================================================
 // spor.js — sadece spor.html'de çalışır. 5 bölüm:
-//   🥊 Boks Makinesi   — güç barını doğru anda durdur (ne yaparsan yap ~300, el kırılır)
-//   ⚽ Penaltı         — yön + güç seç, şut at (asla gol olmaz, her şutta bahane)
-//   🏍️ Kasksız 85      — yokuş aşağı motor; fren bozuk, 85'i görünce...
+//   🥊 Boks Makinesi   — bar yeşile ne kadar yakınsa o kadar sert (900 altı: bazen el kırılır, çoğu zaman bahane)
+//   ⚽ Penaltı         — dönen oku doğru anda durdur, kalecide Kurban var
+//   🏍️ Kasksız 85      — 1500 m ötedeki tarlaya arabalara çarpmadan var (kaza resmi admin panelinden)
 //   📋 Spor Karnesi    — Berkay'ın "spor istatistikleri" (admin düzenler, Firestore: spor/karne)
 //   🏆 Berkay Olimpiyatı — haftanın rezilliği oylaması (Firestore: spor/olimpiyat + spor_oylar)
 // ============================================================
@@ -108,10 +108,35 @@
 
   // ============================================================
   // 🥊 BOKS MAKİNESİ
+  // Bar kırmızıdan (zayıf) yeşile (güçlü) dolar; ne kadar yeşilde basarsan o kadar
+  // yüksek vurursun (en fazla 999). 900'ün altında: %20 el kırılır, %80 bahane.
   // ============================================================
+  const BOKS_BAHANE = [
+    "Makine bozuk.",
+    "Eldiven kaydı.",
+    "Güneş gözüme geldi. (Kapalı alan.)",
+    "Isınmadım ki daha.",
+    "Makine Burger'e göre ayarlı.",
+    "Benim suçum yok.",
+    "Dün halı sahada yoruldum.",
+    "Elim hâlâ sargılı, sayılmaz.",
+    "Sensör beni tanımadı.",
+    "Alihan konuşunca konsantrem bozuldu.",
+    "Kurban KPSS sorusu sordu, aklım gitti.",
+    "Popeyes'tan yeni çıktım, midem dolu.",
+    "Bu makine Enver Paşa'dan kalma.",
+    "Yumruğum hızlı, makine yavaş.",
+    "Halil'in deposunda bütün gücümü harcadım.",
+    "Deneme vuruşuydu o, saymıyoruz.",
+    "Airdrop'u düşündüm, dikkatim dağıldı.",
+    "Soldan vursam 999'du.",
+    "Zemin ıslaktı.",
+    "Makine vurmadan önce 'hazır' demedi.",
+  ];
+
   function boks() {
     const wrap = el("div", "sp-wrap");
-    wrap.appendChild(el("p", "muted sp-desc", "Gücün barın sonuna gelince VUR. Rekor 999. Hadi bakalım."));
+    wrap.appendChild(el("p", "muted sp-desc", "Bar kırmızıdan yeşile doluyor. Ne kadar yeşilde basarsan o kadar sert vurursun. Rekor: 999."));
 
     const makine = el("div", "sp-boks-makine");
     const ekran = el("div", "sp-boks-ekran", "000");
@@ -120,15 +145,17 @@
     makine.appendChild(armut);
     wrap.appendChild(makine);
 
-    const bar = el("div", "sp-bar");
+    const bar = el("div", "sp-bar sp-bar-boks");
     const dolgu = el("div", "sp-bar-dolgu");
     bar.appendChild(dolgu);
     wrap.appendChild(bar);
 
-    const vur = btn("🥊 VUR!", "sp-big-btn");
+    const vur = btn("🥊 VUR! (boşluk)", "sp-big-btn");
     wrap.appendChild(vur);
     const mesaj = el("p", "sp-mesaj", "");
+    const bahane = el("p", "sp-bahane", "");
     wrap.appendChild(mesaj);
+    wrap.appendChild(bahane);
 
     const skorlar = el("div", "sp-tablo");
     wrap.appendChild(skorlar);
@@ -136,32 +163,25 @@
     wrap.appendChild(elSayac);
     box.appendChild(wrap);
 
-    const BAHANE = [
-      "Makine bozuk.",
-      "Eldiven kaydı.",
-      "Güneş gözüme geldi (kapalı alan).",
-      "Isınmadım ki daha.",
-      "Makine Burger'e göre ayarlı.",
-      "Benim suçum yok.",
-    ];
-
     let enIyi = lsGet("spor_boks_eniyi", 0);
     let kirik = lsGet("spor_boks_kirik", 0);
+    let bahaneSira = lsGet("spor_boks_bahane", 0);
 
     function tabloCiz() {
       skorlar.innerHTML = "";
       skorlar.appendChild(el("div", "sp-tablo-baslik", "🏆 Rekor tablosu"));
-      [
-        ["🍔 Burger", "999", "(burger yedikten sonra)"],
-        ["📦 Halil", "910", "(depo kasları)"],
-        ["📚 Kurban", "870", "(KPSS stresi)"],
-        ["🦅 Alihan", "—", "(\"Enver Paşa adına vurmam\")"],
-        ["🤕 Berkay", enIyi ? String(enIyi) : "—", "(sen)"],
-      ].forEach(([ad, skor, not]) => {
-        const r = el("div", "sp-tablo-satir");
+      const satirlar = [
+        ["🍔 Burger", 999, "(burger yedikten sonra)"],
+        ["📦 Halil", 910, "(depo kasları)"],
+        ["📚 Kurban", 870, "(KPSS stresi)"],
+        ["🦅 Alihan", -1, "(\"Enver Paşa adına vurmam\")"],
+        ["🥊 Berkay", enIyi, "(sen)"],
+      ].sort((a, b) => b[1] - a[1]);
+      satirlar.forEach(([ad, skor, not]) => {
+        const r = el("div", "sp-tablo-satir" + (ad.includes("Berkay") ? " is-sen" : ""));
         r.appendChild(el("span", "sp-tablo-ad", ad));
         r.appendChild(el("span", "sp-tablo-not muted", not));
-        r.appendChild(el("strong", "sp-tablo-skor", skor));
+        r.appendChild(el("strong", "sp-tablo-skor", skor > 0 ? String(skor) : "—"));
         skorlar.appendChild(r);
       });
       elSayac.textContent = "🦴 Bu cihazda kırılan el sayısı: " + kirik;
@@ -175,7 +195,7 @@
     let kilit = false;
     function dongu() {
       if (calisiyor) {
-        pos += yon * 1.8;
+        pos += yon * 1.5;
         if (pos >= 100) { pos = 100; yon = -1; }
         if (pos <= 0) { pos = 0; yon = 1; }
         dolgu.style.width = pos + "%";
@@ -188,43 +208,49 @@
       if (kilit) return;
       kilit = true;
       calisiyor = false;
-      const guc = pos;
-      const gercek = rand(278, 341) + Math.round(guc / 10); // ne yaparsan yap ~300
+      const skor = Math.max(0, Math.min(999, Math.round(pos * 9.99 + rand(-12, 12))));
       armut.classList.remove("is-hit");
       void armut.offsetWidth;
       armut.classList.add("is-hit");
       ses("dup");
+      mesaj.textContent = "";
+      bahane.textContent = "";
       let n = 0;
-      const hedefGoster = Math.max(gercek, Math.round(guc * 9.99)); // önce umut ver
       const sayac = setInterval(() => {
-        n += Math.ceil(hedefGoster / 25);
-        if (n >= hedefGoster) n = hedefGoster;
+        n = Math.min(skor, n + Math.max(1, Math.ceil(skor / 25)));
         ekran.textContent = String(n).padStart(3, "0");
-        if (n === hedefGoster) {
-          clearInterval(sayac);
-          setTimeout(() => {
-            ekran.textContent = String(gercek).padStart(3, "0");
-            ekran.classList.add("is-glitch");
-            ses("cit");
-            kirik++;
-            lsSet("spor_boks_kirik", kirik);
-            if (gercek > enIyi) {
-              enIyi = gercek;
-              lsSet("spor_boks_eniyi", enIyi);
-            }
-            wrap.classList.add("sp-shake");
-            mesaj.textContent =
-              (guc > 92 ? "Mükemmel zamanlama! Yine de: " : "") + gercek + ". Elinden \"çıt\" diye bir ses geldi. Berkay: \"" + sec(BAHANE) + "\"";
-            tabloCiz();
-            setTimeout(() => {
-              wrap.classList.remove("sp-shake");
-              ekran.classList.remove("is-glitch");
-              vur.textContent = "🥊 Diğer elle dene";
-              calisiyor = true;
-              kilit = false;
-            }, 900);
-          }, 350);
+        if (n < skor) return;
+        clearInterval(sayac);
+        const yeniRekor = skor > enIyi;
+        if (yeniRekor) {
+          enIyi = skor;
+          lsSet("spor_boks_eniyi", enIyi);
         }
+        if (skor >= 900) {
+          mesaj.textContent = skor === 999
+            ? "💥 999! Burger'in rekoruna ortak oldun! Salon ayakta alkışlıyor."
+            : "💪 " + skor + "! Salondakiler şokta. Burger burgerini düşürdü.";
+          bahane.textContent = "Berkay: \"Ben demiştim.\" (Kimse bir şey dememişti.)";
+        } else if (Math.random() < 0.2) {
+          ses("cit");
+          kirik++;
+          lsSet("spor_boks_kirik", kirik);
+          wrap.classList.add("sp-shake");
+          mesaj.textContent = "🦴 " + skor + ". Elinden \"çıt\" diye bir ses geldi.";
+          bahane.textContent = "Berkay: \"" + BOKS_BAHANE[bahaneSira % BOKS_BAHANE.length] + "\"";
+          bahaneSira++;
+        } else {
+          mesaj.textContent = skor + (yeniRekor ? " (kendi rekorun!)" : "") + ". Beklenen: 999.";
+          bahane.textContent = "Berkay: \"" + BOKS_BAHANE[bahaneSira % BOKS_BAHANE.length] + "\"";
+          bahaneSira++;
+        }
+        lsSet("spor_boks_bahane", bahaneSira);
+        tabloCiz();
+        setTimeout(() => {
+          wrap.classList.remove("sp-shake");
+          calisiyor = true;
+          kilit = false;
+        }, 900);
       }, 30);
     }
     vur.addEventListener("click", vurus);
@@ -243,74 +269,65 @@
 
   // ============================================================
   // ⚽ PENALTI
+  // Topun önünde soldan sağa 180° dönen bir ok var; VUR'a basınca top neredeyse
+  // okun gösterdiği yöne gider. Kalede sağa sola giden kaleci Kurban var.
   // ============================================================
   function penalti() {
     const wrap = el("div", "sp-wrap");
-    wrap.appendChild(el("p", "muted sp-desc", "Yön seç, güç barını ayarla, şutunu çek. Kaleci yok. Kolay olmalı..."));
+    wrap.appendChild(el("p", "muted sp-desc", "Ok soldan sağa dönüyor. Kaleyi gösterdiği anda VUR'a bas (ya da boşluk). Kalede Kurban var, KPSS kitabıyla."));
 
     const skor = el("div", "sp-skorbord");
     wrap.appendChild(skor);
 
     const saha = el("div", "sp-saha");
     const kale = el("div", "sp-kale");
-    ["sol", "orta", "sag"].forEach((y) => {
-      const z = el("div", "sp-kale-bolge");
-      z.dataset.yon = y;
-      kale.appendChild(z);
-    });
     saha.appendChild(kale);
+    const kaleci = el("div", "sp-kaleci", "🧤");
+    saha.appendChild(kaleci);
+    const ok = el("div", "sp-ok");
+    saha.appendChild(ok);
     const top = el("div", "sp-top", "⚽");
     saha.appendChild(top);
-    const oyuncu = el("div", "sp-oyuncu", "🧍");
-    saha.appendChild(oyuncu);
     wrap.appendChild(saha);
 
-    const bar = el("div", "sp-bar");
-    const dolgu = el("div", "sp-bar-dolgu");
-    bar.appendChild(dolgu);
-    wrap.appendChild(bar);
-
-    const yonlar = el("div", "sp-yonlar");
-    const bSol = btn("↖️ Sol", "sp-big-btn sp-yon");
-    const bOrta = btn("⬆️ Orta", "sp-big-btn sp-yon");
-    const bSag = btn("↗️ Sağ", "sp-big-btn sp-yon");
-    [bSol, bOrta, bSag].forEach((b) => yonlar.appendChild(b));
-    wrap.appendChild(yonlar);
-
+    const vur = btn("⚽ VUR! (boşluk)", "sp-big-btn");
+    wrap.appendChild(vur);
     const sonuc = el("p", "sp-mesaj", "");
     const bahane = el("p", "sp-bahane", "");
     wrap.appendChild(sonuc);
     wrap.appendChild(bahane);
     box.appendChild(wrap);
 
-    const SONUC = [
-      "Direk! Top direkten döndü, Berkay'ın ayağına geldi, Berkay ona da ıskaladı.",
-      "Auta gitti. Park halindeki arabanın alarmı çaldı.",
-      "Top tellere çarpıp suratına döndü. Günün tek isabeti.",
+    const KACAN = [
+      "Top direkten döndü.",
+      "Top auta gitti, park halindeki arabanın alarmı çaldı.",
+      "Top tellere çarpıp suratına döndü.",
       "Top Alihan'ın kafasına geldi. Alihan: \"Enver Paşa böyle şut atmazdı.\"",
-      "Kaleci yoktu. Top yine de dışarı gitti.",
-      "Topa bastı, düştü, top yerinde kaldı.",
-      "Top Burger'in elindeki burgere çarptı. Burger ağlıyor.",
-      "Kurban topu kafayla çıkardı. KPSS kitabını kafasında taşıyordu.",
-      "Top üst direğe çarpıp Halil'in depo yeleğine yapıştı.",
-      "Şut çok güzeldi. Ama öbür kaleye.",
+      "Top Burger'in burgerine çarptı. Burger ağlıyor.",
+      "Top Halil'in depo yeleğine yapıştı.",
+    ];
+    const KURTARIS = [
+      "Kurban kurtardı! KPSS kitabıyla çeldi.",
+      "Kurban kurtardı ve \"memur olunca bunu da anlatacağım\" dedi.",
+      "Kurban uzandı, topu tuttu, KPSS'ye döndü.",
     ];
     const BAHANE = [
-      "Zemin ıslaktı.",
-      "Top yamuktu.",
-      "Ayakkabım kaydı.",
-      "Güneş gözüme geldi.",
-      "Kale küçük.",
-      "Rüzgâr vardı. (Kapalı saha.)",
-      "Elim sargılı, dengem bozuldu.",
-      "Benim suçum yok.",
-      "Isınmadım daha.",
+      "Zemin ıslaktı.", "Top yamuktu.", "Ayakkabım kaydı.", "Güneş gözüme geldi.",
+      "Kale küçük.", "Rüzgâr vardı. (Kapalı saha.)", "Elim sargılı, dengem bozuldu.",
+      "Benim suçum yok.", "Kaleci önceden hareket etti.",
+    ];
+    const GOL = [
+      "GOOOL! Berkay'ın kariyerindeki ilk... yok, ilk değilmiş, yine de GOOOL!",
+      "GOOOL! Berkay formasını çıkarmaya çalıştı, kafası sıkıştı.",
+      "GOOOL! Alihan: \"Enver Paşa da böyle atardı.\"",
+      "GOOOL! Burger kutlama için burger ısmarladı. Kendine.",
+      "GOOOL! Kurban: \"KPSS'de de böyle şans olsa.\"",
     ];
 
-    let sut = lsGet("spor_penalti_sut", 0);
+    let st = lsGet("spor_penalti", { sut: 0, gol: 0 });
     function skorCiz() {
       skor.innerHTML = "";
-      [["Şut", sut], ["Gol", 0], ["Berkay kariyer golü", 0]].forEach(([a, b]) => {
+      [["Şut", st.sut], ["Gol", st.gol], ["İsabet", st.sut ? Math.round((st.gol / st.sut) * 100) + "%" : "—"]].forEach(([a, b]) => {
         const k = el("div", "sp-skor-kutu");
         k.appendChild(el("span", "muted", a));
         k.appendChild(el("strong", null, String(b)));
@@ -319,200 +336,358 @@
     }
     skorCiz();
 
-    let pos = 0;
-    let yon = 1;
-    let calisiyor = true;
+    // açı: 180 (sol) -> 0 (sağ)
+    let aci = 180;
+    let adim = -1.6;
+    let dondur = true;
+    let kaleciX = 0.5; // 0..1 kale içindeki konum
+    let kaleciYon = 1;
     let kilit = false;
     let raf = null;
+
+    function boyut() {
+      return { W: saha.clientWidth, H: saha.clientHeight };
+    }
+    function topBaslangic() {
+      const { W, H } = boyut();
+      return { x: W / 2, y: H - 34 };
+    }
+    function topKoy(x, y) {
+      top.style.left = x + "px";
+      top.style.top = y + "px";
+    }
+    function sifirlaTop() {
+      top.style.transition = "none";
+      const b = topBaslangic();
+      topKoy(b.x, b.y);
+      void top.offsetWidth;
+      top.style.transition = "";
+    }
+    sifirlaTop();
+
     function dongu() {
-      if (calisiyor) {
-        pos += yon * 2.2;
-        if (pos >= 100) { pos = 100; yon = -1; }
-        if (pos <= 0) { pos = 0; yon = 1; }
-        dolgu.style.width = pos + "%";
+      const { W } = boyut();
+      if (dondur) {
+        aci += adim;
+        if (aci <= 0) { aci = 0; adim = 1.6; }
+        if (aci >= 180) { aci = 180; adim = -1.6; }
       }
+      const b = topBaslangic();
+      ok.style.left = b.x + "px";
+      ok.style.top = b.y + "px";
+      ok.style.transform = "rotate(" + -aci + "deg)";
+      kaleciX += kaleciYon * 0.006;
+      if (kaleciX > 0.92) kaleciYon = -1;
+      if (kaleciX < 0.08) kaleciYon = 1;
+      const kaleSol = W * 0.12;
+      const kaleGen = W * 0.76;
+      kaleci.style.left = kaleSol + kaleciX * kaleGen + "px";
       raf = requestAnimationFrame(dongu);
     }
     raf = requestAnimationFrame(dongu);
 
-    function sutCek(y) {
+    function sut() {
       if (kilit) return;
       kilit = true;
-      calisiyor = false;
-      const guc = pos;
+      dondur = false;
+      ok.style.opacity = "0.3";
       ses("top");
-      sut++;
-      lsSet("spor_penalti_sut", sut);
-      const hedefX = { sol: 18, orta: 50, sag: 82 }[y];
-      // Top önce kaleye doğru gidiyor gibi yapar, sonra saçma bir yere sapar
-      top.style.left = hedefX + "%";
-      top.style.top = guc < 20 ? "55%" : "22%";
+      const { W } = boyut();
+      const b = topBaslangic();
+      const golCizgisiY = 80; // kalenin alt çizgisi (px)
+      const a = ((aci + (Math.random() * 10 - 5)) * Math.PI) / 180; // ±5° sapma
+      const dx = Math.cos(a);
+      const dy = Math.sin(a);
+      let hedefX;
+      let hedefY;
+      let durum;
+      if (dy < 0.12) {
+        // neredeyse yatay: yana gider
+        hedefX = dx > 0 ? W + 30 : -30;
+        hedefY = b.y - 30;
+        durum = "kacti";
+      } else {
+        const t = (b.y - golCizgisiY) / dy;
+        hedefX = b.x + dx * t;
+        hedefY = golCizgisiY - 30;
+        const kaleSol = W * 0.12 + 6;
+        const kaleSag = W * 0.88 - 6;
+        const kaleciPx = W * 0.12 + kaleciX * W * 0.76;
+        if (hedefX < kaleSol || hedefX > kaleSag) durum = "kacti";
+        else if (Math.abs(hedefX - kaleciPx) < 28) durum = "kurtardi";
+        else durum = "gol";
+        if (durum === "kurtardi") hedefY = golCizgisiY - 6;
+      }
+      topKoy(hedefX, hedefY);
+      st.sut++;
       setTimeout(() => {
-        let metin;
-        if (guc < 20) metin = "Top kaleye ulaşamadı, yolda durdu. Bir karınca yolunu kesti.";
-        else if (guc > 96) metin = "Top stadı aştı, Kandıra'ya düştü.";
-        else metin = sec(SONUC);
-        top.style.left = sec(["-10%", "110%", "50%", "8%", "92%"]);
-        top.style.top = sec(["-15%", "5%", "80%"]);
-        sonuc.textContent = "❌ " + metin;
-        bahane.textContent = "Berkay: \"" + sec(BAHANE) + "\"";
-        skorCiz();
-        if (sut % 20 === 0) {
-          sonuc.textContent += " 🏅 Tebrikler: " + sut + " şut, 0 gol. Berkay seviyesine ulaştın.";
+        if (durum === "gol") {
+          st.gol++;
+          sonuc.textContent = "⚽ " + sec(GOL);
+          bahane.textContent = "";
+          saha.classList.add("is-gol");
+        } else {
+          sonuc.textContent = "❌ " + (durum === "kurtardi" ? sec(KURTARIS) : sec(KACAN));
+          bahane.textContent = "Berkay: \"" + sec(BAHANE) + "\"";
         }
+        lsSet("spor_penalti", st);
+        skorCiz();
         setTimeout(() => {
-          top.style.transition = "none";
-          top.style.left = "50%";
-          top.style.top = "78%";
-          void top.offsetWidth;
-          top.style.transition = "";
-          calisiyor = true;
+          saha.classList.remove("is-gol");
+          sifirlaTop();
+          ok.style.opacity = "";
+          dondur = true;
           kilit = false;
-        }, 1100);
-      }, 450);
+        }, 1300);
+      }, 480);
     }
-    bSol.addEventListener("click", () => sutCek("sol"));
-    bOrta.addEventListener("click", () => sutCek("orta"));
-    bSag.addEventListener("click", () => sutCek("sag"));
-    temizle = () => cancelAnimationFrame(raf);
+    vur.addEventListener("click", sut);
+    function tus(e) {
+      if (e.code === "Space") {
+        e.preventDefault();
+        sut();
+      }
+    }
+    document.addEventListener("keydown", tus);
+    temizle = () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", tus);
+    };
   }
 
   // ============================================================
   // 🏍️ KASKSIZ 85
+  // Hedef: 1500 m ötedeki tarla. Yolda arabalar var, ↑/↓ ile şerit değiştir,
+  // → gaz, ← fren. Kaza olursa admin panelinden seçilen resim ekrana gelir.
   // ============================================================
+  let motorResim = null; // Firestore: spor/motor.resim
+  let motorResimYuklendi = false;
+  function motorResmiYukle() {
+    if (motorResimYuklendi || typeof db === "undefined" || !db) return;
+    motorResimYuklendi = true;
+    db.collection("spor").doc("motor").get().then((snap) => {
+      const r = snap.exists ? snap.data().resim : null;
+      if (typeof r === "string" && /^data:image\/(jpeg|png|webp);base64,/.test(r)) motorResim = r;
+    }).catch(() => { /* yoksa 💥 gösterilir */ });
+  }
+
   function motor() {
+    motorResmiYukle();
+    const HEDEF = 1500;
+    const SERIT = 3;
     const wrap = el("div", "sp-wrap");
-    wrap.appendChild(el("p", "muted sp-desc", "Bayır aşağı eve dönüyorsun, eve 2 km var. Amaç: kaza yapmadan eve varmak. GAZ'a basılı tut, gerisini sen düşün."));
+    wrap.appendChild(el("p", "muted sp-desc", "Hedef: 1500 m ötedeki tarla. Yol bayır aşağı, arabalara çarpma. ↑/↓ şerit değiştir, → gaz, ← fren (klavye ya da aşağıdaki tuşlar)."));
 
-    const gosterge = el("div", "sp-hiz");
+    const ust = el("div", "sp-motor-ust");
+    const hizEl = el("div", "sp-hiz");
     const hizSayi = el("strong", null, "0");
-    gosterge.appendChild(hizSayi);
-    gosterge.appendChild(el("span", "muted", " km/s"));
-    wrap.appendChild(gosterge);
+    hizEl.appendChild(hizSayi);
+    hizEl.appendChild(el("span", "muted", " km/s"));
+    ust.appendChild(hizEl);
+    const mesafeYazi = el("div", "sp-motor-mesafe", "🌾 Tarlaya: 1500 m");
+    ust.appendChild(mesafeYazi);
+    wrap.appendChild(ust);
 
-    const yol = el("div", "sp-yol");
-    const cizgi = el("div", "sp-yol-cizgi");
-    yol.appendChild(cizgi);
-    const moto = el("div", "sp-moto", "🏍️");
+    const yol = el("div", "sp-yol2");
+    for (let i = 1; i < SERIT; i++) {
+      const c = el("div", "sp-serit-cizgi");
+      c.style.top = (i / SERIT) * 100 + "%";
+      yol.appendChild(c);
+    }
+    const moto = el("div", "sp-moto2", "🏍️");
     yol.appendChild(moto);
+    const tarla = el("div", "sp-tarla", "🌾");
+    yol.appendChild(tarla);
     const buyuk = el("div", "sp-yol-yazi", "");
     yol.appendChild(buyuk);
+    const kazaEkran = el("div", "sp-kaza");
+    kazaEkran.hidden = true;
+    yol.appendChild(kazaEkran);
     wrap.appendChild(yol);
 
     const mesafe = el("div", "sp-bar sp-mesafe");
     const mDolgu = el("div", "sp-bar-dolgu");
     mesafe.appendChild(mDolgu);
     wrap.appendChild(mesafe);
-    const mYazi = el("p", "muted sp-small", "Eve: 2000 m");
-    wrap.appendChild(mYazi);
 
-    const kontrol = el("div", "sp-yonlar");
-    const gaz = btn("🔥 GAZ (basılı tut)", "sp-big-btn");
+    const kontrol = el("div", "sp-motor-kontrol");
+    const yukari = btn("⬆️", "sp-big-btn sp-gri sp-kare");
+    const asagi = btn("⬇️", "sp-big-btn sp-gri sp-kare");
     const fren = btn("🛑 FREN", "sp-big-btn sp-gri");
-    const kask = btn("⛑️ KASK TAK", "sp-big-btn sp-gri");
-    [gaz, fren, kask].forEach((b) => kontrol.appendChild(b));
+    const gaz = btn("🔥 GAZ", "sp-big-btn");
+    const yonler = el("div", "sp-yon-dikey");
+    yonler.appendChild(yukari);
+    yonler.appendChild(asagi);
+    kontrol.appendChild(yonler);
+    kontrol.appendChild(fren);
+    kontrol.appendChild(gaz);
     wrap.appendChild(kontrol);
 
     const mesaj = el("p", "sp-mesaj", "");
     wrap.appendChild(mesaj);
     const tekrar = btn("🔄 Tekrar bin", "sp-big-btn");
-    tekrar.hidden = true;
     wrap.appendChild(tekrar);
     box.appendChild(wrap);
 
     const KAZA = [
-      "Motor bir yöne, Berkay öbür yöne. Kask? Hangi kask.",
-      "Hastane kaydı: \"Hasta sürekli 85 diye sayıklıyor.\"",
-      "Berkay asfaltı çok yakından gördü. Asfalt da Berkay'ı.",
+      "Kasksız çarptı. Kask? Hangi kask.",
+      "Hastane kaydı: \"Hasta sürekli 'kubiii' diye sayıklıyor.\"",
+      "Berkay arabanın bagajını çok yakından gördü.",
       "Kurban ambulansı aradı, sonra KPSS'ye döndü.",
-      "Alihan: \"Enver Paşa da hızlı giderdi.\" Berkay: \"...\" (konuşamıyor)",
+      "Alihan: \"Enver Paşa da çarpardı.\"",
+      "Burger olay yerine geldi, burger yiyerek tutanak tuttu.",
+      "Halil çekiciyi depodan ayarladı, faturayı Berkay'a kesti.",
     ];
-    const FREN = [
-      "Fren bozuk. Berkay en son balata değiştirmeyi 2019'da düşünmüş.",
-      "Frene bastın. Fren \"benim suçum yok\" dedi.",
-      "Fren kolu elinde kaldı.",
-    ];
+    const ARACLAR = ["🚗", "🚙", "🚕", "🚚", "🚌", "🚜"];
 
-    let hiz = 0;
-    let yolAlinan = 0;
-    let gazda = false;
-    let gazaBasti = false;
-    let bitti = false;
-    let gordu = false;
-    let off = 0;
-    let timer = null;
+    let hiz, konum, serit, araclar, bitti, gazda, frende, gordu85, sonZaman, spawnSure, raf;
+    let frenMesaj = false;
 
-    function sifirla() {
-      hiz = 0;
-      yolAlinan = 0;
-      gazda = false;
-      gazaBasti = false;
-      bitti = false;
-      gordu = false;
-      moto.textContent = "🏍️";
-      moto.classList.remove("is-crash");
-      buyuk.textContent = "";
-      mesaj.textContent = "";
-      tekrar.hidden = true;
-      [gaz, fren, kask].forEach((b) => (b.disabled = false));
+    function seritY(i) {
+      return ((i + 0.5) / SERIT) * yol.clientHeight;
     }
 
-    function tik() {
+    function sifirla() {
+      hiz = 30;
+      konum = 0;
+      serit = 1;
+      bitti = false;
+      gazda = false;
+      frende = false;
+      gordu85 = false;
+      spawnSure = 1.2;
+      araclar.forEach((a) => a.el.remove());
+      araclar = [];
+      kazaEkran.hidden = true;
+      kazaEkran.innerHTML = "";
+      buyuk.textContent = "";
+      mesaj.textContent = "";
+      moto.classList.remove("is-crash");
+      moto.textContent = "🏍️";
+      tekrar.hidden = true;
+      tarla.style.left = "110%";
+      sonZaman = performance.now();
+    }
+    araclar = [];
+
+    function seritDegistir(d) {
       if (bitti) return;
-      // Bayır aşağı: gaz olmasa da hız kendiliğinden artar
-      hiz += gazda ? 1.1 : 0.4;
-      yolAlinan += (hiz / 3.6) * 0.05;
-      off = (off + hiz * 0.12) % 40;
-      cizgi.style.backgroundPositionX = -off + "px";
-      yol.style.setProperty("--titreme", Math.min(hiz / 85, 1) * 3 + "px");
-      yol.classList.toggle("is-fast", hiz > 60);
-      hizSayi.textContent = String(Math.floor(hiz));
-      mDolgu.style.width = Math.min((yolAlinan / 2000) * 100, 100) + "%";
-      mYazi.textContent = "Eve: " + Math.max(0, Math.round(2000 - yolAlinan)) + " m";
-      if (hiz >= 85 && !gordu) {
-        gordu = true;
-        buyuk.textContent = "KUBİİİ 85'İ GÖRDÜM!";
-        setTimeout(kaza, 1200);
-      }
+      serit = Math.max(0, Math.min(SERIT - 1, serit + d));
     }
 
     function kaza() {
       bitti = true;
       ses("carpisma");
-      moto.textContent = "💥";
       moto.classList.add("is-crash");
-      buyuk.textContent = "";
-      mesaj.textContent =
-        (gazaBasti ? "" : "Gaza hiç basmadın ama bayır aşağı motor kendi kendine 85'i gördü. ") +
-        sec(KAZA) + " (Eve kalan: " + Math.round(2000 - yolAlinan) + " m)";
-      [gaz, fren, kask].forEach((b) => (b.disabled = true));
+      moto.textContent = "💥";
+      kazaEkran.hidden = false;
+      kazaEkran.innerHTML = "";
+      if (motorResim) {
+        const img = el("img");
+        img.src = motorResim;
+        img.alt = "Kaza";
+        kazaEkran.appendChild(img);
+      } else {
+        kazaEkran.appendChild(el("div", "sp-kaza-emoji", "💥"));
+      }
+      kazaEkran.appendChild(el("div", "sp-kaza-yazi", "KAZA! " + Math.round(konum) + " m"));
+      mesaj.textContent = sec(KAZA) + " (Tarlaya kalan: " + Math.max(0, Math.round(HEDEF - konum)) + " m)";
       tekrar.hidden = false;
     }
 
-    function gazBas(e) {
-      e.preventDefault();
-      if (bitti) return;
-      gazda = true;
-      gazaBasti = true;
+    function kazandi() {
+      bitti = true;
+      buyuk.textContent = "🌾 TARLAYA VARDI!";
+      mesaj.textContent = "Berkay tarlaya kazasız vardı! Kasksız ama sağ salim. Traktörcü amca: \"Hayırdır evlat, bu hızla nereye?\"";
+      tekrar.hidden = false;
     }
-    function gazBirak() {
-      gazda = false;
+
+    function kare(t) {
+      const dt = Math.min(0.05, (t - sonZaman) / 1000);
+      sonZaman = t;
+      if (!bitti) {
+        // Bayır aşağı: kendiliğinden hızlanır. Gaz daha çok, fren yavaşlatır.
+        hiz += (2.5 + (gazda ? 16 : 0) - (frende ? 28 : 0)) * dt;
+        hiz = Math.max(10, Math.min(140, hiz));
+        konum += (hiz / 3.6) * dt;
+        if (hiz >= 85 && !gordu85) {
+          gordu85 = true;
+          buyuk.textContent = "KUBİİİ 85'İ GÖRDÜM!";
+          setTimeout(() => { if (!bitti) buyuk.textContent = ""; }, 1800);
+        }
+        const W = yol.clientWidth;
+        const pxm = W / 90; // ekranda ~90 metre görünüyor
+        // araç üret
+        spawnSure -= dt * (hiz / 60);
+        if (spawnSure <= 0 && konum < HEDEF - 60) {
+          spawnSure = 0.9 + Math.random() * 1.2;
+          const s = rand(0, SERIT - 1);
+          const e = el("div", "sp-arac", sec(ARACLAR));
+          yol.appendChild(e);
+          araclar.push({ el: e, x: W + 40, serit: s, hiz: rand(25, 55) });
+        }
+        const motoX = W * 0.16;
+        araclar = araclar.filter((a) => {
+          a.x -= ((hiz - a.hiz) / 3.6) * dt * pxm;
+          a.el.style.left = a.x + "px";
+          a.el.style.top = seritY(a.serit) + "px";
+          if (a.serit === serit && Math.abs(a.x - motoX) < 34) kaza();
+          if (a.x < -60 || a.x > W + 80) {
+            a.el.remove();
+            return false;
+          }
+          return true;
+        });
+        moto.style.top = seritY(serit) + "px";
+        const kalan = HEDEF - konum;
+        tarla.style.left = kalan < 90 ? motoX + kalan * pxm + "px" : "110%";
+        hizSayi.textContent = String(Math.floor(hiz));
+        mesafeYazi.textContent = "🌾 Tarlaya: " + Math.max(0, Math.round(kalan)) + " m";
+        mDolgu.style.width = Math.min(100, (konum / HEDEF) * 100) + "%";
+        yol.style.setProperty("--kay", -((konum * pxm) % 60) + "px");
+        yol.classList.toggle("is-fast", hiz > 85);
+        if (!bitti && konum >= HEDEF) kazandi();
+      }
+      raf = requestAnimationFrame(kare);
     }
-    gaz.addEventListener("pointerdown", gazBas);
-    gaz.addEventListener("pointerup", gazBirak);
-    gaz.addEventListener("pointerleave", gazBirak);
-    gaz.addEventListener("pointercancel", gazBirak);
-    fren.addEventListener("click", () => {
-      if (!bitti) mesaj.textContent = sec(FREN);
-    });
-    kask.addEventListener("click", () => {
-      if (!bitti) mesaj.textContent = "Kask yok. Evde unutmuş. Aslında hiç almamış.";
-    });
+
+    function basili(b, ac, kapa) {
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); ac(); });
+      ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => b.addEventListener(ev, kapa));
+    }
+    basili(gaz, () => (gazda = true), () => (gazda = false));
+    basili(fren, () => {
+      frende = true;
+      if (!frenMesaj) {
+        frenMesaj = true;
+        mesaj.textContent = "Fren çalışıyor! Berkay şaşırdı. (Balatalar 2019'dan kalma ama olsun.)";
+      }
+    }, () => (frende = false));
+    yukari.addEventListener("click", () => seritDegistir(-1));
+    asagi.addEventListener("click", () => seritDegistir(1));
     tekrar.addEventListener("click", sifirla);
 
+    function tusBas(e) {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
+      if (e.key === "ArrowUp" && !e.repeat) seritDegistir(-1);
+      if (e.key === "ArrowDown" && !e.repeat) seritDegistir(1);
+      if (e.key === "ArrowRight") gazda = true;
+      if (e.key === "ArrowLeft") frende = true;
+    }
+    function tusBirak(e) {
+      if (e.key === "ArrowRight") gazda = false;
+      if (e.key === "ArrowLeft") frende = false;
+    }
+    document.addEventListener("keydown", tusBas);
+    document.addEventListener("keyup", tusBirak);
+
     sifirla();
-    timer = setInterval(tik, 50);
-    temizle = () => clearInterval(timer);
+    raf = requestAnimationFrame(kare);
+    temizle = () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", tusBas);
+      document.removeEventListener("keyup", tusBirak);
+    };
   }
 
   // ============================================================

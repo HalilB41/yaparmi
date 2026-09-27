@@ -58,6 +58,19 @@
           <p class="muted" style="margin:10px 0 0; font-size:0.85rem;">Hikaye, oyundaki haliyle tam ekran açılır. Yazılara ve seçeneklere tıklayıp olduğu yerde düzenleyebilirsin.</p>
         </div>
 
+        <div class="panel card admin-section">
+          <h2>🏍️ Spor: Kasksız 85 kaza resmi</h2>
+          <p class="muted" style="margin:0 0 10px; font-size:0.85rem;">Spor sayfasındaki motor oyununda Berkay kaza yapınca ekrana çıkacak resim. Resim yoksa 💥 görünür.</p>
+          <div class="se-img-box">
+            <img id="motorResimOnizleme" alt="Kaza resmi" hidden style="width:120px;height:120px;border-radius:12px;object-fit:cover;border:2px solid var(--accent);" />
+            <div>
+              <input type="file" id="motorResimDosya" accept="image/*" />
+              <button type="button" class="admin-btn reject se-small" id="motorResimSil" hidden>Resmi kaldır</button>
+              <p class="suggest-status" id="motorResimDurum"></p>
+            </div>
+          </div>
+        </div>
+
         <!-- Tam ekran Sosyal Hayat editörü: oyunun birebir aynısı, yerinde düzenleme -->
         <div id="sosyalEditor" class="se-overlay" hidden>
           <header class="se-bar">
@@ -159,5 +172,6 @@
   <script src="js/admin.js"></script>
   <script src="js/sosyal-hikaye.js"></script>
   <script src="js/sosyal-editor.js"></script>
+  <script src="js/spor-admin.js"></script>
 </body>
 </html>
