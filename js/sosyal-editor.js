@@ -310,13 +310,18 @@
   const golcukBanner = $("seGolcukBanner");
   function golcukBannerGuncelle() {
     if (!golcukBanner || !hikaye) return;
-    golcukBanner.hidden = !!hikaye.dugumler.gk1;
+    // gk_h1 sadece uzun (v2) sürümde var: yoksa ya Gölcük hiç yok ya da eski kısa sürüm var
+    golcukBanner.hidden = !!hikaye.dugumler.gk_h1;
   }
   if (golcukBanner) {
     $("seGolcukAdd").addEventListener("click", () => {
       const g = window.SosyalHikaye.golcuk();
       const bas = hikaye.dugumler[hikaye.baslangic];
-      bas.secenekler = bas.secenekler.filter((s) => !/kerhan/i.test(s.etiket));
+      // Kerhane seçeneğini ve eski (kısa) Gölcük dalını kaldır
+      bas.secenekler = bas.secenekler.filter((s) => !/kerhan/i.test(s.etiket) && s.hedef !== "gk1");
+      Object.keys(hikaye.dugumler).forEach((id) => {
+        if (/^gk/.test(id)) delete hikaye.dugumler[id];
+      });
       Object.assign(hikaye.dugumler, g.dugumler);
       if (bas.secenekler.length >= MAX_SECENEK) bas.secenekler.pop();
       bas.secenekler.push(g.secenek);
@@ -325,7 +330,7 @@
       degisti();
       golcukBannerGuncelle();
       ciz(true);
-      setStatus("🚗 Gölcük senaryosu eklendi, Kerhane dalı kaldırıldı. Yayına almak için 💾 Kaydet ve yayınla'ya bas.");
+      setStatus("🚗 Yeni uzun Gölcük senaryosu eklendi. Yayına almak için 💾 Kaydet ve yayınla'ya bas.");
     });
   }
 
