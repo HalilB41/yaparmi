@@ -248,48 +248,24 @@
     });
   }
 
-  // İlk sorunlu adıma giden yolu bulur ki oraya götürebilelim
-  function yolBul(hedefId) {
-    const onceki = { [hikaye.baslangic]: null };
-    const kuyruk = [hikaye.baslangic];
-    while (kuyruk.length) {
-      const id = kuyruk.shift();
-      if (id === hedefId) break;
-      hikaye.dugumler[id].secenekler.forEach((s) => {
-        if (hikaye.dugumler[s.hedef] && !(s.hedef in onceki)) {
-          onceki[s.hedef] = id;
-          kuyruk.push(s.hedef);
-        }
+  // Yarım kalan (yazısı boş) adım ve seçenekleri sayar. Kaydı ENGELLEMEZ:
+  // bunlar oyunda gizlenir, sen tamamladıkça görünür hale gelir.
+  function yarimSay() {
+    let n = 0;
+    Object.values(hikaye.dugumler).forEach((d) => {
+      if (!d.metin.trim()) n++;
+      d.secenekler.forEach((s) => {
+        if (!s.etiket.trim()) n++;
       });
-    }
-    const yol = [];
-    let cur = hedefId;
-    while (cur) {
-      yol.unshift(cur);
-      cur = onceki[cur];
-    }
-    return yol[0] === hikaye.baslangic ? yol : [hikaye.baslangic];
-  }
-
-  function dogrula() {
-    for (const [id, d] of Object.entries(hikaye.dugumler)) {
-      if (!d.metin.trim()) return { id, t: "Bu adımın yazısı boş." };
-      for (const s of d.secenekler) {
-        if (!s.etiket.trim()) return { id, t: "Bu adımda yazısı boş bir seçenek var." };
-      }
-    }
-    return null;
+    });
+    return n;
   }
 
   saveBtn.addEventListener("click", async () => {
     ulasilamayanlariTemizle();
-    const hata = dogrula();
-    if (hata) {
-      gecmis = yolBul(hata.id);
-      ciz(true);
-      setStatus("⚠️ Kaydedilmedi: " + hata.t + " (Seni o adıma getirdim.)");
-      return;
-    }
+    gecmis = gecmis.filter((g) => hikaye.dugumler[g]);
+    if (!gecmis.length) gecmis = [hikaye.baslangic];
+    const yarim = yarimSay();
     const temiz = window.SosyalHikaye.temizle(hikaye);
     if (JSON.stringify(temiz).length > 900000) {
       setStatus("⚠️ Hikaye çok uzun oldu, biraz kısalt.");
@@ -305,7 +281,11 @@
       });
       kirli = false;
       saveBtn.classList.remove("is-dirty");
-      setStatus("✅ Kaydedildi! Sosyal Hayat sayfası artık bu hikayeyi gösteriyor.");
+      setStatus(
+        "✅ Kaydedildi! Sosyal Hayat sayfası artık bu hikayeyi gösteriyor." +
+          (yarim ? " (" + yarim + " yarım yazı var — tamamlanana kadar oyunda görünmüyorlar.)" : "")
+      );
+      golcukBannerGuncelle();
     } catch (err) {
       console.error("Hikaye kaydedilemedi:", err.message);
       setStatus("⚠️ Kaydedilemedi: " + err.message);
@@ -318,8 +298,36 @@
     hikaye = window.SosyalHikaye.varsayilan();
     gecmis = [hikaye.baslangic];
     degisti();
+    golcukBannerGuncelle();
     ciz(true);
   });
+
+  // ---------------- Gölcük senaryosu (tek tık ekleme) ----------------
+  // Firestore'daki hikayede Gölcük dalı yoksa editörün üstünde bir buton
+  // çıkar. Basınca başlangıçtaki "Kerhane..." seçeneğini ve ona bağlı tüm
+  // adımları kaldırır, yerine Gölcük senaryosunu ekler. İzmir ve ev
+  // dallarına dokunmaz. Sonra "Kaydet ve yayınla" demek yeterli.
+  const golcukBanner = $("seGolcukBanner");
+  function golcukBannerGuncelle() {
+    if (!golcukBanner || !hikaye) return;
+    golcukBanner.hidden = !!hikaye.dugumler.gk1;
+  }
+  if (golcukBanner) {
+    $("seGolcukAdd").addEventListener("click", () => {
+      const g = window.SosyalHikaye.golcuk();
+      const bas = hikaye.dugumler[hikaye.baslangic];
+      bas.secenekler = bas.secenekler.filter((s) => !/kerhan/i.test(s.etiket));
+      Object.assign(hikaye.dugumler, g.dugumler);
+      if (bas.secenekler.length >= MAX_SECENEK) bas.secenekler.pop();
+      bas.secenekler.push(g.secenek);
+      ulasilamayanlariTemizle();
+      gecmis = [hikaye.baslangic];
+      degisti();
+      golcukBannerGuncelle();
+      ciz(true);
+      setStatus("🚗 Gölcük senaryosu eklendi, Kerhane dalı kaldırıldı. Yayına almak için 💾 Kaydet ve yayınla'ya bas.");
+    });
+  }
 
   // ---------------- Berkay'ın resmi ----------------
   function resmiGoster(src) {
@@ -369,6 +377,7 @@
       gecmis = [hikaye.baslangic];
       setStatus(kaynak === "firestore" ? "" : "Şu an varsayılan hikaye gösteriliyor (henüz hiç kaydedilmedi).");
     }
+    golcukBannerGuncelle();
     ciz(true);
   }
 

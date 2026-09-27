@@ -42,7 +42,12 @@
     textEl.textContent = d.metin;
     choicesEl.innerHTML = "";
 
-    const gecerli = d.secenekler.filter((s) => s.etiket);
+    // Admin'in henüz yazmadığı (yarım kalan) seçenekler oyunda gizlenir:
+    // buton yazısı boşsa ya da gittiği adımın metni boşsa gösterilmez.
+    const gecerli = d.secenekler.filter((s) => {
+      const hedef = hikaye.dugumler[s.hedef];
+      return s.etiket.trim() && hedef && hedef.metin.trim();
+    });
     gecerli.forEach((s) => {
       const btn = document.createElement("button");
       btn.type = "button";
