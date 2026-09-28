@@ -90,6 +90,66 @@
     }
   }
 
+  // 🏍️ 85'i geçince çalan ses (audio/kubi85.mp3)
+  // Tarayıcılar sesi ancak kullanıcı bir tuşa bastıktan sonra çalmaya izin verir;
+  // bu yüzden ilk gaz/şerit tuşunda sesin kilidini açıp dosyayı önceden yüklüyoruz.
+  const KUBI_SES = "audio/kubi85.mp3";
+  let kubiBuf = null;
+  let kubiYukleniyor = false;
+  let kubiKaynak = null;
+  let kubiYedek = null; // Web Audio yoksa <audio> ile çal
+  function kubiKilidiAc() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) {
+        if (!kubiYedek) {
+          kubiYedek = new Audio(KUBI_SES);
+          kubiYedek.preload = "auto";
+        }
+        return;
+      }
+      if (!ac) ac = new Ctx();
+      if (ac.state === "suspended") ac.resume();
+      if (kubiBuf || kubiYukleniyor) return;
+      kubiYukleniyor = true;
+      fetch(KUBI_SES)
+        .then((r) => r.arrayBuffer())
+        .then((b) => new Promise((ok, hata) => ac.decodeAudioData(b, ok, hata)))
+        .then((buf) => (kubiBuf = buf))
+        .catch(() => (kubiYukleniyor = false));
+    } catch {
+      /* ses yoksa oyun yine çalışır */
+    }
+  }
+  function kubiCal() {
+    try {
+      kubiDurdur();
+      if (ac && kubiBuf) {
+        if (ac.state === "suspended") ac.resume();
+        kubiKaynak = ac.createBufferSource();
+        kubiKaynak.buffer = kubiBuf;
+        kubiKaynak.connect(ac.destination);
+        kubiKaynak.start();
+      } else {
+        if (!kubiYedek) kubiYedek = new Audio(KUBI_SES);
+        kubiYedek.currentTime = 0;
+        const p = kubiYedek.play();
+        if (p && p.catch) p.catch(() => {});
+      }
+    } catch {
+      /* sessiz geç */
+    }
+  }
+  function kubiDurdur() {
+    try {
+      if (kubiKaynak) kubiKaynak.stop();
+    } catch {
+      /* zaten bitmiş */
+    }
+    kubiKaynak = null;
+    if (kubiYedek) kubiYedek.pause();
+  }
+
   let temizle = null; // aktif bölümün zamanlayıcılarını durdurmak için
   let isAdmin = false;
   let aktif = "boks";
@@ -555,6 +615,7 @@
       gazda = false;
       frende = false;
       gordu85 = false;
+      kubiDurdur();
       spawnSure = 1.2;
       araclar.forEach((a) => a.el.remove());
       araclar = [];
@@ -616,6 +677,7 @@
         if (hiz >= 85 && !gordu85) {
           gordu85 = true;
           buyuk.textContent = "KUBİİİ 85'İ GÖRDÜM!";
+          kubiCal();
           setTimeout(() => { if (!bitti) buyuk.textContent = ""; }, 1800);
         }
         const W = yol.clientWidth;
@@ -655,7 +717,7 @@
     }
 
     function basili(b, ac, kapa) {
-      b.addEventListener("pointerdown", (e) => { e.preventDefault(); ac(); });
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); kubiKilidiAc(); ac(); });
       ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => b.addEventListener(ev, kapa));
     }
     basili(gaz, () => (gazda = true), () => (gazda = false));
@@ -666,12 +728,16 @@
         mesaj.textContent = "Fren çalışıyor! Berkay şaşırdı. (Balatalar 2019'dan kalma ama olsun.)";
       }
     }, () => (frende = false));
-    yukari.addEventListener("click", () => seritDegistir(-1));
-    asagi.addEventListener("click", () => seritDegistir(1));
-    tekrar.addEventListener("click", sifirla);
+    yukari.addEventListener("click", () => { kubiKilidiAc(); seritDegistir(-1); });
+    asagi.addEventListener("click", () => { kubiKilidiAc(); seritDegistir(1); });
+    tekrar.addEventListener("click", () => { kubiKilidiAc(); sifirla(); });
+    wrap.addEventListener("pointerdown", kubiKilidiAc);
 
     function tusBas(e) {
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+        kubiKilidiAc();
+      }
       if (e.key === "ArrowUp" && !e.repeat) seritDegistir(-1);
       if (e.key === "ArrowDown" && !e.repeat) seritDegistir(1);
       if (e.key === "ArrowRight") gazda = true;
@@ -688,6 +754,7 @@
     raf = requestAnimationFrame(kare);
     temizle = () => {
       cancelAnimationFrame(raf);
+      kubiDurdur();
       document.removeEventListener("keydown", tusBas);
       document.removeEventListener("keyup", tusBirak);
     };
