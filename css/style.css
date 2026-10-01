@@ -3,15 +3,15 @@
    bulandırıcı" duruyordu — artık HER YERDE aynı altın tonunun açık/koyu
    halleri kullanılıyor, başka hiçbir renk yarışmıyor. */
 :root {
-  --bg-1: #140f24;
-  --bg-2: #241a3d;
-  --accent: #e0a72e;
-  --accent-2: #b9860f;
-  --accent-3: #ffd66b;
-  --card-bg: rgba(255, 255, 255, 0.06);
-  --card-border: rgba(255, 255, 255, 0.14);
-  --text: #f5f3ff;
-  --text-dim: #b7b0c9;
+  --bg-1: #07090d;
+  --bg-2: #11151d;
+  --accent: #7c5cff;
+  --accent-2: #5b3fd6;
+  --accent-3: #b8a7ff;
+  --card-bg: rgba(255, 255, 255, 0.055);
+  --card-border: rgba(255, 255, 255, 0.10);
+  --text: #f5f7fb;
+  --text-dim: #9aa4b2;
   --radius: 20px;
   font-size: 16px;
 }
@@ -61,8 +61,8 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  filter: blur(60px);
-  opacity: 0.55;
+  filter: blur(80px);
+  opacity: 0.32;
 }
 .blob {
   position: absolute;
@@ -168,7 +168,7 @@ body {
   height: 48px;
   border-radius: 50%;
   border: 2px solid var(--accent);
-  background: rgba(20, 10, 40, 0.85);
+  background: rgba(9, 11, 16, 0.88);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
@@ -208,12 +208,12 @@ body {
   width: min(230px, 78vw);
   max-height: calc(100vh - 100px);
   overflow-y: auto;
-  background: rgba(18, 10, 36, 0.98);
+  background: rgba(11, 14, 20, 0.98);
   border: 1px solid var(--card-border);
   border-radius: 22px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -253,7 +253,7 @@ body {
   font-size: 1.15rem;
   background: rgba(255, 255, 255, 0.1);
 }
-.menu-item .fab-icon { background: rgba(224, 167, 46, 0.22); }
+.menu-item .fab-icon { background: rgba(124, 92, 255, 0.22); }
 
 /* ---------------- Sağ üst: Giriş Yap / Kayıt Ol ----------------
    Hamburger gibi bu da gerçek ekran köşesine sabitleniyor. */
@@ -269,7 +269,7 @@ body {
   padding: 10px 16px;
   border-radius: 12px;
   border: 1px solid var(--card-border);
-  background: rgba(20, 10, 40, 0.5);
+  background: rgba(10, 13, 18, 0.72);
   color: var(--text);
   font-size: 0.8rem;
   font-weight: 600;
@@ -407,7 +407,7 @@ body {
 }
 .input-with-prefix:focus-within {
   border-color: var(--accent-2);
-  box-shadow: 0 0 0 3px rgba(224, 167, 46, 0.35);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.35);
 }
 
 .berkay-prefix {
@@ -850,15 +850,15 @@ table.admin-table tr:last-child td { border-bottom: none; }
 }
 .g2048-tile[data-value="2"] { background: rgba(255, 255, 255, 0.1); }
 .g2048-tile[data-value="4"] { background: rgba(255, 255, 255, 0.16); }
-.g2048-tile[data-value="8"] { background: #e0a72e; color: white; }
-.g2048-tile[data-value="16"] { background: #d69524; color: white; }
-.g2048-tile[data-value="32"] { background: #cc8420; color: white; }
-.g2048-tile[data-value="64"] { background: #c2721c; color: white; }
-.g2048-tile[data-value="128"] { background: #b9860f; color: white; font-size: 1rem; }
-.g2048-tile[data-value="256"] { background: #ffd66b; color: #241a3d; font-size: 1rem; }
-.g2048-tile[data-value="512"] { background: #ffca47; color: #241a3d; font-size: 1rem; }
-.g2048-tile[data-value="1024"] { background: #ffbe23; color: #241a3d; font-size: 0.85rem; }
-.g2048-tile[data-value="2048"] { background: #ffb300; color: #241a3d; font-size: 0.85rem; box-shadow: 0 0 0 2px var(--accent-3); }
+.g2048-tile[data-value="8"] { background: #7c5cff; color: white; }
+.g2048-tile[data-value="16"] { background: #7048df; color: white; }
+.g2048-tile[data-value="32"] { background: #663fd8; color: white; }
+.g2048-tile[data-value="64"] { background: #5d38c9; color: white; }
+.g2048-tile[data-value="128"] { background: #5b3fd6; color: white; font-size: 1rem; }
+.g2048-tile[data-value="256"] { background: #b8a7ff; color: #11151d; font-size: 1rem; }
+.g2048-tile[data-value="512"] { background: #a993ff; color: #11151d; font-size: 1rem; }
+.g2048-tile[data-value="1024"] { background: #9880ff; color: #11151d; font-size: 0.85rem; }
+.g2048-tile[data-value="2048"] { background: #8b6dff; color: #11151d; font-size: 0.85rem; box-shadow: 0 0 0 2px var(--accent-3); }
 
 /* ---- Yön tuşları (2048 + Yılan ortak) ---- */
 .dpad {
@@ -1036,7 +1036,7 @@ table.admin-table tr:last-child td { border-bottom: none; }
   flex: 1; width: 100%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   border-radius: 8px;
-  background: linear-gradient(160deg, rgba(224,167,46,0.35), rgba(185,134,15,0.15));
+  background: linear-gradient(160deg, rgba(124,92,255,0.35), rgba(185,134,15,0.15));
   color: var(--text);
   font-size: 0.6rem;
 }
@@ -1171,7 +1171,7 @@ table.admin-table tr:last-child td { border-bottom: none; }
   padding: 18px;
   border-radius: 16px;
   border: 1px solid var(--accent);
-  background: rgba(224, 167, 46, 0.12);
+  background: rgba(124, 92, 255, 0.12);
 }
 .optik-result-emoji { font-size: 2.2rem; margin-bottom: 6px; }
 .optik-result-text { font-weight: 700; margin-bottom: 12px; }
@@ -1206,7 +1206,7 @@ table.admin-table tr:last-child td { border-bottom: none; }
   border-radius: 50%;
   border: 3px solid var(--accent);
   background: rgba(0,0,0,0.3);
-  box-shadow: 0 0 0 6px rgba(224,167,46,0.15), 0 12px 30px rgba(0,0,0,0.4);
+  box-shadow: 0 0 0 6px rgba(124,92,255,0.15), 0 12px 30px rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1250,14 +1250,14 @@ table.admin-table tr:last-child td { border-bottom: none; }
   padding: 14px 16px;
   border-radius: 14px;
   border: 1px solid var(--accent);
-  background: rgba(224,167,46,0.12);
+  background: rgba(124,92,255,0.12);
   color: var(--text);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s, background 0.15s;
 }
-.story-choice:hover { background: rgba(224,167,46,0.28); transform: translateY(-2px); }
+.story-choice:hover { background: rgba(124,92,255,0.28); transform: translateY(-2px); }
 .story-footer {
   display: flex;
   gap: 14px;
@@ -1337,7 +1337,7 @@ body.se-open { overflow: hidden; }
   cursor: pointer;
   color: var(--text);
 }
-.se-crumb.is-current { border-color: var(--accent-3); background: rgba(224,167,46,0.25); }
+.se-crumb.is-current { border-color: var(--accent-3); background: rgba(124,92,255,0.25); }
 .se-crumb-sep { color: var(--text-dim); font-size: 0.8rem; }
 
 .se-live { width: 100%; max-width: 560px; }
@@ -1435,7 +1435,7 @@ body.se-open { overflow: hidden; }
   margin-bottom: 12px;
   border-radius: 14px;
   border: 1px solid var(--accent);
-  background: rgba(224,167,46,0.14);
+  background: rgba(124,92,255,0.14);
   font-size: 0.85rem;
   line-height: 1.45;
 }
@@ -1605,7 +1605,7 @@ body.se-open { overflow: hidden; }
 /* Olimpiyat */
 .sp-gecmis { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .sp-madalya { display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); }
-.sp-madalya.is-son { border-color: var(--accent); background: rgba(224,167,46,0.14); }
+.sp-madalya.is-son { border-color: var(--accent); background: rgba(124,92,255,0.14); }
 .sp-madalya-ikon { font-size: 2rem; }
 .sp-madalya-baslik { font-size: 0.72rem; color: var(--text-dim); font-weight: 700; }
 .sp-madalya-metin { font-weight: 700; }
@@ -1620,7 +1620,7 @@ body.se-open { overflow: hidden; }
 
 /* Admin alanları (karne + olimpiyat) */
 .sp-admin { margin-top: 14px; }
-.sp-admin-form { text-align: left; padding: 12px; border-radius: 14px; border: 1px dashed var(--accent); background: rgba(224,167,46,0.06); }
+.sp-admin-form { text-align: left; padding: 12px; border-radius: 14px; border: 1px dashed var(--accent); background: rgba(124,92,255,0.06); }
 .sp-admin-satir { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
 .sp-admin-satir .sp-aday-metin { flex: 1; }
 .sp-admin-alt { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
@@ -1630,7 +1630,7 @@ body.se-open { overflow: hidden; }
 .sp-kaydet { border-color: var(--accent); }
 
 /* ---- Spor v2: boks barı, dönen ok, motor şeritleri ---- */
-.sp-bar-boks .sp-bar-dolgu { background: linear-gradient(90deg, #e05252, #f0a030 45%, #ffd66b 70%, #4ade80); background-size: 460px 100%; }
+.sp-bar-boks .sp-bar-dolgu { background: linear-gradient(90deg, #e05252, #f0a030 45%, #b8a7ff 70%, #4ade80); background-size: 460px 100%; }
 .sp-tablo-satir.is-sen { color: var(--accent-3); font-weight: 700; }
 
 .sp-kaleci {
