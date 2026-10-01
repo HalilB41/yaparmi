@@ -1931,3 +1931,308 @@ button:hover { filter: none; }
   body { padding-left: 12px; padding-right: 12px; }
   .card { border-radius: 16px; }
 }
+
+/* ============================================================
+   Admin: resim/dosya yükleme satırı (motor kaza resmi, ehliyet
+   şoför resimleri/çarpışma sesi aynı düzeni kullanıyor)
+   ============================================================ */
+.se-img-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.se-img-box:last-child { margin-bottom: 0; }
+
+/* ============================================================
+   Ehliyet sayfası — yazılı sınav, araç seç, sürüş sınavı, L Park
+   ============================================================ */
+
+.eh-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 18px;
+}
+.eh-step {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.eh-step.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+  color: white;
+}
+
+.eh-wrap { max-width: 420px; margin: 0 auto; }
+.eh-desc { font-size: 0.85rem; }
+
+/* ---- Yazılı sınav ---- */
+.eh-quiz-progress {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.eh-quiz-question {
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+.eh-quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.eh-quiz-option {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  text-align: left;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.eh-quiz-option:hover:not(:disabled) { border-color: var(--accent); }
+.eh-quiz-option:disabled { cursor: default; }
+.eh-quiz-option.is-correct { background: rgba(70, 200, 120, 0.22); border-color: #46c878; }
+.eh-quiz-option.is-wrong { background: rgba(224, 84, 90, 0.22); border-color: #e0545a; }
+
+.eh-quiz-result { text-align: center; padding: 10px 0; }
+.eh-quiz-emoji { font-size: 2.4rem; margin-bottom: 6px; }
+.eh-quiz-result h3 { margin: 0 0 6px; }
+.eh-quiz-result p { margin: 0 0 14px; }
+
+/* ---- Araç seç ---- */
+.eh-car-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.eh-car-card {
+  flex: 1 1 100px;
+  max-width: 130px;
+  padding: 12px 8px;
+  border-radius: 14px;
+  border: 2px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.05);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.eh-car-card:hover { transform: translateY(-2px); }
+.eh-car-card.is-selected { border-color: var(--accent); background: rgba(255, 255, 255, 0.1); }
+.eh-car-name { margin-top: 8px; font-size: 0.72rem; font-weight: 700; color: var(--text-dim); }
+
+.eh-car-shape {
+  width: 60px;
+  height: 80px;
+  margin: 0 auto;
+  border-radius: 16px 16px 10px 10px;
+  background: var(--eh-car-color, #888);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+.eh-car-window,
+.eh-player-window {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+.eh-car-window img,
+.eh-player-window img { width: 100%; height: 100%; object-fit: cover; }
+
+.eh-start-btn { display: block; margin: 0 auto; }
+
+/* ---- Sürüş sınavı ---- */
+.eh-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.eh-hud-item { font-size: 0.8rem; font-weight: 700; color: var(--text); }
+.eh-lives { letter-spacing: 2px; }
+
+.eh-road {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 380px;
+  margin: 0 auto;
+  background: #1b2330;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.eh-lane-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0 14px, transparent 14px 28px);
+  transform: translateX(-1px);
+}
+.eh-player-car {
+  position: absolute;
+  bottom: 14px;
+  width: 36px;
+  height: 52px;
+  margin-left: -18px;
+  border-radius: 10px 10px 6px 6px;
+  background: var(--eh-car-color, #888);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  transition: left 0.15s ease-out;
+  z-index: 2;
+}
+.eh-player-car .eh-player-window { width: 22px; height: 22px; font-size: 0.75rem; }
+.eh-player-car.eh-flash { animation: eh-flash 0.15s ease-in-out 3; }
+@keyframes eh-flash {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(2.4); }
+}
+.eh-obstacle {
+  position: absolute;
+  margin-left: -16px;
+  font-size: 1.6rem;
+  line-height: 1;
+  z-index: 1;
+}
+
+.eh-progress-bar {
+  width: 100%;
+  max-width: 320px;
+  height: 8px;
+  margin: 10px auto 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.eh-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.2s linear;
+}
+
+.eh-dpad { margin: 14px auto 0; }
+.eh-mesaj {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  min-height: 1.4em;
+  margin: 10px 0 0;
+}
+
+/* ---- L Park ---- */
+.eh-park-lot {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  height: 260px;
+  margin: 0 auto;
+  background: #1b2330;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.eh-park-target {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 70px;
+  height: 110px;
+  border: 2px dashed var(--accent-3);
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+}
+.eh-park-target-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--accent-3);
+}
+.eh-park-car {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  width: 50px;
+  height: 90px;
+  border-radius: 10px 10px 6px 6px;
+  background: var(--eh-car-color, #888);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+.eh-park-car.is-dragging { cursor: grabbing; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5); }
+
+/* ---- Sonuç: ehliyet belgesi ---- */
+.eh-sonuc-wrap { text-align: center; }
+.eh-license-card {
+  max-width: 280px;
+  margin: 0 auto;
+  padding: 18px;
+  border-radius: 16px;
+  border: 2px solid var(--accent);
+  background: linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  text-align: left;
+}
+.eh-license-top {
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--accent-3);
+  margin-bottom: 10px;
+}
+.eh-license-foto {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  border: 2px solid var(--accent);
+  overflow: hidden;
+}
+.eh-license-foto img { width: 100%; height: 100%; object-fit: cover; }
+.eh-license-ad { font-weight: 800; margin-bottom: 6px; }
+.eh-license-satir { font-size: 0.82rem; margin-bottom: 4px; }
+.eh-tebrik { margin: 18px 0 14px; }

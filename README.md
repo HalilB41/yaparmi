@@ -18,8 +18,9 @@ için kayıt olmak zorunlu değil.
 yaparmi-site/
 ├─ index.html
 ├─ spor.html       <- boks makinesi, penaltı, kasksız 85, spor karnesi, Berkay olimpiyatı
-├─ oyun.html       <- oyun sayfası
+├─ oyun.html       <- oyun sayfası (2048, Yılan, Hafıza, XOX, Taş Kağıt Makas)
 ├─ ders.html        <- şakadan optik form: telefonu karekoda tut, 85-99 arası rastgele puan
+├─ ehliyet.html     <- Berkay'ın ehliyet serüveni: yazılı sınav, araç seç, sürüş sınavı, L Park
 ├─ sosyal.html      <- "hikaye seç" oyunu (İzmir'e gitsin / evde kalsın ...)
 ├─ galeri.html      <- yatay kaydırmalı fotoğraf galerisi + fotoğraf öner
 ├─ admin.html       <- sadece "admin" kullanıcı adına giriş yapınca görünür
@@ -30,6 +31,9 @@ yaparmi-site/
 ├─ js/gallery.js    <- sadece galeri.html
 ├─ js/admin.js      <- sadece admin.html
 ├─ js/ders.js       <- sadece ders.html (sahte karekod, deklanşör sesi, rastgele puan)
+├─ js/games.js      <- sadece oyun.html (5 oyun)
+├─ js/ehliyet.js    <- sadece ehliyet.html (yazılı + araç seç + sürüş + L Park)
+├─ js/ehliyet-admin.js  <- admin.html: ehliyet'teki 3 araç şoför resmi + çarpışma sesi
 ├─ js/sosyal-hikaye.js  <- Sosyal Hayat hikayesinin varsayılan hali + Firestore'dan okuma
 ├─ js/sosyal.js     <- sadece sosyal.html (hikaye oynatıcı)
 ├─ js/spor.js       <- sadece spor.html (5 bölüm)
@@ -229,6 +233,13 @@ service cloud.firestore {
         && request.resource.data.gonderenUid == request.auth.uid
         && request.resource.data.tarih == request.time;
     }
+
+    // Ehliyet sayfası: 3 aracın şoför koltuğu resmi + çarpışma sesi.
+    // Herkes okur (oyun oynansın diye), sadece admin "ayarlar" belgesini yazar.
+    match /ehliyet/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId == 'ayarlar';
+    }
   }
 }
 ```
@@ -246,7 +257,8 @@ tarayıcıda 720×720'e küçültülüp bir metin (base64) olarak doğrudan
 Firestore'a yazılıyor; Firestore'un ücretsiz (Spark) planı bunun için
 yeterli. Tek kısıtı: bir fotoğrafın sıkıştırılmış hali ~900KB'ı geçemez —
 kod bunu otomatik ayarlıyor (kaliteyi gerekirse kademeli düşürüyor), sen
-bir şey yapmana gerek yok.
+bir şey yapmana gerek yok. Ehliyet'teki araç resimleri ve çarpışma sesi de
+aynı mantıkla (base64, Firestore) çalışıyor.
 
 ### İlk admin hesabını oluştur
 
@@ -298,10 +310,10 @@ git push -u origin main
 - Berkayın Ahırı'ndaki mesajlar Firestore'da kalıcı olarak duruyor (sohbet
   ekranında sadece en son 50 mesaj gösteriliyor). Zamanla çok birikirse
   Firebase konsolundan elle temizleyebilirsin.
-- Sol üstteki ☰ butonu Spor/Ders/Oyun/Sosyal Hayat/Galeri linklerini içeren
-  bir menü açar, sağ üstte Giriş Yap/Kayıt Ol duruyor. Sol altta Berkayın
-  Ahırı, sağ altta ses açma/kapama butonu sabit duruyor. Dördü de gerçek
-  ekran köşesine sabitlenmiş durumda (sayfa içeriği ortalanmış olsa bile).
+- Sol üstteki ☰ butonu Spor/Ders/Oyun/Ehliyet/Sosyal Hayat/Galeri linklerini
+  içeren bir menü açar, sağ üstte Giriş Yap/Kayıt Ol duruyor. Sol altta
+  Berkayın Ahırı, sağ altta ses açma/kapama butonu sabit duruyor. Dördü de
+  gerçek ekran köşesine sabitlenmiş durumda (sayfa içeriği ortalanmış olsa bile).
 - Galerideki bütün fotoğraflar (hem admin'in direkt eklediği hem
   onaylanan öneriler) tarayıcıda otomatik olarak 720×720 kareye kırpılıp
   küçültülüyor, böylece hepsi aynı boyutta görünüyor.
@@ -323,6 +335,23 @@ Hiç kaydetmediysen `js/sosyal-hikaye.js` içindeki varsayılan hikaye çalış�
 **Önemli:** Kaydetmenin çalışması için yukarıdaki Firestore kurallarındaki
 `sosyal_hikaye` bloğunun Firebase Console → Firestore → Rules'a eklenip
 **Publish** edilmesi gerekiyor.
+
+## Ehliyet sayfası
+
+Berkay'ın ehliyet alma serüveni, 4 adım: 1) 10 soruluk yazılı sınav (soru
+havuzundan rastgele 10 tanesi gelir, en az 5 doğru şart), 2) 3 araçtan
+birini seçme, 3) 3 şeritli yolda kuzeye giden sürüş sınavı (◀/▶ ile şerit
+değiştir, 3 kere çarpınca kalırsın, hedef 1500 metre), 4) hedefe varınca
+sürükle-bırak ile **L Park**. Başarılı olursa şakadan bir "ehliyet belgesi"
+çıkar.
+
+`admin` hesabıyla giriş yapıp **Admin Paneli** → **🚘 Ehliyet Ayarları**'ndan:
+üç aracın şoför koltuğuna (resim yüklenmezse 🧑 görünür) birer fotoğraf
+koyabilir, sürüş sınavındaki çarpışma anında çalacak sesi değiştirebilirsin
+(ses yüklemezsen otomatik, dosyasız üretilen bir çarpışma sesi çalar).
+Çarpışma sesi ~900KB altında kısa bir klip olmalı (Firestore belge sınırı
+yüzünden). Bunların çalışması için yukarıdaki Firestore kurallarındaki
+`ehliyet` bloğunun da Rules'a eklenip **Publish** edilmesi gerekiyor.
 
 ## Bot cevap tarzı
 

@@ -25,6 +25,7 @@
     <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
     <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
     <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
+    <a href="/ehliyet" class="menu-item"><span class="fab-icon">🚘</span> Ehliyet</a>
     <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
     <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
   </nav>
@@ -67,6 +68,51 @@
               <input type="file" id="motorResimDosya" accept="image/*" />
               <button type="button" class="admin-btn reject se-small" id="motorResimSil" hidden>Resmi kaldır</button>
               <p class="suggest-status" id="motorResimDurum"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2>🚘 Ehliyet Ayarları</h2>
+          <p class="muted" style="margin:0 0 10px; font-size:0.85rem;">3 aracın şoför koltuğuna resim ekle (yoksa 🧑 görünür) ve sürüş sınavındaki çarpışma anında çalacak sesi yükle (yoksa otomatik ses çalar).</p>
+
+          <div class="se-img-box">
+            <img id="ehResim1Onizleme" alt="Araç 1 şoförü" hidden style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
+            <div>
+              <p class="muted" style="margin:0 0 4px; font-size:0.8rem;">🔴 Kırmızı Şahin</p>
+              <input type="file" id="ehResim1Dosya" accept="image/*" />
+              <button type="button" class="admin-btn reject se-small" id="ehResim1Sil" hidden>Resmi kaldır</button>
+              <p class="suggest-status" id="ehResim1Durum"></p>
+            </div>
+          </div>
+
+          <div class="se-img-box">
+            <img id="ehResim2Onizleme" alt="Araç 2 şoförü" hidden style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
+            <div>
+              <p class="muted" style="margin:0 0 4px; font-size:0.8rem;">🔵 Mavi Doğan</p>
+              <input type="file" id="ehResim2Dosya" accept="image/*" />
+              <button type="button" class="admin-btn reject se-small" id="ehResim2Sil" hidden>Resmi kaldır</button>
+              <p class="suggest-status" id="ehResim2Durum"></p>
+            </div>
+          </div>
+
+          <div class="se-img-box">
+            <img id="ehResim3Onizleme" alt="Araç 3 şoförü" hidden style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
+            <div>
+              <p class="muted" style="margin:0 0 4px; font-size:0.8rem;">🟡 Altın Tofaş</p>
+              <input type="file" id="ehResim3Dosya" accept="image/*" />
+              <button type="button" class="admin-btn reject se-small" id="ehResim3Sil" hidden>Resmi kaldır</button>
+              <p class="suggest-status" id="ehResim3Durum"></p>
+            </div>
+          </div>
+
+          <div class="se-img-box">
+            <div>
+              <p class="muted" style="margin:0 0 4px; font-size:0.8rem;">💥 Çarpışma sesi (kısa bir klip, ~900KB altı)</p>
+              <input type="file" id="ehSesDosya" accept="audio/*" />
+              <button type="button" class="admin-btn reject se-small" id="ehSesOynat" hidden>▶ Dinle</button>
+              <button type="button" class="admin-btn reject se-small" id="ehSesSil" hidden>Sesi kaldır</button>
+              <p class="suggest-status" id="ehSesDurum"></p>
             </div>
           </div>
         </div>
@@ -173,5 +219,6 @@
   <script src="js/sosyal-hikaye.js"></script>
   <script src="js/sosyal-editor.js"></script>
   <script src="js/spor-admin.js"></script>
+  <script src="js/ehliyet-admin.js"></script>
 </body>
 </html>
