@@ -1022,6 +1022,9 @@ table.admin-table tr:last-child td { border-bottom: none; }
   background: #080b10;
   cursor: grab;
   touch-action: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   z-index: 6;
   justify-content: flex-start;
@@ -1460,6 +1463,9 @@ body.se-open { overflow: hidden; }
   font-size: 1rem;
   cursor: pointer;
   touch-action: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   transition: transform 0.1s, opacity 0.15s;
 }
@@ -1842,12 +1848,14 @@ button:hover { filter: none; }
 .auth-panel {
   background: rgba(10,13,18,.97);
   box-shadow: 0 24px 70px rgba(0,0,0,.48);
+  -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 }
 
 .menu-drawer {
   background: rgba(9,12,17,.97);
   box-shadow: 0 28px 80px rgba(0,0,0,.52);
+  -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 }
 
@@ -2194,6 +2202,9 @@ button:hover { filter: none; }
   padding-top: 6px;
   cursor: grab;
   touch-action: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
   z-index: 2;
