@@ -2247,3 +2247,98 @@ button:hover { filter: none; }
 .eh-license-ad { font-weight: 800; margin-bottom: 6px; }
 .eh-license-satir { font-size: 0.82rem; margin-bottom: 4px; }
 .eh-tebrik { margin: 18px 0 14px; }
+
+/* ============================================================
+   YAS: Berkay ehliyeti geçti — sol üstte siyah kurdele + açılış ekranı
+   (js/site.js içindeki "Yas modu" bölümü ekliyor)
+   ============================================================ */
+.yas-kurdele {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10; /* hamburger (11) üstte kalsın, tıklanabilsin */
+}
+.yas-kurdele span {
+  position: absolute;
+  top: 63px;
+  left: -75px;
+  width: 300px;
+  height: 24px;
+  background: #000;
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+  transform: rotate(-45deg);
+}
+
+.yas-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: yasFade 0.4s ease;
+}
+.yas-card {
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  background: #0b0d11;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 6px solid #000;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  color: var(--text);
+}
+.yas-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
+}
+.yas-body { padding: 18px 22px 22px; }
+.yas-ust {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+}
+.yas-card h2 {
+  margin: 0 0 12px;
+  font-family: "Baloo 2", sans-serif;
+  font-size: 1.7rem;
+  line-height: 1.1;
+}
+.yas-card p { margin: 0 0 10px; line-height: 1.5; font-size: 0.95rem; }
+.yas-card .yas-lead { font-size: 1.05rem; }
+.yas-card .yas-imza {
+  margin-top: 14px;
+  font-style: italic;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+.yas-card button {
+  margin-top: 8px;
+  padding: 11px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.yas-card button:hover { background: #1a1a1a; }
+@keyframes yasFade { from { opacity: 0; } to { opacity: 1; } }

@@ -45,6 +45,68 @@
     if (e.key === "Escape") closeMenu();
   });
 
+  // ---------------- Yas modu: Berkay ehliyeti geçti 🖤 ----------------
+  // Her sayfada sol üstte siyah kurdele. Açılış ekranı oturum başına bir
+  // kez çıkar (sayfadan sayfaya geçerken tekrar tekrar açılmasın diye).
+  // Kaldırmak için: bu bloğu ve style.css'in sonundaki "YAS" bölümünü sil.
+  (function yasModu() {
+    const kurdele = document.createElement("div");
+    kurdele.className = "yas-kurdele";
+    kurdele.setAttribute("aria-hidden", "true");
+    kurdele.innerHTML = "<span></span>";
+    document.body.appendChild(kurdele);
+
+    const ANAHTAR = "yaparmi_yas_ehliyet_goruldu";
+    try {
+      if (sessionStorage.getItem(ANAHTAR)) return;
+    } catch {
+      /* depolama yoksa her açılışta gösterilir */
+    }
+
+    const overlay = document.createElement("div");
+    overlay.className = "yas-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "yasBaslik");
+    overlay.innerHTML =
+      '<div class="yas-card">' +
+      '<img src="images/berkay-kaza.jpg" alt="Berkay ve motoru, son yolculuğunda" />' +
+      '<div class="yas-body">' +
+      '<p class="yas-ust">🖤 ACI HABER 🖤</p>' +
+      '<h2 id="yasBaslik">Türk trafiğinin kara günü</h2>' +
+      '<p class="yas-lead">Berkay, ehliyet sınavını maalesef <strong>GEÇMİŞTİR.</strong></p>' +
+      "<p>Kasksız 85'le bayır aşağı inip asfaltla bizzat tanışan, şeritleri hâlâ yol süsü sanan Berkay'a bugün itibarıyla direksiyon resmen teslim edilmiştir.</p>" +
+      "<p>Yayaların, kaldırımların, bariyerlerin ve tüm trafik levhalarının acısını paylaşıyor, sürücülerimize sabır ve dikkat diliyoruz.</p>" +
+      "<p>Yolda <em>“kubiiii”</em> diye bir ses duyarsanız lütfen derhal sağa çekiniz.</p>" +
+      '<p class="yas-imza">— yaparmi.com ailesi ve Türkiye\'nin tüm kaldırımları</p>' +
+      '<button type="button" id="yasKapat">Başımız sağ olsun 🖤</button>' +
+      "</div></div>";
+    document.body.appendChild(overlay);
+
+    const eskiOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function kapat() {
+      overlay.remove();
+      document.body.style.overflow = eskiOverflow;
+      document.removeEventListener("keydown", escKapat);
+      try {
+        sessionStorage.setItem(ANAHTAR, "1");
+      } catch {
+        /* yok sayılabilir */
+      }
+    }
+    function escKapat(e) {
+      if (e.key === "Escape") kapat();
+    }
+    overlay.querySelector("#yasKapat").addEventListener("click", kapat);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) kapat();
+    });
+    document.addEventListener("keydown", escKapat);
+    overlay.querySelector("#yasKapat").focus();
+  })();
+
   // ---------------- Kullanıcı adı yardımcıları ----------------
   function usernameToEmail(name) {
     return name + "@yaparmi.local";
