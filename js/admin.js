@@ -117,7 +117,7 @@ function loadSorular() {
       (snapshot) => {
         soruTableBody.innerHTML = "";
         if (snapshot.empty) {
-          soruTableBody.innerHTML = '<tr><td colspan="4" class="muted">Henüz soru yok.</td></tr>';
+          soruTableBody.innerHTML = '<tr><td colspan="5" class="muted">Henüz soru yok.</td></tr>';
           return;
         }
         snapshot.forEach((doc) => {
@@ -140,12 +140,17 @@ function loadSorular() {
           tdCevap.textContent = data.cevap || "";
           tr.appendChild(tdCevap);
 
+          const tdModel = document.createElement("td");
+          tdModel.className = "muted";
+          tdModel.textContent = data.model || "—";
+          tr.appendChild(tdModel);
+
           soruTableBody.appendChild(tr);
         });
       },
       (err) => {
         console.error("Soru geçmişi okunamadı:", err.message);
-        soruTableBody.innerHTML = '<tr><td colspan="4" class="muted">Yüklenemedi.</td></tr>';
+        soruTableBody.innerHTML = '<tr><td colspan="5" class="muted">Yüklenemedi.</td></tr>';
       }
     );
 }

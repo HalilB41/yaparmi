@@ -80,6 +80,8 @@ if (homeLink) {
 
 // ---------------- AI'dan cevap al (yedekli) ----------------
 
+let sonModel = ""; // cevabı hangi model verdi (admin panelinde görünür)
+
 async function getAnswer(question) {
   // En fazla 40 saniye bekle; sunucu takılırsa kutu sonsuza kadar
   // "düşünüyor" kalmasın, yedek cevaba geçilsin.
@@ -98,9 +100,11 @@ async function getAnswer(question) {
       throw new Error(data.error || ("API hatası: " + res.status));
     }
     if (!data.answer) throw new Error("Boş cevap");
+    sonModel = data.model || "";
     return data.answer;
   } catch (err) {
     console.warn("AI cevabı alınamadı, yedek cevap kullanılıyor:", err.message);
+    sonModel = "yedek (hazır cevap)";
     return pickFallbackResponse();
   } finally {
     clearTimeout(timer);
@@ -191,6 +195,7 @@ function logQuestion(question, response, category) {
       soru: question,
       cevap: response,
       kategori: category || "genel",
+      model: sonModel || "",
       tarih: firebase.firestore.FieldValue.serverTimestamp(),
     };
     // Giriş yapmış (kayıtlı, anonim Ahır oturumu değil) biriyse kullanıcı
