@@ -149,6 +149,7 @@ if (suggestForm) {
       });
 
       suggestStatus.textContent = "Gönderildi! Admin onaylarsa galeriye eklenir. 🎉";
+      if (window.Basarim) Basarim.say("oneri");
       suggestForm.reset();
     } catch (err) {
       console.error("Öneri gönderilemedi:", err.message);

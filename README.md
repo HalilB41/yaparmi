@@ -236,6 +236,13 @@ service cloud.firestore {
 
     // Ehliyet sayfası: 3 aracın şoför koltuğu resmi + çarpışma sesi.
     // Herkes okur (oyun oynansın diye), sadece admin "ayarlar" belgesini yazar.
+    // Sayaçlar: ana sayfadaki "Berkay ehliyet alalı X gün" kartları.
+    // Herkes okur, sadece admin panelinden düzenlenir.
+    match /sayaclar/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId == 'liste';
+    }
+
     match /ehliyet/{docId} {
       allow read: if true;
       allow write: if isAdmin() && docId == 'ayarlar';

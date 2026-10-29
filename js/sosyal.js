@@ -61,6 +61,7 @@
     });
 
     const son = gecerli.length === 0;
+    if (son && window.Basarim) Basarim.farkli("son", id);
     restartBtn.hidden = !son;
     stage.classList.toggle("is-end", son);
     stepEl.textContent = son ? "🏁 Hikaye bitti (" + adim + ". adım)" : adim + ". adım";

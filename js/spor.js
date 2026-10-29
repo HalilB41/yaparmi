@@ -469,6 +469,7 @@
           enIyi = skor;
           lsSet("spor_boks_eniyi", enIyi);
         }
+        if (window.Basarim) { Basarim.say("boks_vurus"); Basarim.rekor("boks_rekor", skor); }
         if (skor >= 900) {
           durum("is-mutlu", 1400);
           mesaj.textContent = skor === 999
@@ -479,6 +480,7 @@
           ses("cit");
           kirik++;
           lsSet("spor_boks_kirik", kirik);
+          if (window.Basarim) Basarim.say("el_kirik");
           durum("is-aci", 1500);
           wrap.classList.add("sp-shake");
           mesaj.textContent = "🦴 " + skor + ". Elinden \"çıt\" diye bir ses geldi.";
@@ -576,6 +578,7 @@
     ];
 
     let st = lsGet("spor_penalti", { sut: 0, gol: 0 });
+    let golSeri = 0;
     function skorCiz() {
       skor.innerHTML = "";
       [["Şut", st.sut], ["Gol", st.gol], ["İsabet", st.sut ? Math.round((st.gol / st.sut) * 100) + "%" : "—"]].forEach(([a, b]) => {
@@ -688,10 +691,13 @@
       setTimeout(() => {
         if (durum === "gol") {
           st.gol++;
+          golSeri++;
+          if (window.Basarim) { Basarim.say("gol"); Basarim.rekor("gol_seri", golSeri); }
           sonuc.textContent = "⚽ " + sec(GOL);
           bahane.textContent = "";
           saha.classList.add("is-gol");
         } else {
+          golSeri = 0;
           sonuc.textContent = "❌ " + (durum === "kurtardi" ? sec(KURTARIS) : sec(KACAN));
           bahane.textContent = "Berkay: \"" + sec(BAHANE) + "\"";
         }
@@ -843,6 +849,7 @@
 
     function kaza() {
       bitti = true;
+      if (window.Basarim) Basarim.say("kaza");
       ses("carpisma");
       moto.classList.add("is-crash");
       kazaEkran.hidden = false;
@@ -864,6 +871,7 @@
 
     function kazandi() {
       bitti = true;
+      if (window.Basarim) Basarim.say("tarla");
       buyuk.textContent = "🌾 TARLAYA VARDI!";
       mesaj.textContent = "Berkay tarlaya kazasız vardı! Kasksız ama sağ salim. Traktörcü amca: \"Hayırdır evlat, bu hızla nereye?\"";
       tekrar.hidden = false;
@@ -879,6 +887,7 @@
         konum += (hiz / 3.6) * dt;
         if (hiz >= 85 && !gordu85) {
           gordu85 = true;
+          if (window.Basarim) Basarim.rekor("motor_hiz", Math.floor(hiz));
           buyuk.textContent = "KUBİİİ 85'İ GÖRDÜM!";
           kubiCal();
           setTimeout(() => { if (!bitti) buyuk.textContent = ""; }, 1800);

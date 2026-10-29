@@ -277,6 +277,7 @@
       resultDetail.textContent =
         parts.join(" · ") + " — " + FUNNY_LINES[randInt(0, FUNNY_LINES.length - 1)];
       resultBox.hidden = false;
+      if (window.Basarim) { Basarim.say("optik"); Basarim.rekor("optik_puan", plan.score); }
     }, totalDelay);
   }
 

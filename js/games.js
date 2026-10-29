@@ -149,6 +149,7 @@
         score += totalGain;
         addRandomTile();
         render();
+        if (window.Basarim) Basarim.rekor("g2048", Math.max(...board.flat()));
         if (isGameOver()) {
           overEl.hidden = false;
         }
@@ -299,6 +300,7 @@
       if (head.x === food.x && head.y === food.y) {
         score++;
         scoreEl.textContent = String(score);
+        if (window.Basarim) Basarim.rekor("yilan", score);
         placeFood();
       } else {
         snake.pop();
@@ -428,6 +430,7 @@
           matched++;
           if (matched === EMOJIS.length) {
             winEl.hidden = false;
+            if (window.Basarim) { Basarim.say("hafiza"); if (moves <= 14) Basarim.say("hafiza_hizli"); }
           }
         } else {
           lock = true;
@@ -540,7 +543,7 @@
       render();
       if (w) {
         over = true;
-        if (w === "draw") statusEl.textContent = "Berabere! 🤝";
+        if (w === "draw") { statusEl.textContent = "Berabere! 🤝"; if (window.Basarim) Basarim.say("xox_berabere"); }
         else if (w === HUMAN) statusEl.textContent = "Kazandın! 🎉";
         else statusEl.textContent = "Bilgisayar kazandı! 🤖";
       } else {
@@ -604,6 +607,7 @@
         text = "Berabere! İkiniz de " + labelFor(choice);
       } else if (BEATS[choice] === compChoice) {
         you++;
+        if (window.Basarim) Basarim.say("tkm");
         text = "Kazandın! " + labelFor(choice) + " → " + labelFor(compChoice);
       } else {
         comp++;

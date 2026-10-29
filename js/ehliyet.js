@@ -216,6 +216,7 @@
       wrap.innerHTML = "";
       const sonucEl = el("div", "eh-quiz-result");
       if (dogru >= 5) {
+        if (window.Basarim) { Basarim.say("yazili"); if (dogru >= 10) Basarim.say("yazili_tam"); }
         sonucEl.appendChild(el("div", "eh-quiz-emoji", "✅"));
         sonucEl.appendChild(el("h3", null, "Yazılıyı geçtin! (" + dogru + "/10)"));
         sonucEl.appendChild(el("p", "muted", "Sıra sürüş sınavında. Önce bir araç seç."));
@@ -406,6 +407,7 @@
     function basarili() {
       bitti = true;
       cancelAnimationFrame(raf);
+      if (window.Basarim) Basarim.say("surus");
       sahneDegis("park");
     }
 
@@ -587,6 +589,7 @@
   // 5) SONUÇ — Ehliyet belgesi
   // ============================================================
   function sonuc() {
+    if (window.Basarim) Basarim.say("ehliyet");
     const araba = ARABALAR[durum.secilenAraba];
     const wrap = el("div", "eh-wrap eh-sonuc-wrap");
 

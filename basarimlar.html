@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Başarımlar · yaparmi.com</title>
+  <meta name="description" content="yaparmi.com başarımları." />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13111a" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%235a3fd4%22/%3E%3Ccircle cx=%2216%22 cy=%2214%22 r=%228.5%22 fill=%22%23fff%22/%3E%3Ccircle cx=%2213%22 cy=%2211%22 r=%222.4%22 fill=%22%23c9bdf5%22/%3E%3Crect x=%229%22 y=%2224%22 width=%2214%22 height=%223.5%22 rx=%221.7%22 fill=%22%23f5b82e%22/%3E%3C/svg%3E" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="page-head">
+      <span class="eyebrow"><i>🏆</i> Başarımlar</span>
+      <h1>Berkay'dan <em>başarılı</em> ol</h1>
+      <p class="lead">Oyunlarda, sporda, kâhinde ve ehliyette açılan rozetler. Gizli olanlar açılınca görünür. Kayıtlar bu cihazda tutulur.</p>
+    </header>
+    <div class="bs-ozet card" id="bsOzet"></div>
+    <div id="bsSayfa"></div>
+    <p class="bs-alt"><button type="button" class="link-btn" id="bsSifirla">Başarımları sıfırla</button> <span class="muted" id="bsSifirlaOnay" hidden>Emin misin? <button type="button" class="link-btn" id="bsSifirlaEvet">Evet, sıfırla</button> · <button type="button" class="link-btn" id="bsSifirlaHayir">Vazgeç</button></span></p>
+  </main>
+  <!-- Firebase (compat SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/basarim.js"></script>
+  <script src="js/basarimlar.js"></script>
+</body>
+</html>

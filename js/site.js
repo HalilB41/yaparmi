@@ -49,7 +49,7 @@
   footer.className = "site-footer";
   footer.innerHTML =
     '<div class="site-footer-in"><span>yaparmi.com · sadece eğlence amaçlıdır, kimse alınmasın.</span><nav>' +
-    NAV.slice(1).map(([href, label]) => '<a href="' + href + '">' + label + "</a>").join("") + "</nav></div>";
+    NAV.slice(1).concat([["/basarimlar", "Başarımlar"]]).map(([href, label]) => '<a href="' + href + '">' + label + "</a>").join("") + "</nav></div>";
   document.body.appendChild(footer);
 
   // Tema: kullanıcı seçtiyse onu hatırla, seçmediyse sistem ayarı

@@ -174,6 +174,7 @@ form.addEventListener("submit", async (e) => {
 
   const response = await getAnswer(question);
   typeWrite(response);
+  if (window.Basarim) Basarim.say("kahin");
   logQuestion(question, response, "genel");
 
   lastAskedQuestion = rest;
@@ -522,6 +523,7 @@ ahirForm.addEventListener("submit", async (e) => {
       mesaj: text.slice(0, 300),
       tarih: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    if (window.Basarim) Basarim.say("ahir");
     // Hız sınırı kaydı — Firestore kuralları bir sonraki mesajda bunu kontrol ediyor.
     await db.collection("ahir_limits").doc(uid).set({
       sonMesajZamani: firebase.firestore.FieldValue.serverTimestamp(),

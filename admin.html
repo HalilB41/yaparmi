@@ -30,8 +30,15 @@
       </div>
     </div>
 
-    <div id="adminContent" class="admin-grid" hidden>
-      <div class="panel card admin-section">
+    <div id="adminContent" hidden>
+      <nav class="adm-tabs" role="tablist" aria-label="Admin bölümleri">
+        <button type="button" role="tab" data-tab="icerik">📝 İçerik</button>
+        <button type="button" role="tab" data-tab="oyunlar">🎮 Oyun ayarları</button>
+        <button type="button" role="tab" data-tab="galeri">🖼️ Galeri <span class="adm-say" id="admOneriSay" hidden></span></button>
+        <button type="button" role="tab" data-tab="kahin">🔮 Kâhin</button>
+      </nav>
+      <section class="adm-panel admin-grid" data-panel="icerik" hidden>
+      <div class="panel card admin-section wide">
         <div class="se-top">
           <h2>👥 Sosyal hayat hikâyesi</h2>
           <button type="button" class="admin-btn publish" id="sosyalEditBtn">Düzenleyiciyi aç</button>
@@ -39,6 +46,20 @@
         <p class="muted">Hikâye, oyundaki haliyle tam ekran açılır. Yazılara ve seçeneklere tıklayıp olduğu yerde düzenleyebilirsin.</p>
       </div>
 
+      <div class="panel card admin-section wide">
+        <div class="se-top">
+          <h2>⏱️ Sayaçlar</h2>
+          <div class="sayac-butonlar">
+            <button type="button" class="admin-btn reject" id="sayacEkle">➕ Sayaç ekle</button>
+            <button type="button" class="admin-btn publish" id="sayacKaydet">Kaydet</button>
+          </div>
+        </div>
+        <p class="muted">Ana sayfada canlı sayılır. "Geçen süre": o tarihten beri ("Berkay ehliyet alalı"). "Kalan süre": o tarihe kadar ("Berkay'ın askerliğine kalan").</p>
+        <div id="sayacAdmin"><p class="muted">Yükleniyor…</p></div>
+        <p class="suggest-status" id="sayacDurum"></p>
+      </div>
+      </section>
+      <section class="adm-panel admin-grid" data-panel="oyunlar" hidden>
       <div class="panel card admin-section">
         <h2>🏍️ Kasksız 85 kaza resmi</h2>
         <p class="muted">Spor sayfasındaki motor oyununda kaza anında çıkan resim. Resim yoksa 💥 görünür.</p>
@@ -52,7 +73,7 @@
           </div>
       </div>
 
-      <div class="panel card admin-section wide">
+      <div class="panel card admin-section">
         <h2>🚘 Ehliyet ayarları</h2>
         <p class="muted">Üç aracın şoför koltuğuna resim ekle (yoksa 🧑 görünür) ve sürüş sınavındaki çarpışma sesini yükle (yoksa otomatik ses çalar).</p>
           <div class="se-img-box">
@@ -97,6 +118,40 @@
       </div>
 
         <!-- Tam ekran Sosyal Hayat editörü: oyunun birebir aynısı, yerinde düzenleme -->
+      </section>
+      <section class="adm-panel admin-grid" data-panel="galeri" hidden>
+      <div class="panel card admin-section">
+        <h2>📸 Galeri önerileri</h2>
+        <div id="queueList"><p class="muted">Yükleniyor…</p></div>
+      </div>
+
+      <div class="panel card admin-section">
+        <h2>➕ Galeriye direkt fotoğraf ekle</h2>
+        <form class="admin-upload" id="adminUploadForm" autocomplete="off">
+          <input type="file" id="adminUploadFile" accept="image/*" required />
+          <button type="submit" class="admin-btn publish">Yayınla</button>
+        </form>
+        <p class="suggest-status" id="adminUploadStatus"></p>
+      </div>
+
+      </section>
+      <section class="adm-panel admin-grid" data-panel="kahin" hidden>
+      <div class="panel card admin-section wide">
+        <h2>🔮 Kâhine sorulanlar</h2>
+        <p class="muted">Giriş yapıp soru soranların kullanıcı adı görünür, diğerleri "Misafir" olarak listelenir.</p>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Tarih</th><th>Kullanıcı</th><th>Soru</th><th>Cevap</th><th>Model</th></tr>
+            </thead>
+            <tbody id="soruTableBody">
+              <tr><td colspan="5" class="muted">Yükleniyor…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </section>
+
         <div id="sosyalEditor" class="se-overlay" hidden>
           <header class="se-bar">
             <strong class="se-bar-title">👥 Sosyal Hayat — Düzenleme</strong>
@@ -152,34 +207,6 @@
           </div>
         </div>
 
-      <div class="panel card admin-section">
-        <h2>📸 Galeri önerileri</h2>
-        <div id="queueList"><p class="muted">Yükleniyor…</p></div>
-      </div>
-
-      <div class="panel card admin-section">
-        <h2>➕ Galeriye direkt fotoğraf ekle</h2>
-        <form class="admin-upload" id="adminUploadForm" autocomplete="off">
-          <input type="file" id="adminUploadFile" accept="image/*" required />
-          <button type="submit" class="admin-btn publish">Yayınla</button>
-        </form>
-        <p class="suggest-status" id="adminUploadStatus"></p>
-      </div>
-
-      <div class="panel card admin-section wide">
-        <h2>🔮 Kâhine sorulanlar</h2>
-        <p class="muted">Giriş yapıp soru soranların kullanıcı adı görünür, diğerleri "Misafir" olarak listelenir.</p>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Tarih</th><th>Kullanıcı</th><th>Soru</th><th>Cevap</th><th>Model</th></tr>
-            </thead>
-            <tbody id="soruTableBody">
-              <tr><td colspan="5" class="muted">Yükleniyor…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   </main>
 
@@ -189,7 +216,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
+  <script src="js/basarim.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/sayac.js"></script>
+  <script src="js/admin-sekme.js"></script>
   <script src="js/sosyal-hikaye.js"></script>
   <script src="js/sosyal-editor.js"></script>
   <script src="js/spor-admin.js"></script>
