@@ -194,16 +194,178 @@
     "Makine vurmadan önce 'hazır' demedi.",
   ];
 
-  function boks() {
-    const wrap = el("div", "sp-wrap");
-    wrap.appendChild(el("p", "muted sp-desc", "Bar kırmızıdan yeşile doluyor. Ne kadar yeşilde basarsan o kadar sert vurursun. Rekor: 999."));
+  // ---------------- Çizimler (SVG) ----------------
+  function svgEl(html) {
+    const t = document.createElement("template");
+    t.innerHTML = html.trim();
+    return t.content.firstChild;
+  }
+  // Boks sahnesi: tavandan zincirle sarkan deri torba + gardda duran çöp adam Berkay
+  const BOKS_SAHNE = `
+<svg class="bx-svg" viewBox="0 0 380 270" role="img" aria-label="Berkay boks torbasına vuruyor">
+  <defs>
+    <linearGradient id="bxDeri" x1="0" x2="1">
+      <stop offset="0" stop-color="#5e1414"/><stop offset=".28" stop-color="#b3261e"/>
+      <stop offset=".55" stop-color="#d23a2c"/><stop offset="1" stop-color="#6a1712"/>
+    </linearGradient>
+    <linearGradient id="bxKapak" x1="0" x2="1">
+      <stop offset="0" stop-color="#151218"/><stop offset=".5" stop-color="#3a3340"/><stop offset="1" stop-color="#151218"/>
+    </linearGradient>
+    <radialGradient id="bxEldiven" cx=".35" cy=".35" r=".7">
+      <stop offset="0" stop-color="#ff7466"/><stop offset=".6" stop-color="#d42a1f"/><stop offset="1" stop-color="#8e140d"/>
+    </radialGradient>
+    <radialGradient id="bxGolge" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect class="bx-duvar" x="0" y="0" width="380" height="236"/>
+  <g class="bx-tugla">
+    <path d="M0 60H380M0 120H380M0 180H380"/>
+    <path d="M60 0V60M180 0V60M300 0V60M120 60V120M240 60V120M360 60V120M60 120V180M180 120V180M300 120V180M120 180V236M240 180V236M360 180V236"/>
+  </g>
+  <rect class="bx-zemin" x="0" y="236" width="380" height="34"/>
+  <rect x="0" y="0" width="380" height="12" fill="#2b2631"/>
+  <rect x="232" y="10" width="28" height="8" rx="2" fill="#4a4351"/>
+  <ellipse cx="246" cy="244" rx="46" ry="7" fill="url(#bxGolge)" class="bx-torba-golge"/>
+  <ellipse cx="120" cy="244" rx="48" ry="7" fill="url(#bxGolge)"/>
 
-    const makine = el("div", "sp-boks-makine");
+  <g class="bx-torba" id="bxTorba">
+    <g fill="none" stroke="#8d8794" stroke-width="3.2">
+      <ellipse cx="246" cy="24" rx="3.6" ry="6"/><ellipse cx="246" cy="34" rx="6" ry="3.6"/>
+      <ellipse cx="246" cy="44" rx="3.6" ry="6"/>
+    </g>
+    <path d="M246 50L224 70M246 50L268 70M246 50L238 70M246 50L254 70" stroke="#6f6876" stroke-width="2.4"/>
+    <rect x="216" y="66" width="60" height="150" rx="16" fill="url(#bxDeri)"/>
+    <rect x="214" y="64" width="64" height="18" rx="9" fill="url(#bxKapak)"/>
+    <rect x="214" y="200" width="64" height="18" rx="9" fill="url(#bxKapak)"/>
+    <g stroke="#3d0b08" stroke-opacity=".45" stroke-width="1.6">
+      <path d="M216 112h60M216 158h60"/>
+    </g>
+    <g stroke="#ffd7cf" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="3 3">
+      <path d="M218 109h56M218 115h56M218 155h56M218 161h56"/>
+    </g>
+    <rect x="226" y="122" width="40" height="26" rx="5" fill="#16121b" opacity=".85"/>
+    <text x="246" y="134" text-anchor="middle" font-size="8" font-weight="800" fill="#f5b82e" font-family="Manrope, sans-serif">BURGER</text>
+    <text x="246" y="144" text-anchor="middle" font-size="7" font-weight="700" fill="#fff" font-family="Manrope, sans-serif">GYM</text>
+    <path d="M226 72c-4 30-4 100 0 136" stroke="#fff" stroke-opacity=".18" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <g class="bx-pat" id="bxPat">
+    <path d="M214 110l10-14 2 12 14-8-6 13 15 2-14 7 9 11-15-3 1 15-9-12-8 12-1-15-14 4 9-12-12-8 15-1z" fill="#f5b82e" stroke="#2a1d00" stroke-width="2" stroke-linejoin="round"/>
+    <text x="221" y="122" text-anchor="middle" font-size="11" font-weight="900" fill="#2a1d00" font-family="Bricolage Grotesque, Manrope, sans-serif" transform="rotate(-10 221 118)">PAT!</text>
+  </g>
+
+  <g class="bx-adam" id="bxAdam" stroke-linecap="round" stroke-linejoin="round">
+    <g class="bx-govde">
+      <path class="bx-cizgi" d="M112 176l-20 58M112 176l26 30l-4 28" fill="none"/>
+      <path d="M100 168h26l-2 18h-24z" fill="#5a3fd4"/>
+      <path class="bx-cizgi" d="M116 122L112 172" fill="none"/>
+      <g class="bx-kafa">
+        <circle cx="120" cy="100" r="17" class="bx-kafa-yuz"/>
+        <path d="M104 94c4-11 22-15 31-4" stroke="#5a3fd4" stroke-width="6" fill="none"/>
+        <g class="bx-goz-acik"><circle cx="126" cy="100" r="2.2"/><circle cx="133" cy="100" r="2.2"/></g>
+        <g class="bx-goz-x" stroke-width="2.2" fill="none"><path d="M123 97l5 5M128 97l-5 5M130 97l5 5M135 97l-5 5"/></g>
+        <path class="bx-agiz" d="M127 109q4 2 7 0" stroke-width="2" fill="none"/>
+      </g>
+      <g class="bx-kol-arka">
+        <path class="bx-cizgi" d="M116 130l14 16l6-24" fill="none"/>
+        <circle cx="137" cy="117" r="10" fill="url(#bxEldiven)"/>
+      </g>
+      <g class="bx-kol-gard">
+        <path class="bx-cizgi" d="M116 128l24 10l8-20" fill="none"/>
+        <circle cx="150" cy="113" r="11" fill="url(#bxEldiven)"/>
+      </g>
+      <g class="bx-kol-yumruk">
+        <path class="bx-cizgi" d="M116 128l40 0l42-6" fill="none"/>
+        <circle cx="205" cy="121" r="12" fill="url(#bxEldiven)"/>
+        <path d="M193 116h-14M195 126h-18M197 121h-26" stroke="#d42a1f" stroke-opacity=".45" stroke-width="2.5"/>
+      </g>
+      <g class="bx-kol-aci">
+        <path class="bx-cizgi" d="M116 128l20 16l2 14" fill="none"/>
+        <circle cx="138" cy="162" r="11" fill="url(#bxEldiven)"/>
+        <text x="160" y="150" font-size="13" font-weight="900" fill="#c8412c" font-family="Bricolage Grotesque, Manrope, sans-serif">ÇIT!</text>
+        <path d="M150 168l4-4M156 172l6-2M146 176l2 6" stroke="#c8412c" stroke-width="2.4"/>
+      </g>
+    </g>
+  </g>
+</svg>`;
+
+  // Penaltı: kaleci Kurban (elinde KPSS kitabı), şutör Berkay, top
+  const KALECI_SVG = `
+<svg viewBox="0 0 64 70" class="pn-kaleci-svg" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+  <g class="pn-kaleci-govde">
+    <path d="M32 40l-12 26M32 40l12 26" stroke="#1b1726" stroke-width="5" fill="none"/>
+    <path d="M24 22h16l-2 20h-12z" fill="#f08a24"/>
+    <path d="M32 22v18" stroke="#1b1726" stroke-width="5"/>
+    <path d="M30 24L10 10M34 24l20-14" stroke="#1b1726" stroke-width="5" fill="none"/>
+    <circle cx="9" cy="9" r="5.5" fill="#f5e04a" stroke="#1b1726" stroke-width="2"/>
+    <rect x="50" y="2" width="12" height="15" rx="1.5" fill="#3fa7d6" stroke="#1b1726" stroke-width="2"/>
+    <text x="56" y="12.5" font-size="5" font-weight="900" text-anchor="middle" fill="#fff" font-family="Manrope,sans-serif">KPSS</text>
+    <circle cx="32" cy="13" r="8" fill="#f6d2b0" stroke="#1b1726" stroke-width="3"/>
+    <circle cx="29" cy="13" r="1.3" fill="#1b1726"/><circle cx="35" cy="13" r="1.3" fill="#1b1726"/>
+  </g>
+</svg>`;
+  const SUTOR_SVG = `
+<svg viewBox="0 0 60 80" class="pn-sutor-svg" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="26" cy="12" r="9" fill="#f6d2b0" stroke="#1b1726" stroke-width="3"/>
+  <path d="M17 9c3-7 15-8 19-1" stroke="#5a3fd4" stroke-width="4" fill="none"/>
+  <path d="M26 21l2 26" stroke="#1b1726" stroke-width="5"/>
+  <path d="M20 22h14l-1 16h-12z" fill="#5a3fd4"/>
+  <path d="M27 26l-14 12M27 26l14 10" stroke="#1b1726" stroke-width="5" fill="none"/>
+  <path d="M28 47l-10 30" stroke="#1b1726" stroke-width="5" fill="none"/>
+  <g class="pn-sut-bacak"><path d="M28 47l6 14l10 14" stroke="#1b1726" stroke-width="5" fill="none"/><path d="M42 74h8" stroke="#f5f5f5" stroke-width="5"/></g>
+</svg>`;
+  const TOP_SVG = `
+<svg viewBox="0 0 32 32" class="pn-top-svg" aria-hidden="true">
+  <circle cx="16" cy="16" r="14.5" fill="#fff" stroke="#1b1726" stroke-width="2"/>
+  <path d="M16 9l5.5 4-2 6.5h-7l-2-6.5z" fill="#1b1726"/>
+  <path d="M16 9V3M21.5 13l5.8-2M19.5 19.5l3.5 5M12.5 19.5l-3.5 5M10.5 13l-5.8-2" stroke="#1b1726" stroke-width="1.6"/>
+  <path d="M4.5 22l4.5 2.5M27.5 22L23 24.5M13 29l3-2 3 2" stroke="#1b1726" stroke-width="1.6" fill="none"/>
+</svg>`;
+  // Kasksız 85: yandan motor + saçları uçuşan Berkay, yoldaki araçlar
+  const MOTOR_SVG = `
+<svg viewBox="0 0 96 64" class="mt-motor-svg" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+  <g class="mt-hiz-cizgi" stroke="#fff" stroke-opacity=".55" stroke-width="2.4"><path d="M2 34h14M0 42h10M4 50h12"/></g>
+  <circle cx="24" cy="50" r="11" fill="#141218" stroke="#5c5666" stroke-width="3"/><circle cx="24" cy="50" r="3" fill="#9a94a3"/>
+  <circle cx="76" cy="50" r="11" fill="#141218" stroke="#5c5666" stroke-width="3"/><circle cx="76" cy="50" r="3" fill="#9a94a3"/>
+  <path d="M24 50l16-14h22l14 14" stroke="#9a94a3" stroke-width="3.5" fill="none"/>
+  <path d="M36 36c4-6 16-8 26-6l8 4-6 8H40z" fill="#d42a1f"/>
+  <path d="M64 30l8-10h6" stroke="#2b2631" stroke-width="3.5" fill="none"/>
+  <path d="M40 42h-10" stroke="#5c5666" stroke-width="4"/>
+  <g class="mt-surucu">
+    <path d="M48 30l8-16" stroke="#f3f0f8" stroke-width="5.5"/>
+    <path d="M55 17l14 6l8-3" stroke="#f3f0f8" stroke-width="5" fill="none"/>
+    <path d="M48 30l10 6l-2 10" stroke="#f3f0f8" stroke-width="5" fill="none"/>
+    <circle cx="59" cy="9" r="7.5" fill="#f6d2b0" stroke="#f3f0f8" stroke-width="2.5"/>
+    <path class="mt-sac" d="M52 6c-6-2-11 0-16 3M53 10c-6 0-10 2-14 6M54 3c-4-3-9-3-13-2" stroke="#c98a4b" stroke-width="2.6" fill="none"/>
+    <circle cx="62" cy="8.5" r="1.3" fill="#1b1726"/>
+  </g>
+</svg>`;
+  const ARAC_RENK = ["#3fa7d6", "#f5b82e", "#2fa36b", "#e05a8a", "#8a72e6", "#ef7d3c", "#e8e4ee"];
+  function aracSvg() {
+    const r = sec(ARAC_RENK);
+    if (Math.random() < 0.2) {
+      // kamyonet
+      return `<svg viewBox="0 0 96 48" class="mt-arac-svg" aria-hidden="true"><rect x="4" y="10" width="56" height="26" rx="3" fill="#ece7df" stroke="#1b1726" stroke-width="2"/><path d="M60 18h16l12 10v8H60z" fill="${r}" stroke="#1b1726" stroke-width="2" stroke-linejoin="round"/><path d="M64 21h10l7 7H64z" fill="#bfe3f2"/><circle cx="22" cy="38" r="7" fill="#141218"/><circle cx="74" cy="38" r="7" fill="#141218"/><circle cx="22" cy="38" r="2.5" fill="#9a94a3"/><circle cx="74" cy="38" r="2.5" fill="#9a94a3"/></svg>`;
+    }
+    return `<svg viewBox="0 0 96 48" class="mt-arac-svg" aria-hidden="true"><path d="M6 32c0-6 4-9 10-10l12-10h30l16 10c8 1 14 4 14 10v4H6z" fill="${r}" stroke="#1b1726" stroke-width="2" stroke-linejoin="round"/><path d="M31 15h12v8H24zM47 15h10l11 8H47z" fill="#bfe3f2"/><path d="M84 26h4" stroke="#ffe08a" stroke-width="3" stroke-linecap="round"/><circle cx="26" cy="37" r="7" fill="#141218"/><circle cx="72" cy="37" r="7" fill="#141218"/><circle cx="26" cy="37" r="2.5" fill="#9a94a3"/><circle cx="72" cy="37" r="2.5" fill="#9a94a3"/></svg>`;
+  }
+
+  function boks() {
+    const wrap = el("div", "sp-wrap sp-wrap-genis");
+    wrap.appendChild(el("p", "muted sp-desc", "Güç barı kırmızıdan yeşile doluyor. Ne kadar yeşilde basarsan Berkay o kadar sert vurur. Rekor: 999."));
+
+    const sahne = el("div", "bx-sahne");
+    sahne.appendChild(svgEl(BOKS_SAHNE));
+    const panoKutu = el("div", "bx-pano");
+    panoKutu.appendChild(el("span", "bx-pano-etiket", "GÜÇ"));
     const ekran = el("div", "sp-boks-ekran", "000");
-    const armut = el("div", "sp-boks-armut", "🥊");
-    makine.appendChild(ekran);
-    makine.appendChild(armut);
-    wrap.appendChild(makine);
+    panoKutu.appendChild(ekran);
+    sahne.appendChild(panoKutu);
+    wrap.appendChild(sahne);
+    const svg = sahne.querySelector("svg");
+    const torba = svg.querySelector("#bxTorba");
+    const golge = svg.querySelector(".bx-torba-golge");
 
     const bar = el("div", "sp-bar sp-bar-boks");
     const dolgu = el("div", "sp-bar-dolgu");
@@ -248,31 +410,52 @@
     }
     tabloCiz();
 
+    // Torba sarkaç gibi sallanır: açı (derece) ve açısal hız
+    let aci = 0;
+    let hizA = 0;
     let pos = 0;
     let yon = 1;
     let calisiyor = true;
     let raf = null;
     let kilit = false;
-    function dongu() {
+    let sonT = performance.now();
+    function dongu(t) {
+      const dt = Math.min(0.04, (t - sonT) / 1000);
+      sonT = t;
       if (calisiyor) {
-        pos += yon * 1.5;
+        pos += yon * 90 * dt;
         if (pos >= 100) { pos = 100; yon = -1; }
         if (pos <= 0) { pos = 0; yon = 1; }
         dolgu.style.width = pos + "%";
       }
+      // sönümlü sarkaç
+      hizA += (-460 * Math.sin((aci * Math.PI) / 180) - 1.7 * hizA) * dt;
+      aci += hizA * dt;
+      torba.setAttribute("transform", "rotate(" + aci.toFixed(2) + " 246 14)");
+      golge.setAttribute("transform", "translate(" + (Math.sin((aci * Math.PI) / 180) * 150).toFixed(1) + " 0)");
       raf = requestAnimationFrame(dongu);
     }
     raf = requestAnimationFrame(dongu);
+
+    function durum(ad, sure) {
+      svg.classList.add(ad);
+      if (sure) setTimeout(() => svg.classList.remove(ad), sure);
+    }
 
     function vurus() {
       if (kilit) return;
       kilit = true;
       calisiyor = false;
       const skor = Math.max(0, Math.min(999, Math.round(pos * 9.99 + rand(-12, 12))));
-      armut.classList.remove("is-hit");
-      void armut.offsetWidth;
-      armut.classList.add("is-hit");
-      ses("dup");
+      // yumruk animasyonu: kol uzanır, torba skora göre savrulur
+      svg.classList.remove("is-aci", "is-vur", "is-pat");
+      void svg.getBoundingClientRect();
+      durum("is-vur", 260);
+      setTimeout(() => {
+        hizA += 12 + skor * 0.075;
+        durum("is-pat", 320);
+        ses("dup");
+      }, 90);
       mesaj.textContent = "";
       bahane.textContent = "";
       let n = 0;
@@ -287,6 +470,7 @@
           lsSet("spor_boks_eniyi", enIyi);
         }
         if (skor >= 900) {
+          durum("is-mutlu", 1400);
           mesaj.textContent = skor === 999
             ? "💥 999! Burger'in rekoruna ortak oldun! Salon ayakta alkışlıyor."
             : "💪 " + skor + "! Salondakiler şokta. Burger burgerini düşürdü.";
@@ -295,6 +479,7 @@
           ses("cit");
           kirik++;
           lsSet("spor_boks_kirik", kirik);
+          durum("is-aci", 1500);
           wrap.classList.add("sp-shake");
           mesaj.textContent = "🦴 " + skor + ". Elinden \"çıt\" diye bir ses geldi.";
           bahane.textContent = "Berkay: \"" + BOKS_BAHANE[bahaneSira % BOKS_BAHANE.length] + "\"";
@@ -314,6 +499,7 @@
       }, 30);
     }
     vur.addEventListener("click", vurus);
+    sahne.addEventListener("click", vurus);
     function tus(e) {
       if (e.code === "Space") {
         e.preventDefault();
@@ -342,11 +528,16 @@
     const saha = el("div", "sp-saha");
     const kale = el("div", "sp-kale");
     saha.appendChild(kale);
-    const kaleci = el("div", "sp-kaleci", "🧤");
+    const kaleci = el("div", "sp-kaleci");
+    kaleci.appendChild(svgEl(KALECI_SVG));
     saha.appendChild(kaleci);
+    const sutor = el("div", "sp-oyuncu");
+    sutor.appendChild(svgEl(SUTOR_SVG));
+    saha.appendChild(sutor);
     const ok = el("div", "sp-ok");
     saha.appendChild(ok);
-    const top = el("div", "sp-top", "⚽");
+    const top = el("div", "sp-top");
+    top.appendChild(svgEl(TOP_SVG));
     saha.appendChild(top);
     wrap.appendChild(saha);
 
@@ -418,8 +609,13 @@
     }
     function sifirlaTop() {
       top.style.transition = "none";
+      top.classList.remove("is-ucus");
+      sutor.classList.remove("is-sut");
+      kaleci.classList.remove("is-sol", "is-sag");
       const b = topBaslangic();
       topKoy(b.x, b.y);
+      sutor.style.left = b.x - 44 + "px";
+      sutor.style.top = b.y - 56 + "px";
       void top.offsetWidth;
       top.style.transition = "";
     }
@@ -478,7 +674,16 @@
         else durum = "gol";
         if (durum === "kurtardi") hedefY = golCizgisiY - 6;
       }
-      topKoy(hedefX, hedefY);
+      sutor.classList.add("is-sut");
+      // kaleci: kurtarışta topa, diğerlerinde çoğu zaman yanlış tarafa uçar
+      const kaleciPx2 = W * 0.12 + kaleciX * W * 0.76;
+      const topaSol = hedefX < kaleciPx2;
+      const sol = durum === "kurtardi" ? topaSol : Math.random() < 0.7 ? !topaSol : topaSol;
+      setTimeout(() => kaleci.classList.add(sol ? "is-sol" : "is-sag"), 120);
+      setTimeout(() => {
+        top.classList.add("is-ucus");
+        topKoy(hedefX, hedefY);
+      }, 110);
       st.sut++;
       setTimeout(() => {
         if (durum === "gol") {
@@ -499,7 +704,7 @@
           dondur = true;
           kilit = false;
         }, 1300);
-      }, 480);
+      }, 600);
     }
     vur.addEventListener("click", sut);
     function tus(e) {
@@ -554,7 +759,8 @@
       c.style.top = (i / SERIT) * 100 + "%";
       yol.appendChild(c);
     }
-    const moto = el("div", "sp-moto2", "🏍️");
+    const moto = el("div", "sp-moto2");
+    moto.appendChild(svgEl(MOTOR_SVG));
     yol.appendChild(moto);
     const tarla = el("div", "sp-tarla", "🌾");
     yol.appendChild(tarla);
@@ -598,7 +804,6 @@
       "Burger olay yerine geldi, burger yiyerek tutanak tuttu.",
       "Halil çekiciyi depodan ayarladı, faturayı Berkay'a kesti.",
     ];
-    const ARACLAR = ["🚗", "🚙", "🚕", "🚚", "🚌", "🚜"];
 
     let hiz, konum, serit, araclar, bitti, gazda, frende, gordu85, sonZaman, spawnSure, raf;
     let frenMesaj = false;
@@ -625,7 +830,6 @@
       buyuk.textContent = "";
       mesaj.textContent = "";
       moto.classList.remove("is-crash");
-      moto.textContent = "🏍️";
       tekrar.hidden = true;
       tarla.style.left = "110%";
       sonZaman = performance.now();
@@ -641,7 +845,6 @@
       bitti = true;
       ses("carpisma");
       moto.classList.add("is-crash");
-      moto.textContent = "💥";
       kazaEkran.hidden = false;
       kazaEkran.innerHTML = "";
       yol.classList.add("is-kaza");
@@ -687,7 +890,8 @@
         if (spawnSure <= 0 && konum < HEDEF - 60) {
           spawnSure = 0.9 + Math.random() * 1.2;
           const s = rand(0, SERIT - 1);
-          const e = el("div", "sp-arac", sec(ARACLAR));
+          const e = el("div", "sp-arac");
+          e.appendChild(svgEl(aracSvg()));
           yol.appendChild(e);
           araclar.push({ el: e, x: W + 40, serit: s, hiz: rand(25, 55) });
         }
@@ -696,7 +900,7 @@
           a.x -= ((hiz - a.hiz) / 3.6) * dt * pxm;
           a.el.style.left = a.x + "px";
           a.el.style.top = seritY(a.serit) + "px";
-          if (a.serit === serit && Math.abs(a.x - motoX) < 34) kaza();
+          if (a.serit === serit && Math.abs(a.x - motoX) < 58) kaza();
           if (a.x < -60 || a.x > W + 80) {
             a.el.remove();
             return false;
