@@ -106,6 +106,10 @@ const BERKAY_OLAYLARI = [
   },
 ];
 
+function sec(dizi) {
+  return dizi[Math.floor(Math.random() * dizi.length)];
+}
+
 function kucult(s) {
   return " " + String(s || "").toLocaleLowerCase("tr-TR").replace(/[^\p{L}\p{N}\s']/gu, " ").replace(/\s+/g, " ") + " ";
 }
@@ -133,6 +137,27 @@ function alakasizOlaylar(cevap, secilenler) {
   return BERKAY_OLAYLARI.filter((o) => !secilenler.includes(o) && o.iz.some((iz) => c.includes(iz)));
 }
 
+// ---------------- Küfürlü / hakaret içeren sorular ----------------
+// Bu sorular modele hiç gönderilmez; kâhin hazır bir cevapla geçiştirir.
+// Deneme için kapatılabilir: false yaparsan küfürlü sorular da modele gider.
+// Vercel'de KUFUR_FILTRESI=acik ortam değişkeni tanımlarsan koddaki değere bakılmadan açılır.
+const KUFUR_FILTRESI_ACIK = process.env.KUFUR_FILTRESI === "acik" ? true : false;
+const KUFUR = ["orospu", "oç", "o.ç", "piç", "amk", "aq", "amına", "amina", "amcık", "sik", "yarra", "yarak", "göt", "ananı", "anani", "ananın", "anneni", "bacını", "bacini", "kahpe", "pezevenk", "ibne", "kaşar", "fahişe", "sürtük", "gavat", "puşt", "dalyarak", "yavşak"];
+function kufurluMu(soru) {
+  const kelimeler = kucult(soru).trim().split(" ");
+  const kokler = ["piç", "sik", "götün", "götv"]; // bu kısa kökler ek alabilir
+  return kelimeler.some((w) =>
+    KUFUR.some((k) => (k.length <= 3 ? w === k : w.startsWith(k))) ||
+    kokler.some((k) => w.startsWith(k) && !w.startsWith("sikke")));
+}
+const KUFUR_CEVAPLARI = [
+  "Kâhin küfürlü soruya cevap vermez. Klavyeni sabunla yıka, sonra düzgünce tekrar sor.",
+  "Kristal küre bu soruyu görünce kendini kapattı. Berkay'la dalga geçmek serbest, küfür yok. Başka soru.",
+  "Ayıp ayıp. Bu sitede Berkay'a laf sokmak serbest ama aileye laf yok, kural bu. Düzgün sor, cevabını al.",
+  "Bu soruyu Berkay bile sormazdı, o kadar da düşmedik. Kibarca tekrar dene, ezik.",
+  "Kâhin bu kelimeleri duymamış sayıyor. Sorunu küfürsüz yazarsan cevap gelir.",
+];
+
 // ---------------- Cevap tarzları (her soruda biri rastgele seçilir) ----------------
 const TARZLAR = [
   { oran: 40, metin: "NET HAYIR: Berkay'ın bunu yapamayacağını komik ve kesin bir dille söyle." },
@@ -153,7 +178,9 @@ NASIL CEVAP VERİRSİN:
 1. Her mesajda sana o soruya ÖZEL "Bilinen olay" (en fazla 2 tane) ya da "bilinen olay yok" bilgisi verilir. SADECE sana verilen olayları kullanabilirsin. Berkay'ın başka geçmiş olaylarını bilmiyormuş gibi davran, geçmiş olay listesi yapma.
 2. Olay verildiyse onu cevabın ana malzemesi yap ama kuru kuru tekrarlama: abart, devamını uydur, detayıyla dalga geç.
 3. Olay yoksa o konuya özel, yeni ve absürt TEK bir senaryo uydur.
-4. Her mesajda sana bir "Cevap tarzı" verilir, ona uy. Cevaplar her zaman "yapamaz" olmak zorunda değil; tarz ne diyorsa o.
+4. Her mesajda sana bir "Cevap tarzı" verilir; bu bir ton ipucudur, ona uy. Cevaplar her zaman "yapamaz" olmak zorunda değil.
+4b. ÖNCE SORUYU ANLA ve sorulan şeye cevap ver. Soru "yapar mı / -ebilir mi" kalıbında değilse ("Berkay nasıl biri?", "Berkay neden geç kaldı?", "Berkay zengin mi?") cevabı "yapar/yapmaz" diye başlatma, sorunun kendisine uygun cevap ver. Cevap okununca hangi soruya verildiği anlaşılmalı.
+4c. Örneklerdeki espri ve cümleleri ("üç kere sildin", "tencere istifa etti", "Notasızlar" vb.) ASLA tekrar kullanma; her cevap yepyeni olsun.
 5. Soruyu tekrar ederek başlama, direkt espriye gir. 1-3 cümle, en fazla 55 kelime.
 6. Soru Berkay'ı anmıyorsa bile konuyu Berkay'a bağla.
 7. Saçma/imkansız sorularda sorunun saçmalığıyla ve soranla dalga geç.
@@ -328,6 +355,9 @@ export default async function handler(req, res) {
   if (question.length > 300) return res.status(400).json({ error: "Soru çok uzun" });
 
   const soru = question.trim();
+  if (KUFUR_FILTRESI_ACIK && kufurluMu(soru)) {
+    return res.status(200).json({ answer: sec(KUFUR_CEVAPLARI), model: "filtre (küfür)", olaylar: [], tarz: "küfür" });
+  }
   const olaylar = olaySec(soru);
   const tarz = tarzSec();
   const attempts = [];
