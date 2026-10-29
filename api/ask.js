@@ -1,8 +1,11 @@
 // Vercel Serverless Function — /api/ask
+// Vercel'in varsayılan 10 saniyelik limitini 60 saniyeye çıkarıyoruz ki AI cevap verirken kesilmesin.
+export const maxDuration = 60; 
+
 // Ana sayfadaki kâhin. Nasıl çalışır:
 //  1) Soru gelir, kod BERKAY_OLAYLARI listesinden soruyla ilgili en fazla 2 olayı seçer
 //  2) Her soruda rastgele bir cevap tarzı seçilir.
-//  3) Cevap gelince kod kontrol eder: ret/moralizing cümleleri varsa baştan üretir.
+//  3) Cevap gelince kod kontrol eder: ahlak dersi, ret cümlesi (İngilizce/Türkçe) varsa baştan üretir.
 //  4) Nous Research modelleri sırayla denenir, olmazsa Gemini.
 
 // ---------------- Berkay hakkında bilinenler ----------------
@@ -10,8 +13,8 @@ const BERKAY_OLAYLARI = [
   {
     ad: "ders",
     kelimeler: ["ders", "sınav", "matematik", "okul", "kitap", "oku", "çarp", "hesap", "kopya", "deneme", "zeki", "akıl", "kpss", "üniversite", "öğren", "test", "soru çöz", "puan"],
-    metin: "3x3'ün kaç ettiğini bilmez ama denemelerde kopyayla 94 alır. Kitap okumaya çalışırken yorulur.",
-    iz: ["3x3", "kopya", "94"],
+    metin: "3x3'ün kaç ettiğini bilmez ama KPSS denemelerinde telefondan QR okutup kopyayla 94 alır. Kitap okumaya çalışırken yorulur.",
+    iz: ["3x3", "kopya", "94", "qr"],
   },
   {
     ad: "boks",
@@ -174,7 +177,7 @@ const NOUS_MODEL_CANDIDATES = [
   "qwen/qwen3-30b-a3b-instruct-2507",
 ].filter(Boolean);
 
-const MODEL_TIMEOUT_MS = 12000;
+const MODEL_TIMEOUT_MS = 8000; // Modellerin gereksiz yere Vercel'i patlatmasını engellemek için 8 saniyeye düşürüldü
 const SICAKLIK = 0.70;
 
 async function fetchWithTimeout(url, options, ms) {
@@ -342,15 +345,21 @@ export default async function handler(req, res) {
     }
   }
 
-  if (sonuc) {
+  // Tüm AI sistemleri çökerse (veya sürekli ret yerse) kibar hata vermek yerine, ağır küfürlü yedeği döndürür.
+  if (!sonuc) {
+    console.error("Tüm AI sağlayıcıları başarısız:", attempts);
     return res.status(200).json({
-      answer: sonuc.answer,
-      model: sonuc.model,
+      answer: "Berkay'ın o kadar süzme bir mal olduğu ortaya çıktı ki, yapay zeka bile bu gavatın anasına sövmekten yorulup çöktü amk. Siktir git başka soru sor.",
+      model: "kâhin (sistem çöktü)",
       olaylar: olaylar.map((o) => o.ad),
-      tarz: tarz.metin.split(":")[0],
+      tarz: "SİSTEM ÇÖKTÜ"
     });
   }
 
-  console.error("Tüm AI sağlayıcıları başarısız:", attempts);
-  return res.status(500).json({ error: "AI cevap üretemedi (Tüm modeller ret verdi)", detail: attempts.join(" | ") });
+  return res.status(200).json({
+    answer: sonuc.answer,
+    model: sonuc.model,
+    olaylar: olaylar.map((o) => o.ad),
+    tarz: tarz.metin.split(":")[0],
+  });
 }
