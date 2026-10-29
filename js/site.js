@@ -28,6 +28,10 @@
   const MOON = '<svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
   const SUN = '<svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 
+  const RENKLER = [
+    ["", "Kâhin moru", "#5a3fd4"], ["popeyes", "Popeyes turuncusu", "#e8590c"],
+    ["pembe", "Ehliyet pembesi", "#d6336c"], ["tarla", "Tarla yeşili", "#2b8a3e"],
+  ];
   const topbar = document.createElement("header");
   topbar.className = "topbar";
   topbar.innerHTML =
@@ -37,13 +41,25 @@
     NAV.map(([href, label]) => '<a href="' + href + '"' + (href === here ? ' class="on" aria-current="page"' : "") + ">" + label + "</a>").join("") +
     "</nav>" +
     '<div class="top-actions">' +
-    '<button type="button" class="icon-btn theme-btn" id="themeBtn" aria-label="Açık / koyu tema">' + MOON + SUN + "</button>" +
+    '<div class="tema-widget"><button type="button" class="icon-btn theme-btn" id="themeBtn" aria-label="Tema ve ayarlar" aria-expanded="false">' + MOON + SUN + "</button>" +
+    '<div class="card tema-panel" id="temaPanel" hidden>' +
+    '<div class="tema-baslik">Görünüm</div>' +
+    '<div class="tema-mod" role="group" aria-label="Açık / koyu">' +
+    '<button type="button" data-mod="light">☀️ Açık</button><button type="button" data-mod="dark">🌙 Koyu</button><button type="button" data-mod="">💻 Sistem</button></div>' +
+    '<div class="tema-baslik">Renk</div>' +
+    '<div class="tema-renkler">' +
+    RENKLER.map(([k, ad, c]) => '<button type="button" data-renk="' + k + '" title="' + ad + '" aria-label="' + ad + '" style="--sw:' + c + '"><i></i><span>' + ad + "</span></button>").join("") +
+    "</div>" +
+    '<div class="tema-baslik">Bildirimler</div>' +
+    '<button type="button" class="tema-bildirim" id="bildirimBtn">🔔 Ahır bildirimlerini aç</button>' +
+    '<p class="tema-not" id="bildirimNot"></p>' +
+    "</div></div>" +
     '<div class="auth-widget" id="authWidget"><button type="button" class="auth-toggle" id="authToggle">Giriş yap</button><div class="card auth-panel" id="authPanel" hidden></div></div>' +
     "</div></div>";
   document.body.insertBefore(topbar, document.body.firstChild);
   // Ana sayfadaki müzik düğmesi üst bara taşınır: Ahır sekmesindeyken de görünsün
   const sesBtn = document.getElementById("sound-toggle");
-  if (sesBtn) topbar.querySelector(".top-actions").insertBefore(sesBtn, topbar.querySelector("#themeBtn"));
+  if (sesBtn) topbar.querySelector(".top-actions").insertBefore(sesBtn, topbar.querySelector(".tema-widget"));
 
   const footer = document.createElement("footer");
   footer.className = "site-footer";
@@ -52,14 +68,55 @@
     NAV.slice(1).concat([["/basarimlar", "Başarımlar"]]).map(([href, label]) => '<a href="' + href + '">' + label + "</a>").join("") + "</nav></div>";
   document.body.appendChild(footer);
 
-  // Tema: kullanıcı seçtiyse onu hatırla, seçmediyse sistem ayarı
+  // Tema: açık / koyu / sistem + renk. Seçim hatırlanır (sayfaların <head>'indeki küçük
+  // betik, sayfa açılırken yanıp sönmesin diye aynı ayarları en başta uygular).
   const TEMA = "yaparmi_tema";
-  document.getElementById("themeBtn").addEventListener("click", () => {
-    const root = document.documentElement;
-    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-    root.dataset.theme = dark ? "light" : "dark";
-    try { localStorage.setItem(TEMA, root.dataset.theme); } catch { /* yok sayılabilir */ }
+  const RENK = "yaparmi_renk";
+  const root = document.documentElement;
+  const temaBtn = document.getElementById("themeBtn");
+  const temaPanel = document.getElementById("temaPanel");
+  function lsYaz(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch { /* yok sayılabilir */ } }
+  function temaCiz() {
+    temaPanel.querySelectorAll("[data-mod]").forEach((b) => b.classList.toggle("on", (root.dataset.theme || "") === b.dataset.mod));
+    temaPanel.querySelectorAll("[data-renk]").forEach((b) => b.classList.toggle("on", (root.dataset.renk || "") === b.dataset.renk));
+  }
+  temaBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    temaPanel.hidden = !temaPanel.hidden;
+    temaBtn.setAttribute("aria-expanded", String(!temaPanel.hidden));
+    temaCiz();
   });
+  temaPanel.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const mod = e.target.closest("[data-mod]");
+    const renk = e.target.closest("[data-renk]");
+    if (mod) {
+      if (mod.dataset.mod) root.dataset.theme = mod.dataset.mod; else delete root.dataset.theme;
+      lsYaz(TEMA, mod.dataset.mod);
+    }
+    if (renk) {
+      if (renk.dataset.renk) root.dataset.renk = renk.dataset.renk; else delete root.dataset.renk;
+      lsYaz(RENK, renk.dataset.renk);
+    }
+    if (mod || renk) {
+      temaCiz();
+      document.dispatchEvent(new CustomEvent("tema-degisti", { detail: { mod: root.dataset.theme || "", renk: root.dataset.renk || "" } }));
+    }
+  });
+  document.addEventListener("click", () => { if (!temaPanel.hidden) { temaPanel.hidden = true; temaBtn.setAttribute("aria-expanded", "false"); } });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") temaPanel.hidden = true; });
+
+  // Davet linki: yaparmi.com/?davet=kullaniciadi ile gelen kişi kayıt olursa davet edene sayılır
+  try {
+    const u = new URL(location.href);
+    const d = (u.searchParams.get("davet") || "").toLocaleLowerCase("tr-TR").replace(/[^a-z0-9._-]/g, "").slice(0, 20);
+    if (d) {
+      localStorage.setItem("yaparmi_davet", d);
+      u.searchParams.delete("davet");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    }
+  } catch { /* yok sayılabilir */ }
+
 
   // ---------------- Yas modu: Berkay ehliyeti geçti 🖤 ----------------
   // Her sayfada sol üstte siyah kurdele. Açılış ekranı oturum başına bir
@@ -270,9 +327,31 @@
         '<span class="who"></span>' +
         (isAdmin ? '<span class="role-badge">ADMIN</span>' : "") +
         (isAdmin ? '<a href="/admin" class="link-btn">⚙️ Admin Paneli</a>' : "") +
+        '<div class="davet-kutu"><b>🔗 Arkadaşını davet et</b><span>Linkinle kayıt olan her arkadaşın sana sayılır, rozet kazanırsın.</span>' +
+        '<button type="button" class="btn davet-kopya" id="davetKopya">Davet linkini kopyala</button><small id="davetSayi"></small></div>' +
         '<button type="button" class="link-btn" id="logoutBtn">Çıkış Yap</button>' +
         "</div>";
       authPanel.querySelector(".who").textContent = profile.kullaniciAdi;
+      const davetLink = location.origin + "/?davet=" + encodeURIComponent(profile.kullaniciAdi);
+      const kopyaBtn = document.getElementById("davetKopya");
+      kopyaBtn.addEventListener("click", async () => {
+        try {
+          if (navigator.share && matchMedia("(pointer:coarse)").matches) {
+            await navigator.share({ title: "yaparmi.com", text: "Berkay yapar mı? Gel sen de sor:", url: davetLink });
+          } else {
+            await navigator.clipboard.writeText(davetLink);
+            kopyaBtn.textContent = "✅ Kopyalandı";
+            setTimeout(() => (kopyaBtn.textContent = "Davet linkini kopyala"), 1800);
+          }
+        } catch { document.getElementById("davetSayi").textContent = davetLink; }
+      });
+      if (db) {
+        db.collection("davetler").where("davetEden", "==", profile.kullaniciAdi).get().then((snap) => {
+          const n = snap.size;
+          document.getElementById("davetSayi") && (document.getElementById("davetSayi").textContent = n ? n + " arkadaşın davetinle katıldı." : "Henüz davetinle katılan yok.");
+          if (window.Basarim) Basarim.rekor("davet", n);
+        }).catch(() => { /* kurallar eklenmemiş olabilir */ });
+      }
       const logoutBtn = document.getElementById("logoutBtn");
       if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
@@ -319,6 +398,14 @@
             rol: rol,
             olusturulmaTarihi: firebase.firestore.FieldValue.serverTimestamp(),
           });
+          // Davet linkiyle geldiyse davet edene yaz (kendini davet edemez)
+          let davetEden = "";
+          try { davetEden = localStorage.getItem("yaparmi_davet") || ""; } catch { /* yok */ }
+          if (davetEden && davetEden !== name) {
+            db.collection("davetler").doc(cred.user.uid).set({
+              davetEden, davetEdilen: name, tarih: firebase.firestore.FieldValue.serverTimestamp(),
+            }).catch((err) => console.warn("Davet kaydedilemedi:", err.message));
+          }
         } else {
           await auth.signInWithEmailAndPassword(email, pass);
         }

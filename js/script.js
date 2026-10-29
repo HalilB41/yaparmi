@@ -546,3 +546,9 @@ document.querySelectorAll(".ask-chip").forEach((chip) => {
     else form.dispatchEvent(new Event("submit", { cancelable: true }));
   });
 });
+
+// Bildirimden ya da linkten /#ahir ile gelindiyse Ahır'ı aç
+if (location.hash === "#ahir") {
+  const ahirBtn = document.getElementById("ahirBtn");
+  if (ahirBtn) ahirBtn.click();
+}

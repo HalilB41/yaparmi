@@ -14,6 +14,7 @@
     ["kahin", "🔮", "Kâhin ve Ahır"],
     ["spor", "🥊", "Spor"],
     ["ehliyet", "🚘", "Ehliyet"],
+    ["grup", "🤝", "Grup"],
     ["diger", "📚", "Ders, sosyal hayat, galeri"],
     ["gizli", "🌙", "Gizli"],
   ];
@@ -45,6 +46,13 @@
     { id: "surus", k: "ehliyet", ikon: "🛣️", ad: "Kazasız", acik: "Sürüş sınavını geç.", sayac: "surus", hedef: 1 },
     { id: "ehliyet", k: "ehliyet", ikon: "🪪", ad: "Belgeli", acik: "L parkı yap ve ehliyetini al.", sayac: "ehliyet", hedef: 1 },
 
+    { id: "davet_1", k: "grup", ikon: "🔗", ad: "Davetçi", acik: "Davet linkinle bir arkadaşın kayıt olsun.", sayac: "davet", hedef: 1 },
+    { id: "davet_3", k: "grup", ikon: "👥", ad: "Grup kurucusu", acik: "Davet linkinle 3 arkadaşın kayıt olsun.", sayac: "davet", hedef: 3 },
+    { id: "lider", k: "grup", ikon: "🥇", ad: "Rekortmen", acik: "Bir spor oyununun grup rekor tablosunda 1. ol.", sayac: "lider_x", hedef: 1 },
+    { id: "paylas", k: "grup", ikon: "📤", ad: "Yayıncı", acik: "Kâhinin bir cevabını paylaş.", sayac: "paylas", hedef: 1 },
+    { id: "bildirim", k: "grup", ikon: "🔔", ad: "Haberim olsun", acik: "Ahır bildirimlerini aç.", sayac: "bildirim", hedef: 1 },
+    { id: "uygulama", k: "grup", ikon: "📲", ad: "Cebimde", acik: "yaparmi.com'u uygulama olarak yükle.", sayac: "uygulama", hedef: 1 },
+
     { id: "optik", k: "diger", ikon: "📷", ad: "Kopya ustası", acik: "Ders sayfasında optiği okut.", sayac: "optik", hedef: 1 },
     { id: "optik_99", k: "diger", ikon: "🎯", ad: "Neredeyse tam", acik: "Optikten 99 al.", sayac: "optik_puan", hedef: 99 },
     { id: "son_ilk", k: "diger", ikon: "🏁", ad: "Kader çizildi", acik: "Sosyal hayat hikâyesinde bir sona ulaş.", sayac: "son", hedef: 1 },
@@ -52,9 +60,9 @@
     { id: "oneri", k: "diger", ikon: "📸", ad: "Paparazzi", acik: "Galeriye fotoğraf öner.", sayac: "oneri", hedef: 1 },
 
     { id: "gece", k: "gizli", gizli: true, ikon: "🦉", ad: "Berkay gibi uyumuyorsun", acik: "Siteye gece 02.00 ile 05.00 arasında gir.", sayac: "gece", hedef: 1 },
-    { id: "tema", k: "gizli", gizli: true, ikon: "🌑", ad: "Karanlık taraf", acik: "Koyu temaya geç.", sayac: "tema", hedef: 1 },
+    { id: "tema", k: "gizli", gizli: true, ikon: "🌑", ad: "Karanlık taraf", acik: "Ayarlardan koyu temaya geç.", sayac: "tema", hedef: 1 },
     { id: "ziyaret_7", k: "gizli", gizli: true, ikon: "📅", ad: "Sadık ziyaretçi", acik: "Siteye 7 farklı gün gir.", sayac: "gun", hedef: 7 },
-    { id: "hepsi_yarisi", k: "gizli", gizli: true, ikon: "👑", ad: "Berkay'dan daha başarılı", acik: "Başarımların yarısını aç.", sayac: "acilan", hedef: 15 },
+    { id: "hepsi_yarisi", k: "gizli", gizli: true, ikon: "👑", ad: "Berkay'dan daha başarılı", acik: "Başarımların yarısını aç.", sayac: "acilan", hedef: 18 },
   ];
 
   const ANAHTAR = "yaparmi_basarimlar";
@@ -171,10 +179,7 @@
     const gun = simdi.getFullYear() + "-" + (simdi.getMonth() + 1) + "-" + simdi.getDate();
     farkli("gun", gun);
     if (simdi.getHours() >= 2 && simdi.getHours() < 5) say("gece");
-    const temaBtn = document.getElementById("themeBtn");
-    if (temaBtn) temaBtn.addEventListener("click", () => {
-      setTimeout(() => { if (document.documentElement.dataset.theme === "dark") say("tema"); }, 0);
-    });
+    document.addEventListener("tema-degisti", (e) => { if (e.detail && e.detail.mod === "dark") say("tema"); });
     // Eski kayıtlardan gelenler (önceki sürümde oynanmış oyunlar)
     try {
       const boks = JSON.parse(localStorage.getItem("spor_boks_eniyi") || "0");

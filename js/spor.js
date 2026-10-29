@@ -154,7 +154,15 @@
   let isAdmin = false;
   let aktif = "boks";
 
+  let rekorKapat = null;
+  function rekorTablosu(oyun, parent) {
+    if (!window.Rekor) return;
+    const k = el("div");
+    parent.appendChild(k);
+    rekorKapat = Rekor.tablo(oyun, k);
+  }
   function goster(ad) {
+    if (rekorKapat) { try { rekorKapat(); } catch { /* yok */ } rekorKapat = null; }
     if (temizle) {
       temizle();
       temizle = null;
@@ -383,6 +391,7 @@
     wrap.appendChild(skorlar);
     const elSayac = el("p", "muted sp-small", "");
     wrap.appendChild(elSayac);
+    rekorTablosu("boks", wrap);
     box.appendChild(wrap);
 
     let enIyi = lsGet("spor_boks_eniyi", 0);
@@ -470,6 +479,7 @@
           lsSet("spor_boks_eniyi", enIyi);
         }
         if (window.Basarim) { Basarim.say("boks_vurus"); Basarim.rekor("boks_rekor", skor); }
+        if (window.Rekor) Rekor.gonder("boks", skor);
         if (skor >= 900) {
           durum("is-mutlu", 1400);
           mesaj.textContent = skor === 999
@@ -549,6 +559,7 @@
     const bahane = el("p", "sp-bahane", "");
     wrap.appendChild(sonuc);
     wrap.appendChild(bahane);
+    rekorTablosu("penalti", wrap);
     box.appendChild(wrap);
 
     const KACAN = [
@@ -693,6 +704,7 @@
           st.gol++;
           golSeri++;
           if (window.Basarim) { Basarim.say("gol"); Basarim.rekor("gol_seri", golSeri); }
+          if (window.Rekor) Rekor.gonder("penalti", golSeri);
           sonuc.textContent = "⚽ " + sec(GOL);
           bahane.textContent = "";
           saha.classList.add("is-gol");
@@ -799,6 +811,7 @@
     wrap.appendChild(mesaj);
     const tekrar = btn("🔄 Tekrar bin", "sp-big-btn");
     wrap.appendChild(tekrar);
+    rekorTablosu("motor", wrap);
     box.appendChild(wrap);
 
     const KAZA = [
@@ -850,6 +863,7 @@
     function kaza() {
       bitti = true;
       if (window.Basarim) Basarim.say("kaza");
+      if (window.Rekor) Rekor.gonder("motor", konum);
       ses("carpisma");
       moto.classList.add("is-crash");
       kazaEkran.hidden = false;
@@ -872,6 +886,7 @@
     function kazandi() {
       bitti = true;
       if (window.Basarim) Basarim.say("tarla");
+      if (window.Rekor) Rekor.gonder("motor", HEDEF);
       buyuk.textContent = "🌾 TARLAYA VARDI!";
       mesaj.textContent = "Berkay tarlaya kazasız vardı! Kasksız ama sağ salim. Traktörcü amca: \"Hayırdır evlat, bu hızla nereye?\"";
       tekrar.hidden = false;

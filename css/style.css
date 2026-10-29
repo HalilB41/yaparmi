@@ -103,6 +103,17 @@
   }
 }
 
+/* ---------------- Renk seçenekleri (ayarlardan) ---------------- */
+:root[data-renk="popeyes"] { --accent: #e8590c; --accent-hover: #c94a06; --accent-soft: #fde6d6; --accent-line: #f6c09c; --accent-ink: #ffffff; }
+:root[data-renk="popeyes"][data-theme="dark"] { --accent: #ff8a4c; --accent-hover: #ffa36f; --accent-soft: #3a2216; --accent-line: #7a3c1c; --accent-ink: #1a0d05; }
+@media (prefers-color-scheme: dark) { :root[data-renk="popeyes"]:not([data-theme="light"]) { --accent: #ff8a4c; --accent-hover: #ffa36f; --accent-soft: #3a2216; --accent-line: #7a3c1c; --accent-ink: #1a0d05; } }
+:root[data-renk="pembe"] { --accent: #d6336c; --accent-hover: #b5275a; --accent-soft: #fbe1ea; --accent-line: #f3b3c8; --accent-ink: #ffffff; }
+:root[data-renk="pembe"][data-theme="dark"] { --accent: #ff7aa8; --accent-hover: #ff98bd; --accent-soft: #3a1a27; --accent-line: #7a2f4c; --accent-ink: #1f0a12; }
+@media (prefers-color-scheme: dark) { :root[data-renk="pembe"]:not([data-theme="light"]) { --accent: #ff7aa8; --accent-hover: #ff98bd; --accent-soft: #3a1a27; --accent-line: #7a2f4c; --accent-ink: #1f0a12; } }
+:root[data-renk="tarla"] { --accent: #2b8a3e; --accent-hover: #237032; --accent-soft: #dcefdf; --accent-line: #a9d8b1; --accent-ink: #ffffff; }
+:root[data-renk="tarla"][data-theme="dark"] { --accent: #5fd47a; --accent-hover: #7fe095; --accent-soft: #163020; --accent-line: #2f6a3c; --accent-ink: #06150a; }
+@media (prefers-color-scheme: dark) { :root[data-renk="tarla"]:not([data-theme="light"]) { --accent: #5fd47a; --accent-hover: #7fe095; --accent-soft: #163020; --accent-line: #2f6a3c; --accent-ink: #06150a; } }
+
 /* ---------------- Temel ---------------- */
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -1255,6 +1266,39 @@ body.se-open { overflow: hidden; }
 }
 .yas-card button:hover { opacity: .88; }
 @keyframes yasFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------------- Tema / ayarlar paneli ---------------- */
+.tema-widget { position: relative; }
+.tema-panel { position: absolute; top: calc(100% + 10px); right: 0; width: 290px; max-width: calc(100vw - 24px); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 60; }
+.tema-baslik { font-size: 0.72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.tema-baslik:not(:first-child) { margin-top: 16px; }
+.tema-mod { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface-2); }
+.tema-mod button { border: none; background: transparent; padding: 8px 4px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; color: var(--ink-2); }
+.tema-mod button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm), 0 0 0 1px var(--line); }
+.tema-renkler { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tema-renkler button { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 0.78rem; font-weight: 700; color: var(--ink-2); text-align: left; }
+.tema-renkler button i { width: 18px; height: 18px; flex: none; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 2px rgba(255,255,255,.35); }
+.tema-renkler button.on { border-color: var(--sw); color: var(--ink); box-shadow: 0 0 0 2px color-mix(in srgb, var(--sw) 30%, transparent); }
+.tema-bildirim { width: 100%; margin-bottom: 6px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); font-weight: 800; font-size: 0.84rem; color: var(--ink); text-align: left; }
+.tema-bildirim:hover:not(:disabled) { border-color: var(--accent); }
+.tema-not { margin: 2px 0 0; font-size: 0.76rem; color: var(--muted); line-height: 1.4; }
+.tema-not:empty { display: none; }
+
+/* Davet kutusu (giriş paneli) */
+.davet-kutu { width: 100%; display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 14px; background: var(--surface-2); }
+.davet-kutu b { font-size: 0.9rem; }
+.davet-kutu span { font-size: 0.8rem; color: var(--ink-2); line-height: 1.35; }
+.davet-kutu .btn { padding: 9px 14px; font-size: 0.84rem; }
+.davet-kutu small { font-size: 0.76rem; color: var(--muted); word-break: break-all; }
+
+/* Ortak rekor tablosu */
+.rk-tablo { border-color: var(--accent-line); background: var(--accent-soft); }
+.rk-sira { flex: none; width: 26px; font-weight: 800; text-align: center; }
+.rk-not:empty { display: none; }
+.rk-not { margin: 6px 0 0; }
+
+/* Paylaş düğmesi */
+.paylas-btn { padding: 9px 16px; font-size: 0.86rem; }
 
 /* ---------------- Başarımlar ---------------- */
 .bs-btn { position: relative; text-decoration: none; }

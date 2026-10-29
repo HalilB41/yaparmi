@@ -1,0 +1,16 @@
+{
+  "name": "yaparmi.com · Berkay yapar mı?",
+  "short_name": "yaparmi",
+  "description": "Berkay bunu yapar mı? Kâhine sor, Ahır'da sohbet et, spor oyunlarında rekor kır.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#5a3fd4",
+  "lang": "tr",
+  "icons": [
+    { "src": "/images/ikon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/ikon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/images/ikon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

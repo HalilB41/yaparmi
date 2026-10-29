@@ -236,6 +236,35 @@ service cloud.firestore {
 
     // Ehliyet sayfası: 3 aracın şoför koltuğu resmi + çarpışma sesi.
     // Herkes okur (oyun oynansın diye), sadece admin "ayarlar" belgesini yazar.
+    // Ortak rekor tablosu (spor): herkes kendi kaydını yazar, skor sadece yükselebilir.
+    match /rekorlar/{id} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.keys().hasOnly(['oyun', 'uid', 'ad', 'skor', 'tarih'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.oyun in ['boks', 'penalti', 'motor']
+        && id == request.resource.data.oyun + '_' + request.auth.uid
+        && request.resource.data.skor is int && request.resource.data.skor > 0
+        && ((request.resource.data.oyun == 'boks' && request.resource.data.skor <= 999)
+          || (request.resource.data.oyun == 'motor' && request.resource.data.skor <= 1500)
+          || (request.resource.data.oyun == 'penalti' && request.resource.data.skor <= 1000))
+        && request.resource.data.ad == get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.kullaniciAdi
+        && (resource == null || request.resource.data.skor > resource.data.skor);
+      allow delete: if isAdmin();
+    }
+
+    // Davetler: davet linkiyle kayıt olan kişi kendi kaydını bir kez yazar.
+    match /davetler/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['davetEden', 'davetEdilen', 'tarih'])
+        && request.resource.data.davetEden is string && request.resource.data.davetEden.size() <= 20
+        && request.resource.data.davetEdilen == get(/databases/$(database)/documents/kullanicilar/$(uid)).data.kullaniciAdi
+        && request.resource.data.davetEden != request.resource.data.davetEdilen;
+      allow update, delete: if false;
+    }
+
     // Sayaçlar: ana sayfadaki "Berkay ehliyet alalı X gün" kartları.
     // Herkes okur, sadece admin panelinden düzenlenir.
     match /sayaclar/{docId} {
