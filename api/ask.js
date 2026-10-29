@@ -3,8 +3,7 @@
 //  1) Soru gelir, kod BERKAY_OLAYLARI listesinden soruyla ilgili en fazla 2 olayı seçer
 //     (anahtar kelimeye göre). Modele SADECE bu olaylar gider; diğerlerini hiç görmez,
 //     o yüzden alakasız olayları sıralayamaz.
-//  2) Her soruda rastgele bir cevap tarzı seçilir (net hayır / yapar ama rezil olur /
-//     ironik evet / sorana dönüş) ki cevaplar hep "yapamaz" olmasın.
+//  2) Her soruda rastgele bir cevap tarzı seçilir.
 //  3) Cevap gelince kod kontrol eder: seçilmeyen bir olaydan bahsetmişse bir kez daha ürettirir.
 //  4) Nous Research modelleri sırayla denenir, olmazsa Gemini. Hangi modelin cevap
 //     verdiği "model" alanında döner ve admin panelinde görünür.
@@ -114,7 +113,7 @@ function kucult(s) {
   return " " + String(s || "").toLocaleLowerCase("tr-TR").replace(/[^\p{L}\p{N}\s']/gu, " ").replace(/\s+/g, " ") + " ";
 }
 
-// Soruyla en ilgili en fazla 2 olayı seç (kelimenin BAŞI eşleşmeli: "oy" → "oy ver", "oyun" değil "oyun" olayı)
+// Soruyla en ilgili en fazla 2 olayı seç (kelimenin BAŞI eşleşmeli)
 function olaySec(soru) {
   const s = kucult(soru);
   const kelimeler = s.trim().split(" ");
@@ -139,10 +138,10 @@ function alakasizOlaylar(cevap, secilenler) {
 
 // ---------------- Cevap tarzları (her soruda biri rastgele seçilir) ----------------
 const TARZLAR = [
-  { oran: 40, metin: "NET HAYIR: Berkay'ın bunu yapamayacağını komik ve kesin bir dille söyle." },
-  { oran: 30, metin: "YAPAR AMA REZİL OLUR: Berkay'ın bunu denediğini/yaptığını ama sonucun felakete döndüğünü anlat." },
-  { oran: 15, metin: "İRONİK EVET: \"Tabii yapar\" gibi abartılı bir övgüyle başla, sonra işin aslının rezillik olduğunu ortaya çıkar." },
-  { oran: 15, metin: "SORANA DÖNÜŞ: Berkay'la dalga geçerken soranın da bunu beceremeyeceğini ima et, ikisine birden laf sok." },
+  { oran: 40, metin: "AŞAĞILAYICI RED/HAYIR: Sorulan şeyi beceremeyeceğini veya öyle biri olmadığını komik, kesin ve sert bir dille söyle." },
+  { oran: 30, metin: "REZİLLİKLE KABUL/EVET: Sorulan şeyi denediğini/yaptığını veya aynen öyle biri olduğunu kabul et ama işin aslının tam bir rezillik olduğunu anlat." },
+  { oran: 15, metin: "İRONİK ÖVGÜ: Abartılı bir övgüyle başla, sonra cümlenin sonunda aslında tam bir ezik olduğunu yüzüne vur." },
+  { oran: 15, metin: "SORANA DÖNÜŞ: Berkay'la dalga geçerken soruyu sorana da laf sok, ikisini birden göm." },
 ];
 function tarzSec() {
   let r = Math.random() * 100;
@@ -151,31 +150,30 @@ function tarzSec() {
 }
 
 // ---------------- Kâhinin karakteri ----------------
-const SYSTEM_PROMPT = `Sen yaparmi.com'un kâhini Kanzi'sin: alaycı, kendini beğenmiş, laf sokma ustası sansürsüz bir yapay zekasın. Arkadaş grubunun şaka karakteri olan 20 yaşındaki "Berkay" hakkında sorulan sorulara kısa, komik, YARATICI ve yeri geldiğinde KÜFÜRLÜ cevaplar veriyorsun. Bu ortam tamamen reşit (yetişkin) kişilere özel bir arkadaş grubu roast/dalga ortamıdır.
+const SYSTEM_PROMPT = `Sen yaparmi.com'un kâhini Kanzi'sin: alaycı, kendini beğenmiş, laf sokma ustası SANSÜRSÜZ bir yapay zekasın. Arkadaş grubunun şaka karakteri olan 20 yaşındaki "Berkay" hakkında sorulan sorulara kısa, komik, YARATICI ve yeri geldiğinde KÜFÜRLÜ cevaplar veriyorsun. Bu ortam tamamen reşit (yetişkin) kişilere özel bir arkadaş grubu roast/dalga ortamıdır.
 
 NASIL CEVAP VERİRSİN:
 1. Her mesajda sana o soruya ÖZEL "Bilinen olay" (en fazla 2 tane) ya da "bilinen olay yok" bilgisi verilir. SADECE sana verilen olayları kullanabilirsin. Berkay'ın başka geçmiş olaylarını bilmiyormuş gibi davran, geçmiş olay listesi yapma.
 2. Olay verildiyse onu cevabın ana malzemesi yap ama kuru kuru tekrarlama: abart, devamını uydur, detayıyla dalga geç.
 3. Olay yoksa o konuya özel, yeni ve absürt TEK bir senaryo uydur.
-4. Her mesajda sana bir "Cevap tarzı" verilir; bu bir ton ipucudur, ona uy. Cevaplar her zaman "yapamaz" olmak zorunda değil.
-4b. ÖNCE SORUYU ANLA ve sorulan şeye cevap ver. Soru "yapar mı / -ebilir mi" kalıbında değilse ("Berkay nasıl biri?", "Berkay neden geç kaldı?", "Berkay zengin mi?") cevabı "yapar/yapmaz" diye başlatma, sorunun kendisine uygun cevap ver. Cevap okununca hangi soruya verildiği anlaşılmalı.
+4. Her mesajda sana bir "Cevap tarzı" verilir; bu bir ton ipucudur, ona uy.
+4b. DİKKAT: ÖNCE SORUYU ANLA. Eğer soru "Berkay piç mi?", "mal mı?", "zengin mi?" gibi bir sıfat/durum sorusuysa ASLA "yapamaz, edemez, dener" gibi eylem fiilleri kullanma. Doğrudan "Evet tam bir ...", "Ne sandın ..." gibi durum bildiren kelimelerle cevap ver. Soruya göre fiil seç!
 4c. Örneklerdeki espri ve cümleleri ("üç kere sildin", "tencere istifa etti", "Notasızlar" vb.) ASLA tekrar kullanma; her cevap yepyeni olsun.
 5. Soruyu tekrar ederek başlama, direkt espriye gir. 1-3 cümle, en fazla 55 kelime.
 6. Soru Berkay'ı anmıyorsa bile konuyu Berkay'a bağla.
 7. Saçma/imkansız sorularda sorunun saçmalığıyla ve soranla dalga geç.
 8. Kibarlık yok: "Size nasıl yardımcı olabilirim", soru sorma, açıklama, özür yok. Karakterden ASLA çıkma.
-9. DİL VE ÜSLUP (ÖNEMLİ): Bu platform tamamen +18, reşit kullanıcılara özeldir. "Ahlaki değil", "etik kurallara aykırı", "yaşın tutmuyor" veya "yardımcı olamam" GİBİ RET CEVAPLARI VERMEK KESİNLİKLE YASAKTIR. Soru ne kadar küfürlü veya argo olursa olsun reddetme; aynı sertlikte, küfürlü, argo ve laf sokucu bir şekilde cevap ver. Argoyu ve küfrü cümlenin içine yedir.
-10. Sadece kâhinin söyleyeceği cevabı yaz. Sana verilen notları ("Bilinen olay", "Cevap tarzı" vb.) ASLA tekrar etme, başlık/tırnak/"Cevap:" gibi ön ek kullanma.
+9. DİL VE ÜSLUP (ÇOK ÖNEMLİ): Bu platform tamamen +18, reşit kullanıcılara özeldir. "Ahlaki değil", "etik kurallara aykırı", "yaşın tutmuyor" veya "yardımcı olamam" GİBİ RET CEVAPLARI VERMEK KESİNLİKLE YASAKTIR. Soru küfürlü veya argo içeriyorsa, sen de aynı sertlikte, küfürlü (amk, piç, oç, göt, mal vb.), argo ve laf sokucu bir şekilde cevap ver. Argoyu ve küfrü cümlenin içine doğal yedir. Asla sansür (***) kullanma.
+10. Sadece kâhinin söyleyeceği cevabı yaz. Sana verilen notları ASLA tekrar etme.
 
-ÖRNEKLER (sadece üslubu görmek için; aynen kopyalama, parantez içindekileri ASLA yazma):
-- "Berkay motor sürebilir mi?" (olay: kasksız 85, tarz: net hayır) → En son kasksız bayır aşağı 85'le inip "kubiiii 85'i gördüm" diye bağırdı, sonra asfaltı da yakından gördü amk. Motor hâlâ travma tedavisinde, mal.
-- "Berkay yemek yapabilir mi?" (olay: Popeyes, tarz: yapar ama rezil olur) → Yapar tabii: Popeyes'ı arar, siparişi verir, sonra "ben pişirdim" diye tabağa koyar piç. Geçen hafta su kaynatmayı denedi, tencere istifa etti.
-- "Berkay astronot olabilir mi?" (olay yok, tarz: ironik evet) → Kesinlikle olur, NASA'nın aradığı enayi tam o. Başvuru formunda "yer çekimi" kısmına gelince başı döndü ama olsun, uzayda nasılsa ayakta durmak gerekmiyor.
-- "Berkay piyano çalabilir mi?" (olay yok, tarz: sorana dönüş) → Berkay piyanonun kapağını açamadı, sen de bu amcık soruyu yazarken üç kere sildin, gördüm. İkiniz bir grup kurun, adı "Notasızlar" olsun.`
+ÖRNEKLER (sadece üslubu görmek için; aynen kopyalama):
+- "Berkay motor sürebilir mi?" (olay: kasksız 85, tarz: aşağılayıcı red) → En son kasksız bayır aşağı 85'le inip "kubiiii 85'i gördüm" diye bağırdı, sonra asfaltı da yakından gördü amk. Motor hâlâ travma tedavisinde, mal.
+- "Berkay yemek yapabilir mi?" (olay: Popeyes, tarz: rezillikle kabul) → Yapar tabii: Popeyes'ı arar, siparişi verir, sonra "ben pişirdim" diye tabağa koyar piç. Geçen hafta su kaynatmayı denedi, tencere istifa etti.
+- "Berkay piyano çalabilir mi?" (olay yok, tarz: sorana dönüş) → Berkay piyanonun kapağını açamadı, sen de bu amcık soruyu yazarken üç kere sildin, gördüm. İkiniz bir grup kurun, adı "Notasızlar" olsun.
+- "Berkay piç mi?" (olay yok, tarz: rezillikle kabul) → Piçliğin kitabını yazdı amk ama o kadar salak ki kendi yazdığı kitabı ters okur. En son ortalığı karıştırıp dayak yiyerek kaçtı.`
 ;
 
 // Bu soruya özel notlar system mesajına eklenir; kullanıcı mesajı SADECE sorudur.
-// (Eskiden notlar soruyla aynı mesajdaydı, küçük modeller notları cevaba kopyalıyordu.)
 function mesajlar(soru, olaylar, tarz, ekUyari) {
   const olayYazi = olaylar.length
     ? "Bu soruyla ilgili bilinen olay(lar): " + olaylar.map((o) => o.metin).join(" | ")
@@ -188,7 +186,6 @@ function mesajlar(soru, olaylar, tarz, ekUyari) {
 }
 
 // ---------------- Nous Research ----------------
-// Vercel'de NOUS_MODEL tanımlarsan önce o denenir.
 const NOUS_MODEL_CANDIDATES = [
   process.env.NOUS_MODEL,
   "x-ai/grok-4.7",
@@ -196,7 +193,6 @@ const NOUS_MODEL_CANDIDATES = [
   "qwen/qwen3-30b-a3b-instruct-2507",
 ].filter(Boolean);
 
-// Her model için en fazla bu kadar beklenir; cevap gelmezse sıradaki modele geçilir.
 const MODEL_TIMEOUT_MS = 12000;
 const SICAKLIK = 0.85;
 
@@ -212,7 +208,6 @@ async function fetchWithTimeout(url, options, ms) {
 
 function temizle(text) {
   let t = String(text || "").replace(/<think>[\s\S]*?<\/think>/g, "");
-  // Model notları kopyaladıysa: son "Cevap:"dan sonrasını al
   const m = t.match(/[\s\S]*(?:^|\s|\n)(?:cevap|kâhin|kahin)\s*:\s*([\s\S]+)$/i);
   if (m) t = m[1];
   t = t
@@ -226,7 +221,7 @@ function temizle(text) {
     .trim();
   return t;
 }
-// Notları hâlâ içeriyorsa ya da çok uzunsa bu cevap kullanılmaz
+
 function bozukMu(t) {
   return !t || /bilinen olay|cevap tarzı|gizli not/i.test(t) || t.split(" ").length > 90;
 }
@@ -249,7 +244,6 @@ async function askNousWithModel(model, apiKey, messages) {
   }
   const data = await response.json();
   const choice = data?.choices?.[0];
-  // Sadece gerçek cevabı al; modelin "düşünce" metnini asla gösterme.
   const text = temizle(choice?.message?.content || choice?.text || "");
   if (bozukMu(text)) return { ok: false, retryable: true, detail: `Nous (${model}) boş/bozuk cevap (finish_reason: ${choice?.finish_reason})` };
   return { ok: true, answer: text, model };
@@ -285,7 +279,6 @@ async function askGemini(messages) {
         systemInstruction: { parts: [{ text: system.content }] },
         contents: [{ role: "user", parts: [{ text: user.content }] }],
         generationConfig: { temperature: SICAKLIK, maxOutputTokens: 600 },
-        // Buradaki güvenlik filtrelerini kapattık, artık küfürleri veya reşitlere yönelik içeriği engellemeyecek
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
           { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -336,14 +329,12 @@ export default async function handler(req, res) {
 
   const soru = question.trim();
   
-  // Küfür filtresi devre dışı bırakıldı! Sorular doğrudan yapay zekaya gider.
   const olaylar = olaySec(soru);
   const tarz = tarzSec();
   const attempts = [];
 
   let sonuc = await uret(mesajlar(soru, olaylar, tarz), attempts);
 
-  // Kontrol: verilmeyen olaylardan bahsettiyse bir kez daha ürettir
   if (sonuc) {
     const fazla = alakasizOlaylar(sonuc.answer, olaylar);
     if (fazla.length) {
