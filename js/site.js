@@ -16,7 +16,7 @@
   // Menü, logo, tema düğmesi ve Giriş Yap butonu buradan eklenir; sayfaların
   // HTML'inde sadece kendi içerikleri var.
   const NAV = [
-    ["/", "Kâhin"], ["/spor", "Spor"], ["/ders", "Ders"], ["/oyun", "Oyun"],
+    ["/", "Kâhin"], ["/spor", "Spor"], ["/ders", "Ders"],
     ["/ehliyet", "Ehliyet"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");

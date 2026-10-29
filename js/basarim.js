@@ -13,7 +13,6 @@
   const KATEGORILER = [
     ["kahin", "🔮", "Kâhin ve Ahır"],
     ["spor", "🥊", "Spor"],
-    ["oyun", "🎮", "Oyun"],
     ["ehliyet", "🚘", "Ehliyet"],
     ["diger", "📚", "Ders, sosyal hayat, galeri"],
     ["gizli", "🌙", "Gizli"],
@@ -40,13 +39,6 @@
     { id: "tarla", k: "spor", ikon: "🌾", ad: "Tarlaya vardı", acik: "Kasksız 85'te tarlaya kazasız ulaş.", sayac: "tarla", hedef: 1 },
     { id: "kaza_10", k: "spor", ikon: "🪖", ad: "Kask nedir?", acik: "Kasksız 85'te 10 kaza yap.", sayac: "kaza", hedef: 10 },
 
-    { id: "g2048_512", k: "oyun", ikon: "🔢", ad: "Sayı avcısı", acik: "2048'de 512 karesini yap.", sayac: "g2048", hedef: 512 },
-    { id: "g2048_2048", k: "oyun", ikon: "🧠", ad: "2048!", acik: "2048'de 2048 karesini yap.", sayac: "g2048", hedef: 2048 },
-    { id: "yilan_20", k: "oyun", ikon: "🐍", ad: "Uzun yılan", acik: "Yılanda tek oyunda 20 elma ye.", sayac: "yilan", hedef: 20 },
-    { id: "hafiza", k: "oyun", ikon: "🃏", ad: "Fil hafızası", acik: "Hafıza oyununu bitir.", sayac: "hafiza", hedef: 1 },
-    { id: "hafiza_hizli", k: "oyun", ikon: "⚡", ad: "Şimşek hafıza", acik: "Hafıza oyununu 14 hamle ya da daha azında bitir.", sayac: "hafiza_hizli", hedef: 1 },
-    { id: "xox_berabere", k: "oyun", ikon: "🤝", ad: "Yenilmedim", acik: "XOX'ta bilgisayarla berabere kal.", sayac: "xox_berabere", hedef: 1 },
-    { id: "tkm_5", k: "oyun", ikon: "✊", ad: "Taş gibi", acik: "Taş kağıt makasta 5 kez kazan.", sayac: "tkm", hedef: 5 },
 
     { id: "yazili", k: "ehliyet", ikon: "📝", ad: "Teoride iyi", acik: "Ehliyet yazılısını geç.", sayac: "yazili", hedef: 1 },
     { id: "yazili_10", k: "ehliyet", ikon: "💯", ad: "Kitap gibi", acik: "Yazılıdan 10/10 al.", sayac: "yazili_tam", hedef: 1 },
@@ -62,7 +54,7 @@
     { id: "gece", k: "gizli", gizli: true, ikon: "🦉", ad: "Berkay gibi uyumuyorsun", acik: "Siteye gece 02.00 ile 05.00 arasında gir.", sayac: "gece", hedef: 1 },
     { id: "tema", k: "gizli", gizli: true, ikon: "🌑", ad: "Karanlık taraf", acik: "Koyu temaya geç.", sayac: "tema", hedef: 1 },
     { id: "ziyaret_7", k: "gizli", gizli: true, ikon: "📅", ad: "Sadık ziyaretçi", acik: "Siteye 7 farklı gün gir.", sayac: "gun", hedef: 7 },
-    { id: "hepsi_yarisi", k: "gizli", gizli: true, ikon: "👑", ad: "Berkay'dan daha başarılı", acik: "Başarımların yarısını aç.", sayac: "acilan", hedef: 19 },
+    { id: "hepsi_yarisi", k: "gizli", gizli: true, ikon: "👑", ad: "Berkay'dan daha başarılı", acik: "Başarımların yarısını aç.", sayac: "acilan", hedef: 15 },
   ];
 
   const ANAHTAR = "yaparmi_basarimlar";

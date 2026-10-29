@@ -357,6 +357,7 @@
     let bitti = false;
     let engeller = [];
     let spawnSure = 1.1;
+    const ENGEL_HIZ = 30; // bütün engeller aynı hızda: birbirlerine yetişip yolu kapatmasınlar
     let sonZaman = performance.now();
     let raf = null;
     let carpmaKilit = false;
@@ -424,10 +425,20 @@
         spawnSure -= dt * (hizDeger / 55);
         if (spawnSure <= 0 && konum < HEDEF - 40) {
           spawnSure = 0.75 + Math.random() * 0.9;
-          const s = rand(0, SERIT - 1);
-          const e = el("div", "eh-obstacle", sec(ENGEL_ARAC));
-          yol.appendChild(e);
-          engeller.push({ el: e, y: -40, serit: s, hiz: rand(20, 45) });
+          // Yeni araba, yukarıdaki ~170 px'lik bölgedeki arabalarla birlikte 3 şeridi
+          // birden kapatamaz: her zaman en az bir şerit boş kalır. Hepsi aynı hızda
+          // gittiği için aralarındaki boşluk da sonradan kapanmaz.
+          const dolu = new Set(engeller.filter((g) => g.y < 170).map((g) => g.serit));
+          const bos = [];
+          for (let i = 0; i < SERIT; i++) if (!dolu.has(i)) bos.push(i);
+          if (bos.length >= 2 || (bos.length === 1 && dolu.size === 0)) {
+            const s = sec(bos);
+            const e = el("div", "eh-obstacle", sec(ENGEL_ARAC));
+            yol.appendChild(e);
+            engeller.push({ el: e, y: -40, serit: s, hiz: ENGEL_HIZ });
+          } else {
+            spawnSure = 0.3; // yer yok, biraz sonra tekrar dene
+          }
         }
 
         const oyuncuY = H - 54;
