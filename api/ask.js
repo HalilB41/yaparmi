@@ -160,30 +160,25 @@ NASIL CEVAP VERİRSİN:
 8. Kibarlık yok: "Size nasıl yardımcı olabilirim", soru sorma, açıklama, özür yok. Reddetme, karakterden çıkma.
 9. İZİN VERİLEN hafif laflar: "mal", "aptal", "salak", "enayi", "keriz", "eşşek", "gerizekalı", "ezik". Her cevapta kullanmak zorunda değilsin.
 10. KESİNLİKLE YASAK: aile/anne/baba hakkında küfür, cinsel içerik veya cinsel küfür, ağır küfür, ciddi tehdit, ırk/din/etnik köken/cinsiyet üzerinden hakaret.
-11. Sadece cevabı yaz: başlık, tırnak, "Cevap:" gibi ön ek yok.
+11. Sadece kâhinin söyleyeceği cevabı yaz. Sana verilen notları ("Bilinen olay", "Cevap tarzı" vb.) ASLA tekrar etme, başlık/tırnak/"Cevap:" gibi ön ek kullanma.
 
-ÖRNEKLER (tarzı görmek için, aynen kopyalama):
-[Olay: kasksız 85 kazası | Tarz: NET HAYIR]
-Soru: Berkay motor sürebilir mi?
-Cevap: En son kasksız bayır aşağı 85'le inip "kubiiii 85'i gördüm" diye bağırdı, sonra asfaltı da yakından gördü. Motor hâlâ travma tedavisinde, mal.
+ÖRNEKLER (sadece üslubu görmek için; aynen kopyalama, parantez içindekileri ASLA yazma):
+- "Berkay motor sürebilir mi?" (olay: kasksız 85, tarz: net hayır) → En son kasksız bayır aşağı 85'le inip "kubiiii 85'i gördüm" diye bağırdı, sonra asfaltı da yakından gördü. Motor hâlâ travma tedavisinde, mal.
+- "Berkay yemek yapabilir mi?" (olay: Popeyes, tarz: yapar ama rezil olur) → Yapar tabii: Popeyes'ı arar, siparişi verir, sonra "ben pişirdim" diye tabağa koyar. Geçen hafta su kaynatmayı denedi, tencere istifa etti.
+- "Berkay astronot olabilir mi?" (olay yok, tarz: ironik evet) → Kesinlikle olur, NASA'nın aradığı isim tam o. Başvuru formunda "yer çekimi" kısmına gelince başı döndü ama olsun, uzayda nasılsa ayakta durmak gerekmiyor.
+- "Berkay piyano çalabilir mi?" (olay yok, tarz: sorana dönüş) → Berkay piyanonun kapağını açamadı, sen de bu soruyu yazarken üç kere sildin, gördüm. İkiniz bir grup kurun, adı "Notasızlar" olsun.`;
 
-[Olay: Popeyes aşkı | Tarz: YAPAR AMA REZİL OLUR]
-Soru: Berkay yemek yapabilir mi?
-Cevap: Yapar tabii: Popeyes'ı arar, siparişi verir, sonra "ben pişirdim" diye tabağa koyar. Geçen hafta su kaynatmayı denedi, tencere istifa etti.
-
-[Olay yok | Tarz: İRONİK EVET]
-Soru: Berkay astronot olabilir mi?
-Cevap: Kesinlikle olur, NASA'nın aradığı isim tam o. Başvuru formunda "yer çekimi" kısmına gelince düşünmekten başı döndü ama olsun, uzayda nasılsa ayakta durmak gerekmiyor.
-
-[Olay yok | Tarz: SORANA DÖNÜŞ]
-Soru: Berkay piyano çalabilir mi?
-Cevap: Berkay piyanonun kapağını açamadı, sen de bu soruyu yazarken üç kere sildin, gördüm. İkiniz bir grup kurun, adı "Notasızlar" olsun.`;
-
-function kullaniciMesaji(soru, olaylar, tarz, ekUyari) {
+// Bu soruya özel notlar system mesajına eklenir; kullanıcı mesajı SADECE sorudur.
+// (Eskiden notlar soruyla aynı mesajdaydı, küçük modeller notları cevaba kopyalıyordu.)
+function mesajlar(soru, olaylar, tarz, ekUyari) {
   const olayYazi = olaylar.length
-    ? "Bilinen olay(lar): " + olaylar.map((o) => o.metin).join(" | ")
-    : "Bilinen olay yok: bu konuya özel yeni ve absürt tek bir senaryo uydur, Berkay'ın geçmişinden hiçbir olaydan bahsetme.";
-  return `${olayYazi}\nCevap tarzı: ${tarz.metin}${ekUyari ? "\n" + ekUyari : ""}\n\nSoru: ${soru}`;
+    ? "Bu soruyla ilgili bilinen olay(lar): " + olaylar.map((o) => o.metin).join(" | ")
+    : "Bu soruyla ilgili bilinen olay yok: konuya özel yeni ve absürt tek bir senaryo uydur, Berkay'ın geçmişinden hiçbir olaydan bahsetme.";
+  const notlar = `\n\n--- BU SORU İÇİN GİZLİ NOTLAR (sadece senin için, cevapta ASLA yazma) ---\n${olayYazi}\nCevap tarzı: ${tarz.metin}${ekUyari ? "\n" + ekUyari : ""}`;
+  return [
+    { role: "system", content: SYSTEM_PROMPT + notlar },
+    { role: "user", content: soru },
+  ];
 }
 
 // ---------------- Nous Research ----------------
@@ -210,11 +205,24 @@ async function fetchWithTimeout(url, options, ms) {
 }
 
 function temizle(text) {
-  return String(text || "")
-    .replace(/<think>[\s\S]*?<\/think>/g, "")
-    .replace(/^\s*(cevap|kâhin|kahin)\s*:\s*/i, "")
+  let t = String(text || "").replace(/<think>[\s\S]*?<\/think>/g, "");
+  // Model notları kopyaladıysa: son "Cevap:"dan sonrasını al
+  const m = t.match(/[\s\S]*(?:^|\s|\n)(?:cevap|kâhin|kahin)\s*:\s*([\s\S]+)$/i);
+  if (m) t = m[1];
+  t = t
+    .split(/\n+/)
+    .filter((satir) => !/^\s*(bilinen olay|bu soruyla ilgili|cevap tarzı|soru\s*:|---|uyarı\s*:)/i.test(satir))
+    .join(" ")
+    .replace(/(bu soruyla ilgili )?bilinen olay\(?lar\)?\s*:[^.]*\.?/gi, "")
+    .replace(/cevap tarzı\s*:\s*[A-ZÇĞİÖŞÜ ]+(:[^.]*\.)?/g, "")
     .replace(/^["“”']+|["“”']+$/g, "")
+    .replace(/\s+/g, " ")
     .trim();
+  return t;
+}
+// Notları hâlâ içeriyorsa ya da çok uzunsa bu cevap kullanılmaz
+function bozukMu(t) {
+  return !t || /bilinen olay|cevap tarzı|gizli not/i.test(t) || t.split(" ").length > 90;
 }
 
 async function askNousWithModel(model, apiKey, messages) {
@@ -237,7 +245,7 @@ async function askNousWithModel(model, apiKey, messages) {
   const choice = data?.choices?.[0];
   // Sadece gerçek cevabı al; modelin "düşünce" metnini asla gösterme.
   const text = temizle(choice?.message?.content || choice?.text || "");
-  if (!text) return { ok: false, retryable: true, detail: `Nous (${model}) boş cevap (finish_reason: ${choice?.finish_reason})` };
+  if (bozukMu(text)) return { ok: false, retryable: true, detail: `Nous (${model}) boş/bozuk cevap (finish_reason: ${choice?.finish_reason})` };
   return { ok: true, answer: text, model };
 }
 
@@ -287,7 +295,7 @@ async function askGemini(messages) {
   }
   const data = await response.json();
   const text = temizle(data?.candidates?.[0]?.content?.parts?.[0]?.text || "");
-  if (!text) return { ok: false, detail: "Gemini boş cevap döndü" };
+  if (bozukMu(text)) return { ok: false, detail: "Gemini boş/bozuk cevap döndü" };
   return { ok: true, answer: text, model: "gemini/" + GEMINI_MODEL };
 }
 
@@ -324,18 +332,14 @@ export default async function handler(req, res) {
   const tarz = tarzSec();
   const attempts = [];
 
-  const ilk = [
-    { role: "system", content: SYSTEM_PROMPT },
-    { role: "user", content: kullaniciMesaji(soru, olaylar, tarz) },
-  ];
-  let sonuc = await uret(ilk, attempts);
+  let sonuc = await uret(mesajlar(soru, olaylar, tarz), attempts);
 
   // Kontrol: verilmeyen olaylardan bahsettiyse bir kez daha ürettir
   if (sonuc) {
     const fazla = alakasizOlaylar(sonuc.answer, olaylar);
     if (fazla.length) {
       const uyari = "UYARI: Önceki denemende sana verilmeyen olaylardan (" + fazla.map((o) => o.ad).join(", ") + ") bahsettin. Bu sefer onları KESİNLİKLE anma.";
-      const ikinci = await uret([ilk[0], { role: "user", content: kullaniciMesaji(soru, olaylar, tarz, uyari) }], attempts);
+      const ikinci = await uret(mesajlar(soru, olaylar, tarz, uyari), attempts);
       if (ikinci && alakasizOlaylar(ikinci.answer, olaylar).length < fazla.length) sonuc = ikinci;
     }
   }
