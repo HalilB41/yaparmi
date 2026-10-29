@@ -2,67 +2,47 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Paneli — yaparmi.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin · yaparmi.com</title>
+  <meta name="description" content="Yönetim paneli." />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13111a" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%235a3fd4%22/%3E%3Ccircle cx=%2216%22 cy=%2214%22 r=%228.5%22 fill=%22%23fff%22/%3E%3Ccircle cx=%2213%22 cy=%2211%22 r=%222.4%22 fill=%22%23c9bdf5%22/%3E%3Crect x=%229%22 y=%2224%22 width=%2214%22 height=%223.5%22 rx=%221.7%22 fill=%22%23f5b82e%22/%3E%3C/svg%3E" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-
-  <div class="bg-blobs" aria-hidden="true">
-    <span class="blob blob-1"></span>
-    <span class="blob blob-2"></span>
-    <span class="blob blob-3"></span>
-  </div>
-
-  <button type="button" class="hamburger-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
-  <nav class="menu-drawer" id="menuDrawer" hidden>
-    <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
-    <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
-    <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
-    <a href="/ehliyet" class="menu-item"><span class="fab-icon">🚘</span> Ehliyet</a>
-    <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
-    <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
-  </nav>
-
-  <div class="auth-widget" id="authWidget">
-    <button type="button" class="auth-toggle" id="authToggle">Giriş Yap</button>
-    <div class="card auth-panel" id="authPanel" hidden></div>
-  </div>
-
-  <main class="app-shell">
-    <header class="site-header-simple">
-      <a href="/" class="logo-link" aria-label="Ana sayfaya dön">
-        <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
-      </a>
+  <main class="page">
+    <header class="page-head">
+      <span class="eyebrow"><i>⚙️</i> Yönetim</span>
+      <h1>Admin <em>paneli</em></h1>
+      <p class="lead">Hikâyeyi düzenle, resimleri ve sesleri değiştir, galeri önerilerini onayla, kâhine sorulanlara bak.</p>
     </header>
 
-    <section class="center-panel" style="max-width: 980px;">
-      <div class="panel card" id="adminGate">
-        <div class="admin-gate">
-          <p>Bu sayfayı görmek için <strong>admin</strong> kullanıcı adıyla giriş yapmalısın (sağ üstten).</p>
+    <div class="panel card admin-section" id="adminGate">
+      <div class="admin-gate">
+        <div class="big">🔒</div>
+        <p>Bu sayfayı görmek için sağ üstten <strong>admin</strong> kullanıcı adıyla giriş yapmalısın.</p>
+      </div>
+    </div>
+
+    <div id="adminContent" class="admin-grid" hidden>
+      <div class="panel card admin-section">
+        <div class="se-top">
+          <h2>👥 Sosyal hayat hikâyesi</h2>
+          <button type="button" class="admin-btn publish" id="sosyalEditBtn">Düzenleyiciyi aç</button>
         </div>
+        <p class="muted">Hikâye, oyundaki haliyle tam ekran açılır. Yazılara ve seçeneklere tıklayıp olduğu yerde düzenleyebilirsin.</p>
       </div>
 
-      <div id="adminContent" hidden>
-        <div class="panel card admin-section">
-          <div class="se-top">
-            <h2 style="margin:0;">👥 Sosyal Hayat hikayesi</h2>
-            <button type="button" class="admin-btn publish" id="sosyalEditBtn">👥 Sosyal Hayat Düzenle</button>
-          </div>
-
-          <p class="muted" style="margin:10px 0 0; font-size:0.85rem;">Hikaye, oyundaki haliyle tam ekran açılır. Yazılara ve seçeneklere tıklayıp olduğu yerde düzenleyebilirsin.</p>
-        </div>
-
-        <div class="panel card admin-section">
-          <h2>🏍️ Spor: Kasksız 85 kaza resmi</h2>
-          <p class="muted" style="margin:0 0 10px; font-size:0.85rem;">Spor sayfasındaki motor oyununda Berkay kaza yapınca ekrana çıkacak resim. Resim yoksa 💥 görünür.</p>
-          <div class="se-img-box">
+      <div class="panel card admin-section">
+        <h2>🏍️ Kasksız 85 kaza resmi</h2>
+        <p class="muted">Spor sayfasındaki motor oyununda kaza anında çıkan resim. Resim yoksa 💥 görünür.</p>
+        <div class="se-img-box">
             <img id="motorResimOnizleme" alt="Kaza resmi" hidden style="width:120px;height:120px;border-radius:12px;object-fit:cover;border:2px solid var(--accent);" />
             <div>
               <input type="file" id="motorResimDosya" accept="image/*" />
@@ -70,12 +50,11 @@
               <p class="suggest-status" id="motorResimDurum"></p>
             </div>
           </div>
-        </div>
+      </div>
 
-        <div class="panel card admin-section">
-          <h2>🚘 Ehliyet Ayarları</h2>
-          <p class="muted" style="margin:0 0 10px; font-size:0.85rem;">3 aracın şoför koltuğuna resim ekle (yoksa 🧑 görünür) ve sürüş sınavındaki çarpışma anında çalacak sesi yükle (yoksa otomatik ses çalar).</p>
-
+      <div class="panel card admin-section wide">
+        <h2>🚘 Ehliyet ayarları</h2>
+        <p class="muted">Üç aracın şoför koltuğuna resim ekle (yoksa 🧑 görünür) ve sürüş sınavındaki çarpışma sesini yükle (yoksa otomatik ses çalar).</p>
           <div class="se-img-box">
             <img id="ehResim1Onizleme" alt="Araç 1 şoförü" hidden style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
             <div>
@@ -115,7 +94,7 @@
               <p class="suggest-status" id="ehSesDurum"></p>
             </div>
           </div>
-        </div>
+      </div>
 
         <!-- Tam ekran Sosyal Hayat editörü: oyunun birebir aynısı, yerinde düzenleme -->
         <div id="sosyalEditor" class="se-overlay" hidden>
@@ -173,40 +152,35 @@
           </div>
         </div>
 
-        <div class="panel card admin-section">
-          <h2>📸 Galeri önerileri</h2>
-          <div id="queueList"><p class="muted">Yükleniyor...</p></div>
-        </div>
+      <div class="panel card admin-section">
+        <h2>📸 Galeri önerileri</h2>
+        <div id="queueList"><p class="muted">Yükleniyor…</p></div>
+      </div>
 
-        <div class="panel card admin-section">
-          <h2>➕ Galeriye direkt fotoğraf ekle</h2>
-          <form class="admin-upload" id="adminUploadForm" autocomplete="off">
-            <input type="file" id="adminUploadFile" accept="image/*" required />
-            <button type="submit" class="admin-btn publish">Yayınla</button>
-          </form>
-          <p class="suggest-status" id="adminUploadStatus"></p>
-        </div>
+      <div class="panel card admin-section">
+        <h2>➕ Galeriye direkt fotoğraf ekle</h2>
+        <form class="admin-upload" id="adminUploadForm" autocomplete="off">
+          <input type="file" id="adminUploadFile" accept="image/*" required />
+          <button type="submit" class="admin-btn publish">Yayınla</button>
+        </form>
+        <p class="suggest-status" id="adminUploadStatus"></p>
+      </div>
 
-        <div class="panel card admin-section">
-          <h2>🔮 Bot soru geçmişi</h2>
-          <p class="muted" style="margin-top:-6px;">Sadece giriş yapıp soru sormuş kişilerin kullanıcı adı görünür, giriş yapmadan sorulan sorular "Misafir" olarak listelenir.</p>
-          <div class="admin-table-wrap">
-            <table class="admin-table">
-              <thead>
-                <tr><th>Tarih</th><th>Kullanıcı</th><th>Soru</th><th>Cevap</th></tr>
-              </thead>
-              <tbody id="soruTableBody">
-                <tr><td colspan="4" class="muted">Yükleniyor...</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <div class="panel card admin-section wide">
+        <h2>🔮 Kâhine sorulanlar</h2>
+        <p class="muted">Giriş yapıp soru soranların kullanıcı adı görünür, diğerleri "Misafir" olarak listelenir.</p>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Tarih</th><th>Kullanıcı</th><th>Soru</th><th>Cevap</th></tr>
+            </thead>
+            <tbody id="soruTableBody">
+              <tr><td colspan="4" class="muted">Yükleniyor…</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </section>
-
-    <footer class="site-footer">
-      <p>yaparmi.com — sadece eğlence amaçlıdır 😄</p>
-    </footer>
+    </div>
   </main>
 
   <!-- Firebase (compat SDK) -->

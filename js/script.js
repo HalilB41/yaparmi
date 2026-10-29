@@ -529,3 +529,13 @@ ahirForm.addEventListener("submit", async (e) => {
   setAhirInputEnabled(true);
   ahirInput.focus();
 });
+
+// Hazır soru düğmeleri: tıklayınca soruyu kutuya yazıp gönderir
+document.querySelectorAll(".ask-chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    input.value = chip.textContent.trim();
+    lastAskedQuestion = null;
+    if (form.requestSubmit) form.requestSubmit();
+    else form.dispatchEvent(new Event("submit", { cancelable: true }));
+  });
+});

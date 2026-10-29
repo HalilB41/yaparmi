@@ -2,51 +2,27 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sosyal Hayat — yaparmi.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sosyal hayat · yaparmi.com</title>
+  <meta name="description" content="Berkay'ın kaderi senin elinde." />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👥</text></svg>" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13111a" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%235a3fd4%22/%3E%3Ccircle cx=%2216%22 cy=%2214%22 r=%228.5%22 fill=%22%23fff%22/%3E%3Ccircle cx=%2213%22 cy=%2211%22 r=%222.4%22 fill=%22%23c9bdf5%22/%3E%3Crect x=%229%22 y=%2224%22 width=%2214%22 height=%223.5%22 rx=%221.7%22 fill=%22%23f5b82e%22/%3E%3C/svg%3E" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-
-  <div class="bg-blobs" aria-hidden="true">
-    <span class="blob blob-1"></span>
-    <span class="blob blob-2"></span>
-    <span class="blob blob-3"></span>
-  </div>
-
-  <button type="button" class="hamburger-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
-  <nav class="menu-drawer" id="menuDrawer" hidden>
-    <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
-    <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
-    <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
-    <a href="/ehliyet" class="menu-item"><span class="fab-icon">🚘</span> Ehliyet</a>
-    <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
-    <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
-  </nav>
-
-  <div class="auth-widget" id="authWidget">
-    <button type="button" class="auth-toggle" id="authToggle">Giriş Yap</button>
-    <div class="card auth-panel" id="authPanel" hidden></div>
-  </div>
-
-  <main class="app-shell">
-    <header class="site-header-simple">
-      <a href="/" class="logo-link" aria-label="Ana sayfaya dön">
-        <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
-      </a>
+  <main class="page page-narrow">
+    <header class="page-head">
+      <span class="eyebrow"><i>👥</i> Sosyal hayat</span>
+      <h1>Berkay'ın <em>hafta sonu</em></h1>
+      <p class="lead">Kaderi senin elinde. Seç bakalım ne olacak.</p>
     </header>
-
-    <section class="center-panel">
-      <div class="panel card story-card" id="storyCard">
-        <h2 class="story-title">👥 Berkay'ın Sosyal Hayatı</h2>
-        <p class="muted story-sub">Berkay'ın kaderi senin elinde. Seç bakalım ne olacak.</p>
-
+    <div class="panel card story-card" id="storyCard">
         <div class="story-stage" id="storyStage">
           <div class="story-avatar" id="storyAvatar">
             <img id="storyImg" alt="Berkay" hidden />
@@ -61,14 +37,7 @@
             <button type="button" class="link-btn" id="storyRestart" hidden>🔁 Baştan başla</button>
           </div>
         </div>
-
-        <p><a href="/" class="link-btn">◀ Ana sayfaya dön</a></p>
-      </div>
-    </section>
-
-    <footer class="site-footer">
-      <p>yaparmi.com — sadece eğlence amaçlıdır 😄</p>
-    </footer>
+    </div>
   </main>
 
   <!-- Firebase (compat SDK) -->

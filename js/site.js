@@ -1,6 +1,6 @@
 // ============================================================
-// site.js — TÜM sayfalarda ortak çalışır: hamburger menü (Spor/Ders/
-// Oyun/Sosyal Hayat/Galeri), sağ üstteki Giriş Yap / Kayıt Ol widget'ı,
+// site.js — TÜM sayfalarda ortak çalışır: üst bar (logo, bölümler,
+// tema düğmesi), sağ üstteki Giriş Yap / Kayıt Ol widget'ı, alt bilgi,
 // ve galeri fotoğraflarını aynı boyuta küçültme yardımcı fonksiyonu.
 //
 // Not: Bu, Berkayın Ahırı'ndaki takma ad ile AYNI şey DEĞİL. Ahır'da
@@ -12,37 +12,50 @@
 // ============================================================
 
 (function () {
-  // ---------------- Hamburger menü ----------------
-  // Tam ekran kaplayan koyu bir perde YOK artık — menü sadece hamburger
-  // butonunun hemen altında küçük bir panel olarak açılıyor, dışarıya
-  // (panelin ve butonun dışına) tıklayınca kapanıyor.
-  const menuBtn = document.getElementById("menuBtn");
-  const menuDrawer = document.getElementById("menuDrawer");
+  // ---------------- Üst bar + alt bilgi (tüm sayfalarda ortak) ----------------
+  // Menü, logo, tema düğmesi ve Giriş Yap butonu buradan eklenir; sayfaların
+  // HTML'inde sadece kendi içerikleri var.
+  const NAV = [
+    ["/", "Kâhin"], ["/spor", "Spor"], ["/ders", "Ders"], ["/oyun", "Oyun"],
+    ["/ehliyet", "Ehliyet"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
+  ];
+  const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
+  const ORB =
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="#fff"/>' +
+    '<path d="M8.6 8.2a4 4 0 0 1 3.2-2.6" stroke="#c9bdf5" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
+    '<path d="M15.2 9.6l.45 1.05 1.05.45-1.05.45-.45 1.05-.45-1.05-1.05-.45 1.05-.45z" fill="#f5b82e"/>' +
+    '<path d="M7.5 17.4h9l1.6 3.6H5.9z" fill="#f5b82e"/></svg>';
+  const MOON = '<svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  const SUN = '<svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 
-  function closeMenu() {
-    if (!menuBtn || !menuDrawer) return;
-    menuBtn.setAttribute("aria-expanded", "false");
-    menuDrawer.hidden = true;
-  }
-  function openMenu() {
-    if (!menuBtn || !menuDrawer) return;
-    menuBtn.setAttribute("aria-expanded", "true");
-    menuDrawer.hidden = false;
-  }
-  if (menuBtn) {
-    menuBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = menuBtn.getAttribute("aria-expanded") === "true";
-      if (isOpen) closeMenu();
-      else openMenu();
-    });
-  }
-  document.addEventListener("click", (e) => {
-    if (!menuDrawer || menuDrawer.hidden) return;
-    if (!menuDrawer.contains(e.target) && !menuBtn.contains(e.target)) closeMenu();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMenu();
+  const topbar = document.createElement("header");
+  topbar.className = "topbar";
+  topbar.innerHTML =
+    '<div class="topbar-in">' +
+    '<a class="brand" href="/" aria-label="yaparmi.com ana sayfa"><span class="brand-mark">' + ORB + '</span><span class="brand-word">yaparmi<b>.com</b></span></a>' +
+    '<nav class="mainnav" aria-label="Bölümler">' +
+    NAV.map(([href, label]) => '<a href="' + href + '"' + (href === here ? ' class="on" aria-current="page"' : "") + ">" + label + "</a>").join("") +
+    "</nav>" +
+    '<div class="top-actions">' +
+    '<button type="button" class="icon-btn theme-btn" id="themeBtn" aria-label="Açık / koyu tema">' + MOON + SUN + "</button>" +
+    '<div class="auth-widget" id="authWidget"><button type="button" class="auth-toggle" id="authToggle">Giriş yap</button><div class="card auth-panel" id="authPanel" hidden></div></div>' +
+    "</div></div>";
+  document.body.insertBefore(topbar, document.body.firstChild);
+
+  const footer = document.createElement("footer");
+  footer.className = "site-footer";
+  footer.innerHTML =
+    '<div class="site-footer-in"><span>yaparmi.com · sadece eğlence amaçlıdır, kimse alınmasın.</span><nav>' +
+    NAV.slice(1).map(([href, label]) => '<a href="' + href + '">' + label + "</a>").join("") + "</nav></div>";
+  document.body.appendChild(footer);
+
+  // Tema: kullanıcı seçtiyse onu hatırla, seçmediyse sistem ayarı
+  const TEMA = "yaparmi_tema";
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem(TEMA, root.dataset.theme); } catch { /* yok sayılabilir */ }
   });
 
   // ---------------- Yas modu: Berkay ehliyeti geçti 🖤 ----------------
@@ -212,7 +225,7 @@
     }
 
     function renderLoggedOut() {
-      authToggle.textContent = "Giriş Yap";
+      authToggle.textContent = "Giriş yap";
       // Kayıt olurken şifreyi yanlış yazmamak için ikinci bir "şifre tekrar"
       // kutusu ekleniyor — sadece kayıt modunda, girişte gerek yok.
       const confirmField =

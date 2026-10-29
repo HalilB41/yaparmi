@@ -2,82 +2,76 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>yaparmi.com — Berkay Yapar mı?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>yaparmi.com · Berkay yapar mı?</title>
   <meta name="description" content="Berkay bunu yapar mı, yapamaz mı? Sor, öğren." />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13111a" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%235a3fd4%22/%3E%3Ccircle cx=%2216%22 cy=%2214%22 r=%228.5%22 fill=%22%23fff%22/%3E%3Ccircle cx=%2213%22 cy=%2211%22 r=%222.4%22 fill=%22%23c9bdf5%22/%3E%3Crect x=%229%22 y=%2224%22 width=%2214%22 height=%223.5%22 rx=%221.7%22 fill=%22%23f5b82e%22/%3E%3C/svg%3E" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  <main class="page">
+    <section class="home-hero">
+      <div>
+        <span class="eyebrow"><i>🔮</i> Kâhin Kanzi her şeyi bilir</span>
+        <h1>Berkay bunu<br /><span class="q">yapar mı?</span></h1>
+        <p class="lead">Aklına ne gelirse sor. Kâhin dürüst cevap verir, genelde de kötü haber olur. Sıkılırsan aşağıdaki bölümlere bak.</p>
+        <div class="hero-stats">
+          <span class="hero-stat"><span>🧠</span><span><b>Yapay zekâ</b> cevaplıyor</span></span>
+          <span class="hero-stat"><span>🐴</span><span><b>Ahır</b>'da canlı sohbet</span></span>
+        </div>
+      </div>
 
-  <div class="bg-blobs" aria-hidden="true">
-    <span class="blob blob-1"></span>
-    <span class="blob blob-2"></span>
-    <span class="blob blob-3"></span>
-  </div>
+      <div>
+        <div class="view-switch" role="tablist" aria-label="Görünüm">
+          <button type="button" class="active" data-view="trivia">🔮 Kâhine sor</button>
+          <button type="button" id="ahirBtn" data-view="ahir">🐴 Berkayın Ahırı</button>
+        </div>
 
-  <!-- Sol üst köşeye sabit: hamburger menü -->
-  <button type="button" class="hamburger-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
-  <nav class="menu-drawer" id="menuDrawer" hidden>
-    <a href="/spor" class="menu-item"><span class="fab-icon">⚽</span> Spor</a>
-    <a href="/ders" class="menu-item"><span class="fab-icon">📚</span> Ders</a>
-    <a href="/oyun" class="menu-item"><span class="fab-icon">🎮</span> Oyun</a>
-    <a href="/ehliyet" class="menu-item"><span class="fab-icon">🚘</span> Ehliyet</a>
-    <a href="/sosyal" class="menu-item"><span class="fab-icon">👥</span> Sosyal Hayat</a>
-    <a href="/galeri" class="menu-item"><span class="fab-icon">🖼️</span> Galeri</a>
-  </nav>
-
-  <!-- Sağ üst köşeye sabit: Giriş Yap / Kayıt Ol -->
-  <div class="auth-widget" id="authWidget">
-    <button type="button" class="auth-toggle" id="authToggle">Giriş Yap</button>
-    <div class="card auth-panel" id="authPanel" hidden></div>
-  </div>
-
-  <main class="app-shell">
-    <header class="site-header-simple">
-      <a href="#" class="logo-link" id="homeLink" aria-label="Ana sayfaya dön (soru-cevap)">
-        <div class="logo">🔮 yaparmi<span class="dot">.</span>com</div>
-      </a>
-      <p class="subtitle">Berkay'ın hayatı hakkında merak ettiğin her şeyi sor.</p>
-    </header>
-
-    <section class="center-panel">
-        <div class="panel card" id="panel-trivia">
+        <div class="panel card oracle-card" id="panel-trivia">
+          <div class="oracle-top">
+            <span class="oracle-avatar"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="14" r="10" fill="var(--accent)"/><circle cx="12.5" cy="10.5" r="3" fill="#fff" opacity=".55"/><path d="M21 7.5l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7z" fill="var(--sun)"/><path d="M8 28c0-1.9 1.6-3.5 3.5-3.5h9c1.9 0 3.5 1.6 3.5 3.5z" fill="var(--sun)"/></svg></span>
+            <div><div class="oracle-name">Kâhin Kanzi</div><div class="oracle-status">Çevrimiçi · acımasız dürüst</div></div>
+          </div>
           <form id="ask-form" autocomplete="off">
             <label for="question" class="visually-hidden">Sorunu yaz</label>
             <div class="input-with-prefix">
-              <input
-                id="question"
-                name="question"
-                type="text"
-                placeholder="Berkay spor yapar mı?"
-                maxlength="120"
-                required
-              />
+              <input id="question" name="question" type="text" placeholder="Berkay spor yapar mı?" maxlength="120" required />
             </div>
             <button type="submit" id="ask-btn">
               <span class="btn-text">Sor</span>
-              <span class="btn-loading" hidden>...</span>
+              <span class="btn-loading" hidden>…</span>
             </button>
           </form>
 
           <div class="answer-box" id="answer-box" aria-live="polite">
-            <span class="answer-placeholder" id="answer-placeholder">Cevap burada görünecek 👀</span>
+            <span class="answer-placeholder" id="answer-placeholder">Cevap burada belirecek.</span>
             <span class="answer-text" id="answer-text"></span>
             <span class="cursor" id="cursor" hidden></span>
           </div>
 
-          <p class="hint">Ne sorarsan sor, kâhin dürüst cevap verir. (Genelde kötü haber olur.)</p>
+          <div class="ask-chips">
+            <button type="button" class="ask-chip">Berkay spor yapar mı?</button>
+            <button type="button" class="ask-chip">Berkay erken kalkar mı?</button>
+            <button type="button" class="ask-chip">Berkay park edebilir mi?</button>
+            <button type="button" class="ask-chip">Berkay sınavı geçer mi?</button>
+          </div>
+
+          <div class="oracle-foot">
+            <p class="hint">Ne sorarsan sor, kâhin dürüst cevap verir.</p>
+            <button type="button" id="sound-toggle" class="sound-toggle" aria-pressed="false" title="Müziği aç / kapat"><span id="sound-icon">🔊</span> Müzik</button>
+          </div>
         </div>
 
         <div class="panel card ahir-card" id="panel-ahir" hidden>
           <div class="ahir-header">
-            <h2>🐴 Berkayın Ahırı</h2>
+            <h2>🐴 Berkayın Ahırı<small>Siteye girenlerle canlı sohbet</small></h2>
             <div class="ahir-user-info" id="ahirUserInfo" hidden>
               <span id="ahirUsernameDisplay"></span>
               <button type="button" id="ahirChangeNameBtn" class="link-btn">değiştir</button>
@@ -85,10 +79,10 @@
           </div>
 
           <div class="username-gate" id="usernameGate">
-            <p>Sohbete başlamadan önce bir kullanıcı adı seç (boşluksuz, en fazla 12 karakter, herkes farklı bir isim kullanmalı):</p>
+            <p>Sohbete girmeden önce bir takma ad seç. Boşluksuz, en fazla 12 karakter; aynı adı iki kişi alamaz.</p>
             <form id="usernameForm" autocomplete="off">
-              <input id="usernameInput" type="text" maxlength="16" placeholder="Kullaniciadin (boşluksuz)" required />
-              <button type="submit">Girişi Yap</button>
+              <input id="usernameInput" type="text" maxlength="16" placeholder="takmaadin" required />
+              <button type="submit">Ahıra gir</button>
             </form>
             <p class="username-error" id="usernameError" aria-live="polite"></p>
           </div>
@@ -96,25 +90,27 @@
           <div class="ahir-chat" id="ahirChat" hidden>
             <div class="ahir-messages" id="ahirMessages"></div>
             <form id="ahirForm" autocomplete="off">
-              <input id="ahirInput" type="text" maxlength="300" placeholder="Bir şeyler yaz..." />
+              <input id="ahirInput" type="text" maxlength="300" placeholder="Bir şeyler yaz…" />
               <button type="submit">Gönder</button>
             </form>
           </div>
         </div>
+      </div>
     </section>
 
-    <footer class="site-footer">
-      <p>yaparmi.com — sadece eğlence amaçlıdır 😄</p>
-    </footer>
+    <div class="section-title">
+      <h2>Berkay'ın dünyası</h2>
+      <p>Altı bölüm, sıfır başarı.</p>
+    </div>
+    <div class="tiles">
+        <a class="tile" href="/spor" style="--tile: color-mix(in srgb, #ff7a59 20%, var(--surface))"><span class="tile-ico">⚽</span><div><b>Spor</b><span>Boks makinesi, penaltı, kasksız 85 ve haftanın rezilliği oylaması.</span></div></a>
+        <a class="tile" href="/ders" style="--tile: color-mix(in srgb, #3fa7d6 20%, var(--surface))"><span class="tile-ico">📚</span><div><b>Ders</b><span>Optiği telefona okut, Berkay'ın deneme puanını gör.</span></div></a>
+        <a class="tile" href="/oyun" style="--tile: color-mix(in srgb, #5a3fd4 20%, var(--surface))"><span class="tile-ico">🎮</span><div><b>Oyun</b><span>2048, yılan, hafıza, XOX ve taş kağıt makas.</span></div></a>
+        <a class="tile" href="/ehliyet" style="--tile: color-mix(in srgb, #f5b82e 20%, var(--surface))"><span class="tile-ico">🚘</span><div><b>Ehliyet</b><span>Yazılı, araç seçimi, sürüş sınavı ve L park. Sonunda belge var.</span></div></a>
+        <a class="tile" href="/sosyal" style="--tile: color-mix(in srgb, #e05a8a 20%, var(--surface))"><span class="tile-ico">👥</span><div><b>Sosyal hayat</b><span>Berkay'ın hafta sonunu sen seç, sonuçlarına o katlansın.</span></div></a>
+        <a class="tile" href="/galeri" style="--tile: color-mix(in srgb, #2fa36b 20%, var(--surface))"><span class="tile-ico">🖼️</span><div><b>Galeri</b><span>En iyi kareler burada. Sen de fotoğraf öner.</span></div></a>
+    </div>
   </main>
-
-  <!-- Sol altta sabit: Berkayın Ahırı -->
-  <button type="button" class="fab-round corner-left" id="ahirBtn" data-view="ahir" aria-label="Berkayın Ahırı">🐴</button>
-
-  <!-- Sağ altta sabit: ses açma/kapama -->
-  <button id="sound-toggle" class="fab-round corner-right sound-toggle" aria-pressed="false" title="Sesi aç/kapat">
-    <span id="sound-icon">🔊</span>
-  </button>
 
   <!-- Arka plan sesleri: audio/track1.mp3 ve audio/track2.mp3 sırayla çalar -->
   <audio id="track1" src="audio/track1.mp3" preload="auto"></audio>
