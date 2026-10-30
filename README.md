@@ -41,8 +41,7 @@ yaparmi-site/
 ├─ js/sosyal-editor.js  <- admin.html'deki "Sosyal Hayat Düzenle" (algoritma şeması + editör)
 ├─ api/ask.js              <- Vercel serverless function, Nous Research'e soru gönderir
 ├─ audio/
-│  ├─ track1.mp3
-│  └─ track2.mp3
+│  └─ kubi85.mp3           <- spor oyununda 85'i geçince çalan efekt
 ├─ robots.txt              <- arama motorlarına kapalı (sadece link ile girilsin diye)
 ├─ vercel.json
 ├─ push.bat                <- kodu tek tıkla GitHub'a gönderir
@@ -64,9 +63,10 @@ cevaplarına döner, hiçbir zaman bozulmaz.
    (ör. `z-ai/glm-5.3-flash`) yazabilirsin.
 6. **Deployments** sekmesinden **Redeploy** de.
 
-## 1) Ses dosyalarını ekle
+## 1) Müzik
 
-`audio/` klasörüne iki mp3 dosyasını **track1.mp3** ve **track2.mp3** isimleriyle koy.
+Sitede arka plan müziği yok (kaldırıldı). `audio/` klasöründe sadece spor
+oyununun efekt sesi `kubi85.mp3` duruyor.
 
 ## 2) Firebase kurulumu
 

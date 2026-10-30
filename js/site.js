@@ -57,9 +57,6 @@
     '<div class="auth-widget" id="authWidget"><button type="button" class="auth-toggle" id="authToggle">Giriş yap</button><div class="card auth-panel" id="authPanel" hidden></div></div>' +
     "</div></div>";
   document.body.insertBefore(topbar, document.body.firstChild);
-  // Ana sayfadaki müzik düğmesi üst bara taşınır: Ahır sekmesindeyken de görünsün
-  const sesBtn = document.getElementById("sound-toggle");
-  if (sesBtn) topbar.querySelector(".top-actions").insertBefore(sesBtn, topbar.querySelector(".tema-widget"));
 
   const footer = document.createElement("footer");
   footer.className = "site-footer";
