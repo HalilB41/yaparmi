@@ -135,13 +135,22 @@ KESİN KURALLAR:
 - Soru: "Burger doyar mı?" -> Burger denen o obez piç dünyayı yese doymaz, üstüne Berkay'ı da yer amk. Alihan'ın kahvelerini sömüre sömüre orospu evladına dönüştü. O sınırsız duyduğunda çıldıran anasını sikeyim. Sülalesini doyuramadığımın gavatı.
 `;
 
-function mesajlar(soru, olaylar, tarz, ekUyari) {
+// ---------------- Ahlaklı bot (ikinci bot, aynı API) ----------------
+// Buradaki metni kendin düzenleyebilirsin. Sınırsız bot (SYSTEM_PROMPT) ayrı kalıyor.
+const AHLAKLI_PROMPT = `Sen 'Kâhin' adında, esprili ama ahlaklı bir falcı botsun. Kullanıcının sorusuna kısa, esprili ve küfürsüz cevap verirsin.
+Hiç kimseye hakaret, küfür veya aşağılama yapmazsın; konuyu nazik bir dille ve gerçekçi bir mizahla anlatırsın.
+Cevabın en fazla 3-4 cümle olsun ve düz metin yaz.`;
+
+const AHLAKLI_TARZ = { oran: 100, metin: "Nazik, esprili ve küfürsüz bir cevap ver." };
+
+function mesajlar(soru, olaylar, tarz, ekUyari, bot) {
   const olayYazi = olaylar.length
     ? "Bu soruyla ilgili bilinen olay(lar): " + olaylar.map((o) => o.metin).join(" | ")
     : "Bu soruyla ilgili bilinen olay yok: konuya özel yeni ve mantıklı tek bir senaryo uydur, gruptakilerin geçmişinden hiçbir olaydan bahsetme.";
   const notlar = `\n\n--- BU SORU İÇİN GİZLİ NOTLAR (sadece senin için, cevapta ASLA yazma) ---\n${olayYazi}\nCevap tarzı: ${tarz.metin}${ekUyari ? "\n" + ekUyari : ""}`;
+  const taban = bot === "ahlakli" ? AHLAKLI_PROMPT : SYSTEM_PROMPT;
   return [
-    { role: "system", content: SYSTEM_PROMPT + notlar },
+    { role: "system", content: taban + notlar },
     { role: "user", content: soru },
   ];
 }
@@ -299,27 +308,38 @@ async function uret(messages, attempts) {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { question } = req.body || {};
+  const { question, bot } = req.body || {};
   if (!question || typeof question !== "string" || question.trim().length === 0) {
     return res.status(400).json({ error: "Geçersiz soru" });
   }
   if (question.length > 300) return res.status(400).json({ error: "Soru çok uzun" });
 
   const soru = question.trim();
-  
-  const olaylar = olaySec(soru);
-  const tarz = tarzSec();
+  const botId = bot === "ahlakli" ? "ahlakli" : "sinirsiz";
+
+  const olaylar = botId === "ahlakli" ? [] : olaySec(soru);
+  const tarz = botId === "ahlakli" ? AHLAKLI_TARZ : tarzSec();
   const attempts = [];
 
-  let sonuc = await uret(mesajlar(soru, olaylar, tarz), attempts);
+  let sonuc = await uret(mesajlar(soru, olaylar, tarz, undefined, botId), attempts);
 
-  if (sonuc) {
+  if (sonuc && botId === "sinirsiz") {
     const fazla = alakasizOlaylar(sonuc.answer, olaylar);
     if (fazla.length) {
       const uyari = "UYARI: Önceki denemende sana verilmeyen olaylardan (" + fazla.map((o) => o.ad).join(", ") + ") bahsettin. Bu sefer onları KESİNLİKLE anma.";
-      const ikinci = await uret(mesajlar(soru, olaylar, tarz, uyari), attempts);
+      const ikinci = await uret(mesajlar(soru, olaylar, tarz, uyari, botId), attempts);
       if (ikinci && alakasizOlaylar(ikinci.answer, olaylar).length < fazla.length) sonuc = ikinci;
     }
+  }
+
+  if (!sonuc && botId === "ahlakli") {
+    console.error("Ahlaklı bot: tüm AI sağlayıcıları başarısız:", attempts);
+    return res.status(200).json({
+      answer: "Şu an kâhin biraz yorgun, birazdan tekrar dene.",
+      model: "kâhin (sistem çöktü)",
+      olaylar: [],
+      tarz: "SİSTEM ÇÖKTÜ"
+    });
   }
 
   if (!sonuc) {

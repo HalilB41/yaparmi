@@ -1453,3 +1453,12 @@ body.se-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Bot seçici (Sınırsız / Ahlaklı) */
+.bot-switch { display: flex; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; }
+.bot-btn {
+  flex: 1 1 0; min-width: 130px; padding: 8px 12px; border-radius: 999px;
+  border: 1px solid var(--line, #d8d2c4); background: transparent; color: inherit;
+  font: inherit; font-weight: 700; cursor: pointer; opacity: .65;
+}
+.bot-btn.active { opacity: 1; background: var(--accent); color: #fff; border-color: var(--accent); }

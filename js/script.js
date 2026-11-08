@@ -82,6 +82,9 @@ if (homeLink) {
 
 let sonModel = ""; // cevabı hangi model verdi (admin panelinde görünür)
 
+// Hangi bot seçili: "sinirsiz" (Sınırsız bot) veya "ahlakli" (Ahlaklı bot)
+let secilenBot = "sinirsiz";
+
 async function getAnswer(question) {
   // En fazla 40 saniye bekle; sunucu takılırsa kutu sonsuza kadar
   // "düşünüyor" kalmasın, yedek cevaba geçilsin.
@@ -91,7 +94,7 @@ async function getAnswer(question) {
     const res = await fetch("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, bot: secilenBot }),
       signal: controller.signal,
     });
     const data = await res.json().catch(() => ({}));
@@ -110,6 +113,20 @@ async function getAnswer(question) {
     clearTimeout(timer);
   }
 }
+
+// ---------------- Bot seçici (Sınırsız / Ahlaklı) ----------------
+
+document.querySelectorAll(".bot-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    secilenBot = btn.dataset.bot === "ahlakli" ? "ahlakli" : "sinirsiz";
+    document.querySelectorAll(".bot-btn").forEach((b) => {
+      const aktif = b === btn;
+      b.classList.toggle("active", aktif);
+      b.setAttribute("aria-pressed", aktif ? "true" : "false");
+    });
+    lastAskedQuestion = null;
+  });
+});
 
 // ---------------- Typewriter efekti (Google Çeviri tarzı) ----------------
 
