@@ -96,8 +96,8 @@
       const simdiki = ((cark.aci % 360) + 360) % 360;
       let fark = hedef - simdiki;
       if (fark < 0) fark += 360;
-      // Her çevirişte süre 3-7 saniye arası rastgele, tur sayısı da süreye göre rastgele.
-      const sure = 3 + Math.random() * 4;
+      // Her çevirişte süre 5-13 saniye arası rastgele, tur sayısı da süreye göre rastgele.
+      const sure = 5 + Math.random() * 8;
       const tur = Math.round(sure * (0.9 + Math.random() * 0.6));
       cark.aci += 360 * Math.max(3, tur) + fark;
       const tuval = cark.tuval;
