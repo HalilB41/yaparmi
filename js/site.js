@@ -18,6 +18,7 @@
   const NAV = [
     ["/", "Kâhin"], ["/spor", "Spor"], ["/ders", "Ders"],
     ["/ehliyet", "Ehliyet"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
+    ["/cark", "Çark"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
   const ORB =

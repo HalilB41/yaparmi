@@ -38,7 +38,60 @@
         <button type="button" role="tab" data-tab="oyunlar">🏍️ Spor ve ehliyet</button>
         <button type="button" role="tab" data-tab="galeri">🖼️ Galeri <span class="adm-say" id="admOneriSay" hidden></span></button>
         <button type="button" role="tab" data-tab="kahin">🔮 Kâhin</button>
+        <button type="button" role="tab" data-tab="cark">🎡 Çark <span class="adm-say" id="admCarkSay" hidden></span></button>
       </nav>
+      <section class="adm-panel admin-grid" data-panel="cark" id="carkAdmin" hidden>
+      <div class="panel card admin-section wide">
+        <div class="se-top">
+          <h2>🎡 Çark durumu</h2>
+          <div class="sayac-butonlar">
+            <button type="button" class="admin-btn publish" id="carkAcBtn" hidden>🟢 Çarkları aç (Halil depoda)</button>
+            <button type="button" class="admin-btn reject" id="carkKapatBtn" hidden>🔴 Çarkları kapat</button>
+          </div>
+        </div>
+        <p class="muted">Her açışında yeni tur başlar ve herkesin Sınırsız Çark hakkı yenilenir. Maximus biletleri turdan tura kaybolmaz, çark açıkken kullanılır.</p>
+        <p class="cark-admin-durum" id="carkAdminDurum">Yükleniyor…</p>
+        <label class="cark-hak-label">Kişi başı Sınırsız Çark hakkı (her tur): <input type="number" id="carkHak" min="1" max="50" value="1" /></label>
+      </div>
+
+      <div class="panel card admin-section wide">
+        <div class="se-top">
+          <h2>🎡 Sınırsız Çark dilimleri</h2>
+          <div class="sayac-butonlar">
+            <button type="button" class="admin-btn reject" id="carkSinirsizEkle">➕ Ödül ekle</button>
+            <button type="button" class="admin-btn reject" id="carkSinirsizMxEkle">🌟 Maximus dilimi ekle</button>
+          </div>
+        </div>
+        <p class="muted">Ağırlık ne kadar büyükse o kadar sık çıkar (yanında yüzdesi yazar). "🌟 Maximus" işaretli dilim çıkan kişi Sınırsız Maximus Çarkı'nı bir kez çevirme hakkı kazanır.</p>
+        <div id="carkSinirsizDilimler"></div>
+
+        <div class="se-top" style="margin-top:18px">
+          <h2>🌟 Sınırsız Maximus Çarkı dilimleri</h2>
+          <button type="button" class="admin-btn reject" id="carkMaximusEkle">➕ Ödül ekle</button>
+        </div>
+        <div id="carkMaximusDilimler"></div>
+
+        <div class="sayac-butonlar" style="margin-top:14px">
+          <button type="button" class="admin-btn publish" id="carkKaydet">💾 Dilimleri ve hakkı kaydet</button>
+        </div>
+        <p class="suggest-status" id="carkKaydetDurum"></p>
+      </div>
+
+      <div class="panel card admin-section wide">
+        <h2>🏆 Kime ne çıktı</h2>
+        <p class="muted">Ödülü istesin istemesin herkesin sonucu burada. Sarı satırlar ödülünü isteyip henüz almayanlar; verince "Verildi"ye bas, kişinin Ödüllerim'inde de görünür.</p>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Tarih</th><th>Kullanıcı</th><th>Çark</th><th>Ödül</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody id="carkSonucTablo">
+              <tr><td colspan="6" class="muted">Yükleniyor…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </section>
       <section class="adm-panel admin-grid" data-panel="icerik" hidden>
       <div class="panel card admin-section wide">
         <div class="se-top">
@@ -222,6 +275,7 @@
   <script src="js/bildirim.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/sayac.js"></script>
+  <script src="js/cark-admin.js"></script>
   <script src="js/admin-sekme.js"></script>
   <script src="js/sosyal-hikaye.js"></script>
   <script src="js/sosyal-editor.js"></script>

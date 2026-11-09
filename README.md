@@ -276,6 +276,62 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin() && docId == 'ayarlar';
     }
+
+    // Sınırsız Çark ayarları (açık/kapalı, tur, hak, dilimler).
+    // Herkes okur, sadece admin değiştirir.
+    match /cark/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId == 'ayarlar';
+    }
+
+    // Çark sonuçları: kime ne çıktı. Sadece gerçek hesabı olan (kullanıcı
+    // adı olan) yazabilir, sadece çark açıkken, turda hakkı kadar. Maximus
+    // ancak kendi Maximus biletiyle ve bilet başına BİR kez çevrilir.
+    // Kişi kendi sonuçlarını görür, admin hepsini görür.
+    match /cark_sonuclari/{id} {
+      function carkAyar() {
+        return get(/databases/$(database)/documents/cark/ayarlar).data;
+      }
+      allow read: if request.auth != null
+        && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && carkAyar().acik == true
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.kullaniciAdi == get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.kullaniciAdi
+        && request.resource.data.odul is string
+        && request.resource.data.odul.size() > 0
+        && request.resource.data.odul.size() <= 80
+        && request.resource.data.istendi == false
+        && request.resource.data.tarih == request.time
+        && (
+          (request.resource.data.cark == 'sinirsiz'
+            && request.resource.data.keys().hasOnly(['uid', 'kullaniciAdi', 'cark', 'odul', 'maximusBileti', 'tur', 'sira', 'tarih', 'istendi'])
+            && request.resource.data.maximusBileti is bool
+            && request.resource.data.tur == carkAyar().tur
+            && request.resource.data.sira is int
+            && request.resource.data.sira >= 0
+            && request.resource.data.sira < carkAyar().hak
+            && id == string(carkAyar().tur) + '_' + request.auth.uid + '_s' + string(request.resource.data.sira))
+          ||
+          (request.resource.data.cark == 'maximus'
+            && request.resource.data.keys().hasOnly(['uid', 'kullaniciAdi', 'cark', 'odul', 'maximusBileti', 'bilet', 'tarih', 'istendi'])
+            && request.resource.data.maximusBileti == false
+            && request.resource.data.bilet is string
+            && id == 'mx_' + request.resource.data.bilet
+            && get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.uid == request.auth.uid
+            && get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.maximusBileti == true)
+        );
+      // Kişi sadece "ödülü iste" diyebilir; admin sadece "verildi" işaretler.
+      allow update: if request.auth != null && (
+        (resource.data.uid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['istendi', 'istenmeTarihi'])
+          && request.resource.data.istendi == true
+          && request.resource.data.istenmeTarihi == request.time)
+        || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verildi']))
+      );
+      allow delete: if isAdmin();
+    }
   }
 }
 ```
