@@ -41,8 +41,7 @@
         agirlik: Math.max(0, Math.min(1000, Number(d.agirlik) || 0)),
         maximus: !!(maximusOlabilir && d.maximus),
       }))
-      .filter((d) => d.agirlik > 0)
-      .slice(0, 24);
+      .filter((d) => d.agirlik > 0);
   }
 
   function agirlikliSec(dilimler) {

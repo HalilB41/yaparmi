@@ -220,7 +220,6 @@
     maximus = maximusEd.liste;
     const s = temiz(sinirsiz, true).filter((d) => d.ad.trim()).map((d) => ({ ad: d.ad.trim(), agirlik: d.agirlik, maximus: d.maximus }));
     const m = temiz(maximus, false).filter((d) => d.ad.trim()).map((d) => ({ ad: d.ad.trim(), agirlik: d.agirlik }));
-    if (s.length > 24 || m.length > 24) { kaydetDurum.textContent = "⚠️ Bir çarkta en fazla 24 dilim olabilir."; return; }
     kaydetBtn.disabled = true;
     kaydetDurum.textContent = "Kaydediliyor…";
     try {
