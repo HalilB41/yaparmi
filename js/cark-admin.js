@@ -97,6 +97,16 @@
       '<input class="ce-sans" type="range" min="1" max="100" step="1" /></label>' +
       '<p class="ce-aciklama muted"></p>' +
       (maximusOlabilir ? '<label class="ce-mx"><input type="checkbox" /> 🌟 Bu dilim Maximus bileti versin</label>' : "") +
+      '<div class="ce-arac">' +
+      '<span>Araya ekle:</span>' +
+      '<button type="button" class="admin-btn reject se-small ce-once">⬅️ Öncesine</button>' +
+      '<button type="button" class="admin-btn reject se-small ce-sonra">Sonrasına ➡️</button>' +
+      "</div>" +
+      '<div class="ce-arac">' +
+      '<span>Yerini değiştir:</span>' +
+      '<button type="button" class="admin-btn reject se-small ce-geri">◀ Geri</button>' +
+      '<button type="button" class="admin-btn reject se-small ce-ileri">İleri ▶</button>' +
+      "</div>" +
       '<button type="button" class="admin-btn reject se-small ce-sil">🗑️ Bu dilimi sil</button>' +
       "</div>" +
       '<p class="ce-bos muted">Bir dilime tıkla ya da yeni ödül ekle.</p>' +
@@ -170,6 +180,25 @@
       yenile();
     });
     function ekle(d) { ed.liste.push(d); sec(ed.liste.length - 1); }
+    // Seçili dilimin hemen öncesine / sonrasına yeni dilim (saat yönünde: sonrası = sağı)
+    function arayaEkle(sonrasina) {
+      if (ed.secili == null) return;
+      const yer = ed.secili + (sonrasina ? 1 : 0);
+      ed.liste.splice(yer, 0, { ad: "", agirlik: 10, maximus: false });
+      sec(yer);
+    }
+    function tasi(yon) {
+      const i = ed.secili;
+      const j = i + yon;
+      if (i == null || j < 0 || j >= ed.liste.length) return;
+      [ed.liste[i], ed.liste[j]] = [ed.liste[j], ed.liste[i]];
+      ed.secili = j;
+      yenile();
+    }
+    q(".ce-once").addEventListener("click", () => arayaEkle(false));
+    q(".ce-sonra").addEventListener("click", () => arayaEkle(true));
+    q(".ce-geri").addEventListener("click", () => tasi(-1));
+    q(".ce-ileri").addEventListener("click", () => tasi(1));
     q(".ce-yeni").addEventListener("click", () => ekle({ ad: "", agirlik: 10, maximus: false }));
     const mxBtn = q(".ce-yeni-mx");
     if (mxBtn) mxBtn.addEventListener("click", () => ekle({ ad: "Sınırsız Maximus Çarkı", agirlik: 5, maximus: true }));

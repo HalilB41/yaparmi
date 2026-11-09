@@ -1528,6 +1528,8 @@ body.se-open { overflow: hidden; }
 .ce-aciklama { margin: -6px 0 0; font-size: .82rem; }
 .ce-mx { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; }
 .ce-sil { align-self: flex-start; }
+.ce-arac { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ce-arac span { font-size: .8rem; font-weight: 800; color: var(--ink-2); min-width: 108px; }
 .ce-bos { margin: 0; padding: 14px; border-radius: 14px; background: var(--surface-2); }
 .ce-liste { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
 .ce-chip { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .8rem; font-weight: 700; }

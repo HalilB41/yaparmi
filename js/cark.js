@@ -69,7 +69,22 @@
     carklar.sinirsiz.dilimler = temizDilimler(ayarlar.sinirsiz, true);
     carklar.maximus.dilimler = temizDilimler(ayarlar.maximus, false);
     CarkCiz.ciz(carklar.sinirsiz.tuval, carklar.sinirsiz.dilimler, CarkCiz.RENKLER);
-    CarkCiz.ciz(carklar.maximus.tuval, carklar.maximus.dilimler, CarkCiz.MAXIMUS_RENKLER);
+    maximusCiz(true);
+  }
+
+  // Maximus kilitliyken ödüller görünmesin: sadece "?" dilimleri çizilir.
+  const GIZLI_DILIMLER = Array.from({ length: 8 }, () => ({ ad: "?", agirlik: 1, maximus: false }));
+  let maximusGizliCizili = null;
+  function maximusKilitli() {
+    return !(ayarlar.acik && kullanilmamisBiletler(gorunen()).length > 0);
+  }
+  function maximusCiz(zorla) {
+    if (donuyor) return;
+    const gizli = maximusKilitli();
+    if (!zorla && gizli === maximusGizliCizili) return;
+    maximusGizliCizili = gizli;
+    if (gizli) CarkCiz.ciz(carklar.maximus.tuval, GIZLI_DILIMLER, CarkCiz.MAXIMUS_RENKLER);
+    else CarkCiz.ciz(carklar.maximus.tuval, carklar.maximus.dilimler, CarkCiz.MAXIMUS_RENKLER);
   }
 
   function dondur(cark, index) {
@@ -133,6 +148,7 @@
     s.hakEl.textContent = !acik ? "Kapalı" : hak > 0 ? "Bu tur kalan hakkın: " + hak : "Bu turdaki hakkın bitti, bir sonraki açılışı bekle.";
 
     m.kilit.hidden = acik && biletler.length > 0;
+    maximusCiz(false);
     m.btn.disabled = donuyor || !acik || !biletler.length || !m.dilimler.length;
     m.hakEl.textContent = biletler.length
       ? "🎟️ " + biletler.length + " Maximus biletin var!"
