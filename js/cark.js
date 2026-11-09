@@ -24,15 +24,13 @@
   const durumEl = $("carkDurum");
   const odulListe = $("odulListe");
 
-  const RENKLER = ["#5a3fd4", "#f5b82e", "#e05a8a", "#2fa36b", "#3fa7d6", "#ff7a59", "#8b5cf6", "#14b8a6"];
-  const MAXIMUS_RENKLER = ["#1b1726", "#f5b82e", "#3a2f12", "#ffcf5c", "#4a3300", "#fdf0cc"];
-
   let ayarlar = { acik: false, tur: 0, hak: 1, sinirsiz: [], maximus: [] };
   let profile = null;
   let authCozuldu = false;
   let sonuclar = []; // kullanıcının kendi sonuçları
   let sonucDinleyici = null;
   let donuyor = false;
+  let gizliId = null; // çark dönerken yeni sonuç Ödüllerim'de erken görünmesin
 
   // ---------------- Yardımcılar ----------------
   function temizDilimler(l, maximusOlabilir) {
@@ -61,62 +59,6 @@
     try { return ts && ts.toDate ? ts.toDate().toLocaleString("tr-TR") : "az önce"; } catch { return "-"; }
   }
 
-  // ---------------- Çark çizimi ----------------
-  function carkCiz(tuval, dilimler, renkler) {
-    const ctx = tuval.getContext("2d");
-    const W = tuval.width;
-    const r = W / 2;
-    ctx.clearRect(0, 0, W, W);
-    if (!dilimler.length) {
-      ctx.fillStyle = "#e2dbcb";
-      ctx.beginPath(); ctx.arc(r, r, r - 6, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#878192";
-      ctx.font = "700 26px Manrope, sans-serif";
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("Ödül eklenmedi", r, r);
-      return;
-    }
-    const seg = (Math.PI * 2) / dilimler.length;
-    dilimler.forEach((d, i) => {
-      // Dilim 0 tepeden başlar, saat yönünde ilerler.
-      const a0 = -Math.PI / 2 + i * seg;
-      ctx.beginPath();
-      ctx.moveTo(r, r);
-      ctx.arc(r, r, r - 6, a0, a0 + seg);
-      ctx.closePath();
-      let renk = renkler[i % renkler.length];
-      // Son dilim ilk dilimle aynı renk olup yan yana gelmesin
-      if (dilimler.length > 1 && i === dilimler.length - 1 && i % renkler.length === 0) renk = renkler[1];
-      if (d.maximus) renk = "#1b1726";
-      ctx.fillStyle = renk;
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.85)";
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      ctx.save();
-      ctx.translate(r, r);
-      const orta = a0 + seg / 2;
-      const solda = Math.cos(orta) < 0; // sol yarıdaki yazılar ters görünmesin
-      ctx.rotate(solda ? orta + Math.PI : orta);
-      ctx.textAlign = solda ? "left" : "right";
-      ctx.textBaseline = "middle";
-      const acik = ["#f5b82e", "#ffcf5c", "#fdf0cc"].includes(renk);
-      ctx.fillStyle = d.maximus ? "#ffcf5c" : acik ? "#1b1726" : "#ffffff";
-      const boyut = dilimler.length > 12 ? 17 : dilimler.length > 8 ? 20 : 24;
-      ctx.font = "800 " + boyut + "px Manrope, sans-serif";
-      let yazi = (d.maximus ? "🌟 " : "") + d.ad;
-      const maxGen = r - 70;
-      while (yazi.length > 3 && ctx.measureText(yazi).width > maxGen) yazi = yazi.slice(0, -2) + "…";
-      ctx.fillText(yazi, solda ? -(r - 24) : r - 24, 0);
-      ctx.restore();
-    });
-    // Orta göbek
-    ctx.beginPath(); ctx.arc(r, r, 34, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff"; ctx.fill();
-    ctx.lineWidth = 6; ctx.strokeStyle = "#1b1726"; ctx.stroke();
-  }
-
   const carklar = {
     sinirsiz: { tuval: $("sinirsizTuval"), btn: $("sinirsizCevir"), kilit: $("sinirsizKilit"), hakEl: $("sinirsizHak"), aci: 0, dilimler: [] },
     maximus: { tuval: $("maximusTuval"), btn: $("maximusCevir"), kilit: $("maximusKilit"), hakEl: $("maximusHak"), aci: 0, dilimler: [] },
@@ -126,16 +68,17 @@
     if (donuyor) return; // dönerken çarkın şekli değişmesin
     carklar.sinirsiz.dilimler = temizDilimler(ayarlar.sinirsiz, true);
     carklar.maximus.dilimler = temizDilimler(ayarlar.maximus, false);
-    carkCiz(carklar.sinirsiz.tuval, carklar.sinirsiz.dilimler, RENKLER);
-    carkCiz(carklar.maximus.tuval, carklar.maximus.dilimler, MAXIMUS_RENKLER);
+    CarkCiz.ciz(carklar.sinirsiz.tuval, carklar.sinirsiz.dilimler, CarkCiz.RENKLER);
+    CarkCiz.ciz(carklar.maximus.tuval, carklar.maximus.dilimler, CarkCiz.MAXIMUS_RENKLER);
   }
 
   function dondur(cark, index) {
     return new Promise((resolve) => {
-      const n = cark.dilimler.length;
-      const seg = 360 / n;
-      const sapma = (Math.random() - 0.5) * seg * 0.7;
-      const hedef = (((360 - (index + 0.5) * seg + sapma) % 360) + 360) % 360;
+      // Dilimler şansa göre farklı genişlikte: seçilen dilimin ortasına (biraz kaydırarak) denk getir.
+      const d = CarkCiz.acilar(cark.dilimler)[index];
+      const gen = d.son - d.bas;
+      const sapma = (Math.random() - 0.5) * gen * 0.7;
+      const hedef = (((360 - ((d.bas + d.son) / 2 + sapma)) % 360) + 360) % 360;
       const simdiki = ((cark.aci % 360) + 360) % 360;
       let fark = hedef - simdiki;
       if (fark < 0) fark += 360;
@@ -151,26 +94,29 @@
   }
 
   // ---------------- Hak ve bilet hesabı ----------------
-  function buTurdakiSinirsizlar() {
-    return sonuclar.filter((s) => s.cark === "sinirsiz" && s.tur === ayarlar.tur);
+  function gorunen() {
+    return sonuclar.filter((s) => s.id !== gizliId);
   }
-  function kalanHak() {
-    return Math.max(0, (ayarlar.hak || 1) - buTurdakiSinirsizlar().length);
+  function buTurdakiSinirsizlar(liste = sonuclar) {
+    return liste.filter((s) => s.cark === "sinirsiz" && s.tur === ayarlar.tur);
+  }
+  function kalanHak(liste = sonuclar) {
+    return Math.max(0, (ayarlar.hak || 1) - buTurdakiSinirsizlar(liste).length);
   }
   function siradakiSira() {
     const kullanilan = new Set(buTurdakiSinirsizlar().map((s) => s.sira));
     for (let i = 0; i < (ayarlar.hak || 1); i++) if (!kullanilan.has(i)) return i;
     return -1;
   }
-  function kullanilmamisBiletler() {
-    const kullanilan = new Set(sonuclar.filter((s) => s.cark === "maximus").map((s) => s.bilet));
-    return sonuclar.filter((s) => s.cark === "sinirsiz" && s.maximusBileti && !kullanilan.has(s.id));
+  function kullanilmamisBiletler(liste = sonuclar) {
+    const kullanilan = new Set(liste.filter((s) => s.cark === "maximus").map((s) => s.bilet));
+    return liste.filter((s) => s.cark === "sinirsiz" && s.maximusBileti && !kullanilan.has(s.id));
   }
 
   function arayuzGuncelle() {
     const acik = !!ayarlar.acik;
-    const hak = kalanHak();
-    const biletler = kullanilmamisBiletler();
+    const hak = kalanHak(gorunen());
+    const biletler = kullanilmamisBiletler(gorunen());
     const s = carklar.sinirsiz;
     const m = carklar.maximus;
 
@@ -229,6 +175,7 @@
     }
 
     donuyor = true;
+    gizliId = docId;
     arayuzGuncelle();
     try {
       // Önce kaydediyoruz: sayfayı yenileyip "kötü çıktı, bir daha çevireyim" olmasın.
@@ -236,6 +183,7 @@
     } catch (err) {
       console.error("Çark sonucu kaydedilemedi:", err.message);
       donuyor = false;
+      gizliId = null;
       arayuzGuncelle();
       durumYaz("⚠️ Çevrilemedi: " + err.message + " (Çark kapanmış ya da hakkın bitmiş olabilir.)");
       return;
@@ -246,6 +194,9 @@
     dilimleriGuncelle();
     arayuzGuncelle();
     modalAc(docId, veri);
+    gizliId = null;
+    odulleriCiz();
+    arayuzGuncelle();
   }
 
   carklar.sinirsiz.btn.addEventListener("click", () => cevir("sinirsiz"));
@@ -306,13 +257,13 @@
 
   // ---------------- Ödüllerim ----------------
   function odulleriCiz() {
-    const liste = sonuclar.slice().sort((a, b) => (b.tarihMs || Infinity) - (a.tarihMs || Infinity));
+    const liste = gorunen().sort((a, b) => (b.tarihMs || Infinity) - (a.tarihMs || Infinity));
     odulListe.innerHTML = "";
     if (!liste.length) {
       odulListe.innerHTML = '<p class="muted">Henüz bir şey kazanmadın. Çark açılınca çevir.</p>';
       return;
     }
-    const kullanilanBilet = new Set(sonuclar.filter((s) => s.cark === "maximus").map((s) => s.bilet));
+    const kullanilanBilet = new Set(gorunen().filter((s) => s.cark === "maximus").map((s) => s.bilet));
     liste.forEach((s) => {
       const satir = document.createElement("div");
       satir.className = "odul-satir" + (s.cark === "maximus" ? " is-maximus" : "");

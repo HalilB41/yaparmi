@@ -55,21 +55,13 @@
       </div>
 
       <div class="panel card admin-section wide">
-        <div class="se-top">
-          <h2>🎡 Sınırsız Çark dilimleri</h2>
-          <div class="sayac-butonlar">
-            <button type="button" class="admin-btn reject" id="carkSinirsizEkle">➕ Ödül ekle</button>
-            <button type="button" class="admin-btn reject" id="carkSinirsizMxEkle">🌟 Maximus dilimi ekle</button>
-          </div>
-        </div>
-        <p class="muted">Ağırlık ne kadar büyükse o kadar sık çıkar (yanında yüzdesi yazar). "🌟 Maximus" işaretli dilim çıkan kişi Sınırsız Maximus Çarkı'nı bir kez çevirme hakkı kazanır.</p>
-        <div id="carkSinirsizDilimler"></div>
+        <h2>🎡 Sınırsız Çark</h2>
+        <p class="muted">Düzenlemek istediğin dilime tıkla. Dilim ne kadar büyükse o kadar sık çıkar, kullanıcının gördüğü çark da aynen böyle. "🌟 Maximus" işaretli dilim çıkan kişi Sınırsız Maximus Çarkı'nı bir kez çevirme hakkı kazanır.</p>
+        <div id="carkSinirsizEditor"></div>
 
-        <div class="se-top" style="margin-top:18px">
-          <h2>🌟 Sınırsız Maximus Çarkı dilimleri</h2>
-          <button type="button" class="admin-btn reject" id="carkMaximusEkle">➕ Ödül ekle</button>
-        </div>
-        <div id="carkMaximusDilimler"></div>
+        <h2 style="margin-top:22px">🌟 Sınırsız Maximus Çarkı</h2>
+        <p class="muted">Maximus biletini kazananın çevirdiği çark. Burası boşsa bileti olan da çeviremez.</p>
+        <div id="carkMaximusEditor"></div>
 
         <div class="sayac-butonlar" style="margin-top:14px">
           <button type="button" class="admin-btn publish" id="carkKaydet">💾 Dilimleri ve hakkı kaydet</button>
@@ -275,6 +267,7 @@
   <script src="js/bildirim.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/sayac.js"></script>
+  <script src="js/cark-ciz.js"></script>
   <script src="js/cark-admin.js"></script>
   <script src="js/admin-sekme.js"></script>
   <script src="js/sosyal-hikaye.js"></script>

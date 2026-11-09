@@ -16,8 +16,6 @@
   const acBtn = $("carkAcBtn");
   const kapatBtn = $("carkKapatBtn");
   const hakInput = $("carkHak");
-  const sinirsizKutu = $("carkSinirsizDilimler");
-  const maximusKutu = $("carkMaximusDilimler");
   const kaydetBtn = $("carkKaydet");
   const kaydetDurum = $("carkKaydetDurum");
   const tablo = $("carkSonucTablo");
@@ -81,56 +79,116 @@
     kapatBtn.disabled = false;
   });
 
-  // ---------------- Dilim düzenleyici ----------------
-  function dilimleriCiz(kap, liste, maximusOlabilir) {
-    kap.innerHTML = "";
-    if (!liste.length) {
-      kap.innerHTML = '<p class="muted" style="margin:0 0 8px">Henüz dilim yok.</p>';
+  // ---------------- Çark üzerinde düzenleyici ----------------
+  // Çarka tıkla → o dilim seçilir, yandaki kutudan adı / şansı / Maximus'u değişir.
+  function editorKur(kap, maximusOlabilir, renkler) {
+    const ed = { liste: [], secili: null };
+    kap.className = "cark-editor";
+    kap.innerHTML =
+      '<div class="ce-sol"><div class="cark-sahne"><div class="cark-ok" aria-hidden="true"></div>' +
+      '<canvas class="cark-tuval ce-tuval" width="560" height="560"></canvas></div>' +
+      '<p class="muted ce-ipucu">👆 Düzenlemek için dilime tıkla</p></div>' +
+      '<div class="ce-sag">' +
+      '<div class="ce-ekle"><button type="button" class="admin-btn reject ce-yeni">➕ Ödül ekle</button>' +
+      (maximusOlabilir ? '<button type="button" class="admin-btn reject ce-yeni-mx">🌟 Maximus dilimi ekle</button>' : "") + "</div>" +
+      '<div class="ce-form" hidden>' +
+      '<label class="ce-etiket">Ödül adı<input class="ce-ad" maxlength="80" placeholder="Örn. 1 Burger" /></label>' +
+      '<label class="ce-etiket">Çıkma şansı <span class="ce-yuzde"></span>' +
+      '<input class="ce-sans" type="range" min="1" max="100" step="1" /></label>' +
+      '<p class="ce-aciklama muted"></p>' +
+      (maximusOlabilir ? '<label class="ce-mx"><input type="checkbox" /> 🌟 Bu dilim Maximus bileti versin</label>' : "") +
+      '<button type="button" class="admin-btn reject se-small ce-sil">🗑️ Bu dilimi sil</button>' +
+      "</div>" +
+      '<p class="ce-bos muted">Bir dilime tıkla ya da yeni ödül ekle.</p>' +
+      '<div class="ce-liste"></div>' +
+      "</div>";
+    const q = (c) => kap.querySelector(c);
+    const tuval = q(".ce-tuval");
+    const form = q(".ce-form");
+    const adIn = q(".ce-ad");
+    const sansIn = q(".ce-sans");
+    const yuzde = q(".ce-yuzde");
+    const aciklama = q(".ce-aciklama");
+    const mxIn = q(".ce-mx input");
+    const listeEl = q(".ce-liste");
+
+    function yuzdeHesap(i) {
+      const t = CarkCiz.toplamSans(ed.liste);
+      return t ? (ed.liste[i].agirlik / t) * 100 : 0;
     }
-    const toplam = liste.reduce((t, d) => t + (d.ad.trim() ? d.agirlik : 0), 0);
-    liste.forEach((d, i) => {
-      const r = document.createElement("div");
-      r.className = "cark-dilim-satir" + (d.maximus ? " is-maximus" : "");
-      r.innerHTML =
-        '<input class="cd-ad" maxlength="80" placeholder="Ödül adı" aria-label="Ödül adı" />' +
-        '<label class="cd-agirlik" title="Çıkma ağırlığı: büyük sayı = daha sık çıkar"><span>Ağırlık</span><input type="number" min="0" max="1000" step="1" aria-label="Ağırlık" /></label>' +
-        '<span class="cd-yuzde"></span>' +
-        (maximusOlabilir ? '<label class="cd-mx" title="Bu dilim çıkarsa Sınırsız Maximus Çarkı bileti kazanılır"><input type="checkbox" /> 🌟 Maximus</label>' : "") +
-        '<button type="button" class="admin-btn reject se-small">Sil</button>';
-      const ad = r.querySelector(".cd-ad");
-      const ag = r.querySelector(".cd-agirlik input");
-      const yuzde = r.querySelector(".cd-yuzde");
-      ad.value = d.ad;
-      ag.value = d.agirlik;
-      yuzde.textContent = toplam && d.ad.trim() ? "%" + ((d.agirlik / toplam) * 100).toFixed(1).replace(".0", "") : "";
-      ad.oninput = () => (d.ad = ad.value);
-      ad.onchange = () => dilimleriCiz(kap, liste, maximusOlabilir);
-      ag.onchange = () => { d.agirlik = Math.max(0, Math.min(1000, Math.round(Number(ag.value) || 0))); dilimleriCiz(kap, liste, maximusOlabilir); };
-      const mx = r.querySelector(".cd-mx input");
-      if (mx) {
-        mx.checked = d.maximus;
-        mx.onchange = () => { d.maximus = mx.checked; if (d.maximus && !d.ad.trim()) d.ad = "Sınırsız Maximus Çarkı"; dilimleriCiz(kap, liste, maximusOlabilir); };
-      }
-      r.querySelector("button").onclick = () => { liste.splice(i, 1); dilimleriCiz(kap, liste, maximusOlabilir); };
-      kap.appendChild(r);
+    function cizCark() {
+      CarkCiz.ciz(tuval, ed.liste, renkler, { secili: ed.secili, bosYazi: "➕ Ödül ekle" });
+    }
+    function formDoldur() {
+      const d = ed.liste[ed.secili];
+      form.hidden = !d;
+      q(".ce-bos").hidden = !!d;
+      if (!d) return;
+      if (document.activeElement !== adIn) adIn.value = d.ad;
+      sansIn.value = Math.min(100, Math.max(1, d.agirlik));
+      const y = yuzdeHesap(ed.secili);
+      yuzde.textContent = "%" + (Math.round(y * 10) / 10).toLocaleString("tr-TR");
+      const kac = y > 0 ? Math.max(1, Math.round(100 / y)) : 0;
+      aciklama.textContent = kac ? "Ortalama her " + kac + " çevirişte bir çıkar." : "";
+      if (mxIn) mxIn.checked = !!d.maximus;
+    }
+    function listeCiz() {
+      listeEl.innerHTML = "";
+      ed.liste.forEach((d, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "ce-chip" + (i === ed.secili ? " on" : "") + (d.maximus ? " mx" : "");
+        b.textContent = (d.maximus ? "🌟 " : "") + (d.ad || "(isimsiz)") + " · %" + Math.round(yuzdeHesap(i));
+        b.onclick = () => sec(i);
+        listeEl.appendChild(b);
+      });
+    }
+    function yenile() { cizCark(); formDoldur(); listeCiz(); }
+    function sec(i) { ed.secili = i; yenile(); if (i != null) adIn.focus(); }
+
+    tuval.addEventListener("click", (e) => {
+      if (!ed.liste.length) { ekle({ ad: "", agirlik: 10, maximus: false }); return; }
+      const rect = tuval.getBoundingClientRect();
+      const dx = e.clientX - rect.left - rect.width / 2;
+      const dy = e.clientY - rect.top - rect.height / 2;
+      if (Math.hypot(dx, dy) > rect.width / 2) return;
+      const derece = (Math.atan2(dx, -dy) * 180) / Math.PI;
+      sec(CarkCiz.dilimBul(ed.liste, derece));
     });
-  }
-  function hepsiniCiz() {
-    dilimleriCiz(sinirsizKutu, sinirsiz, true);
-    dilimleriCiz(maximusKutu, maximus, false);
+    adIn.addEventListener("input", () => { if (ed.liste[ed.secili]) { ed.liste[ed.secili].ad = adIn.value; cizCark(); listeCiz(); } });
+    sansIn.addEventListener("input", () => { if (ed.liste[ed.secili]) { ed.liste[ed.secili].agirlik = Number(sansIn.value); yenile(); } });
+    if (mxIn) mxIn.addEventListener("change", () => {
+      const d = ed.liste[ed.secili]; if (!d) return;
+      d.maximus = mxIn.checked;
+      if (d.maximus && !d.ad.trim()) d.ad = "Sınırsız Maximus Çarkı";
+      yenile();
+    });
+    q(".ce-sil").addEventListener("click", () => {
+      if (ed.secili == null) return;
+      ed.liste.splice(ed.secili, 1);
+      ed.secili = ed.liste.length ? Math.min(ed.secili, ed.liste.length - 1) : null;
+      yenile();
+    });
+    function ekle(d) { ed.liste.push(d); sec(ed.liste.length - 1); }
+    q(".ce-yeni").addEventListener("click", () => ekle({ ad: "", agirlik: 10, maximus: false }));
+    const mxBtn = q(".ce-yeni-mx");
+    if (mxBtn) mxBtn.addEventListener("click", () => ekle({ ad: "Sınırsız Maximus Çarkı", agirlik: 5, maximus: true }));
+
+    ed.yukle = (l) => { ed.liste = l; ed.secili = null; yenile(); };
+    yenile();
+    return ed;
   }
 
-  function ekle(liste, kap, maximusOlabilir, d) {
-    liste.push(d);
-    dilimleriCiz(kap, liste, maximusOlabilir);
-    const son = kap.querySelector(".cark-dilim-satir:last-child .cd-ad");
-    if (son) son.focus();
+  const sinirsizEd = editorKur($("carkSinirsizEditor"), true, CarkCiz.RENKLER);
+  const maximusEd = editorKur($("carkMaximusEditor"), false, CarkCiz.MAXIMUS_RENKLER);
+  function hepsiniCiz() {
+    sinirsizEd.yukle(sinirsiz);
+    maximusEd.yukle(maximus);
   }
-  $("carkSinirsizEkle").addEventListener("click", () => ekle(sinirsiz, sinirsizKutu, true, { ad: "", agirlik: 10, maximus: false }));
-  $("carkSinirsizMxEkle").addEventListener("click", () => ekle(sinirsiz, sinirsizKutu, true, { ad: "Sınırsız Maximus Çarkı", agirlik: 3, maximus: true }));
-  $("carkMaximusEkle").addEventListener("click", () => ekle(maximus, maximusKutu, false, { ad: "", agirlik: 10, maximus: false }));
 
   kaydetBtn.addEventListener("click", async () => {
+    sinirsiz = sinirsizEd.liste;
+    maximus = maximusEd.liste;
     const s = temiz(sinirsiz, true).filter((d) => d.ad.trim()).map((d) => ({ ad: d.ad.trim(), agirlik: d.agirlik, maximus: d.maximus }));
     const m = temiz(maximus, false).filter((d) => d.ad.trim()).map((d) => ({ ad: d.ad.trim(), agirlik: d.agirlik }));
     if (s.length > 24 || m.length > 24) { kaydetDurum.textContent = "⚠️ Bir çarkta en fazla 24 dilim olabilir."; return; }
@@ -219,8 +277,8 @@
           // Dilimleri sadece ilk açılışta yükle; düzenlerken başka güncelleme üstüne yazmasın.
           ilk = false;
           hakInput.value = ayarlar.hak;
-          sinirsiz = temiz(v.sinirsiz, true);
-          maximus = temiz(v.maximus, false);
+          sinirsiz = temiz(v.sinirsiz, true).map((d) => Object.assign(d, { agirlik: Math.max(1, d.agirlik) }));
+          maximus = temiz(v.maximus, false).map((d) => Object.assign(d, { agirlik: Math.max(1, d.agirlik) }));
           hepsiniCiz();
         }
       },

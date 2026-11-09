@@ -1513,8 +1513,29 @@ body.se-open { overflow: hidden; }
 .cd-yuzde { font-size: .8rem; font-weight: 800; color: var(--ink-2); text-align: right; }
 .cd-mx { display: flex; align-items: center; gap: 4px; font-size: .8rem; font-weight: 700; white-space: nowrap; }
 .admin-table tr.is-istendi td { background: var(--sun-soft); }
+.cark-editor { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 24px; align-items: start; margin-top: 8px; }
+.ce-sol { display: flex; flex-direction: column; align-items: center; }
+.ce-sol .cark-sahne { width: 100%; margin-bottom: 6px; }
+.ce-tuval { cursor: pointer; }
+.ce-ipucu { margin: 0; font-size: .85rem; }
+.ce-ekle { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.ce-form { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 16px; background: var(--surface-2); border: 2px solid #e03131; }
+.ce-form[hidden] { display: none; }
+.ce-etiket { display: flex; flex-direction: column; gap: 6px; font-size: .8rem; font-weight: 800; color: var(--ink-2); }
+.ce-etiket input.ce-ad { padding: 10px 12px; font-size: 1rem; font-weight: 600; }
+.ce-sans { width: 100%; accent-color: var(--accent); }
+.ce-yuzde { font-size: 1.1rem; color: var(--accent); }
+.ce-aciklama { margin: -6px 0 0; font-size: .82rem; }
+.ce-mx { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; }
+.ce-sil { align-self: flex-start; }
+.ce-bos { margin: 0; padding: 14px; border-radius: 14px; background: var(--surface-2); }
+.ce-liste { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.ce-chip { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .8rem; font-weight: 700; }
+.ce-chip.mx { background: var(--sun-soft); color: var(--sun-ink); }
+.ce-chip.on { border-color: #e03131; box-shadow: 0 0 0 2px #e03131 inset; }
 @media (max-width: 760px) {
   .cark-grid { grid-template-columns: 1fr; }
+  .cark-editor { grid-template-columns: 1fr; }
   .cark-dilim-satir { grid-template-columns: minmax(0, 1fr) auto; }
   .cark-dilim-satir .cd-ad { grid-column: 1 / -1; }
 }
