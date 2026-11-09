@@ -96,14 +96,17 @@
       const simdiki = ((cark.aci % 360) + 360) % 360;
       let fark = hedef - simdiki;
       if (fark < 0) fark += 360;
-      cark.aci += 360 * 6 + fark;
+      // Her çevirişte süre 3-7 saniye arası rastgele, tur sayısı da süreye göre rastgele.
+      const sure = 3 + Math.random() * 4;
+      const tur = Math.round(sure * (0.9 + Math.random() * 0.6));
+      cark.aci += 360 * Math.max(3, tur) + fark;
       const tuval = cark.tuval;
-      tuval.style.transition = "transform 5.2s cubic-bezier(.12,.72,.12,1)";
+      tuval.style.transition = "transform " + sure.toFixed(2) + "s cubic-bezier(.12,.72,.12,1)";
       tuval.style.transform = "rotate(" + cark.aci + "deg)";
       let bitti = false;
       const son = () => { if (bitti) return; bitti = true; resolve(); };
       tuval.addEventListener("transitionend", son, { once: true });
-      setTimeout(son, 5600);
+      setTimeout(son, sure * 1000 + 400);
     });
   }
 
