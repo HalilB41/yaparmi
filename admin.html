@@ -56,6 +56,16 @@
       </div>
 
       <div class="panel card admin-section wide">
+        <h2>📜 Çark kuralları</h2>
+        <p class="muted">Çark sayfasına girenler önce bu maddeleri görür, "Okudum, anladım" deyince çark açılır. Her satır bir madde (en fazla 10). Boş bırakırsan kural ekranı çıkmaz. Maddeleri değiştirince herkes yeniden okuyup onaylar.</p>
+        <textarea id="carkKuralInput" class="cark-kural-input" maxlength="3000" placeholder="Örn. Ödüller sadece Halil depodayken verilir.&#10;Bir kişi birden fazla hesap açarsa ödülü iptal olur.&#10;..."></textarea>
+        <div class="sayac-butonlar" style="margin-top:10px">
+          <button type="button" class="admin-btn publish" id="carkKuralKaydet">💾 Kuralları kaydet</button>
+        </div>
+        <p class="suggest-status" id="carkKuralDurum"></p>
+      </div>
+
+      <div class="panel card admin-section wide">
         <h2>🎡 Sınırsız Çark</h2>
         <p class="muted">Düzenlemek istediğin dilime tıkla. Dilim ne kadar büyükse o kadar sık çıkar, kullanıcının gördüğü çark da aynen böyle. "🌟 Maximus" işaretli dilim çıkan kişi Sınırsız Maximus Çarkı'nı bir kez çevirme hakkı kazanır.</p>
         <div id="carkSinirsizEditor"></div>

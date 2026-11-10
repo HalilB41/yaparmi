@@ -1467,6 +1467,12 @@ body.se-open { overflow: hidden; }
 .cark-kapi { padding: 34px 24px; text-align: center; }
 .cark-kapi-ico { font-size: 2.6rem; margin-bottom: 6px; }
 .cark-kapi p { margin: 0 auto 16px; max-width: 460px; color: var(--ink-2); }
+.cark-kurallar { padding: 30px 24px; text-align: center; }
+.cark-kurallar h2 { margin: 0 0 14px; }
+.cark-kural-liste { text-align: left; max-width: 520px; margin: 0 auto 20px; padding-left: 1.4em; display: grid; gap: 10px; color: var(--ink); line-height: 1.5; }
+.cark-kural-liste li { padding-left: 4px; overflow-wrap: anywhere; }
+.cark-kural-liste li::marker { font-weight: 800; color: var(--accent); }
+.cark-kural-input { width: 100%; min-height: 130px; padding: 10px 12px; border-radius: 12px; font: inherit; font-size: .92rem; line-height: 1.5; resize: vertical; }
 .cark-durum { padding: 14px 18px; margin-bottom: 18px; font-weight: 700; color: var(--ink-2); }
 .cark-durum.is-acik { background: color-mix(in srgb, #2fa36b 14%, var(--surface)); border-color: color-mix(in srgb, #2fa36b 40%, var(--line)); color: var(--ink); }
 .cark-durum.is-hata { background: color-mix(in srgb, #e05a8a 12%, var(--surface)); color: var(--ink); }

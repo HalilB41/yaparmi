@@ -16,6 +16,9 @@
   const acBtn = $("carkAcBtn");
   const kapatBtn = $("carkKapatBtn");
   const sifirlaBtn = $("carkSifirlaBtn");
+  const kuralInput = $("carkKuralInput");
+  const kuralKaydet = $("carkKuralKaydet");
+  const kuralDurum = $("carkKuralDurum");
   const hakInput = $("carkHak");
   const kaydetBtn = $("carkKaydet");
   const kaydetDurum = $("carkKaydetDurum");
@@ -99,6 +102,32 @@
       kaydetDurum.textContent = "⚠️ Sıfırlanamadı: " + err.message;
     }
     sifirlaBtn.disabled = false;
+  });
+
+  // ---------------- Çark kuralları ----------------
+  // cark/ayarlar.kurallar = ["madde 1", "madde 2", ...]  (her satır bir madde)
+  function kurallariOku() {
+    return kuralInput.value
+      .split("\n")
+      .map((s) => s.trim().slice(0, 300))
+      .filter(Boolean)
+      .slice(0, 10);
+  }
+
+  kuralKaydet.addEventListener("click", async () => {
+    const kurallar = kurallariOku();
+    kuralKaydet.disabled = true;
+    kuralDurum.textContent = "Kaydediliyor…";
+    try {
+      await belge().set({ kurallar }, { merge: true });
+      kuralInput.value = kurallar.join("\n");
+      kuralDurum.textContent = kurallar.length
+        ? "✅ " + kurallar.length + " madde kaydedildi. Herkes çarka girince bunları görüp onaylayacak."
+        : "✅ Kurallar kaldırıldı, çark direkt açılıyor.";
+    } catch (err) {
+      kuralDurum.textContent = "⚠️ Kaydedilemedi: " + err.message;
+    }
+    kuralKaydet.disabled = false;
   });
 
   // ---------------- Çark üzerinde düzenleyici ----------------
@@ -327,6 +356,7 @@
           // Dilimleri sadece ilk açılışta yükle; düzenlerken başka güncelleme üstüne yazmasın.
           ilk = false;
           hakInput.value = ayarlar.hak;
+          kuralInput.value = (Array.isArray(v.kurallar) ? v.kurallar : []).filter((s) => typeof s === "string").join("\n");
           sinirsiz = temiz(v.sinirsiz, true).map((d) => Object.assign(d, { agirlik: Math.max(1, d.agirlik) }));
           maximus = temiz(v.maximus, false).map((d) => Object.assign(d, { agirlik: Math.max(1, d.agirlik) }));
           hepsiniCiz();

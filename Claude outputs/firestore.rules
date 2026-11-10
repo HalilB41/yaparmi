@@ -1,0 +1,244 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'admin';
+    }
+
+    // "Genel" kutusundaki sorular — herkes ekleyebilir, sadece admin okuyabilir
+    // (admin panelinden "kim ne zaman ne sormuş" diye görmek için).
+    match /sorular/{docId} {
+      allow create: if true;
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Kayıtlı hesaplar (kullanıcı adı + şifre, sağ üstteki Giriş Yap/Kayıt Ol).
+    // Belge ID'si = uid. "admin" kullanıcı adını İLK ALAN kişi otomatik
+    // admin rolü alır ve tüm yetkilere sahip olur.
+    match /kullanicilar/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['kullaniciAdi', 'rol', 'olusturulmaTarihi'])
+        && request.resource.data.kullaniciAdi is string
+        && request.resource.data.kullaniciAdi.size() > 0
+        && request.resource.data.kullaniciAdi.size() <= 20
+        && request.resource.data.rol == (request.resource.data.kullaniciAdi == 'admin' ? 'admin' : 'kullanici')
+        && request.resource.data.olusturulmaTarihi == request.time;
+      allow update, delete: if false;
+    }
+
+    // Berkayın Ahırı'ndaki takma ad rezervasyonu (kayıt olmakla eşdeğer
+    // DEĞİL). Belge ID'si = takma adın kendisi (boşluksuz, küçük harf, en
+    // fazla 12 karakter), bu yüzden aynı isim ikinci kez "create"
+    // edilemez (Firestore bunu "update" sayar ve update kapalı olduğu
+    // için istek reddedilir) — yani aynı isimden 2. kişi asla giremez.
+    match /ahir_kullanicilar/{kullaniciAdi} {
+      allow read: if false;
+      allow create: if request.auth != null
+        && kullaniciAdi.matches('^[^\\s]{1,12}$')
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.uid
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Berkayın Ahırı — gerçek kullanıcı mesajları. Sadece (anonim de olsa)
+    // giriş yapmış biri yazabilir, kendi kimliği (uid) dışında birini taklit
+    // edemez, sadece kendi rezerve ettiği takma adla yazabilir, isim
+    // boşluksuz + en fazla 12 karakter, mesaj uzunluğu sınırlı, ve son
+    // mesajından en az 3 saniye geçmeden yeni mesaj atamaz (aşağıdaki
+    // ahir_limits koleksiyonuyla).
+    match /ahir_mesajlar/{mesajId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'kullaniciAdi', 'mesaj', 'tarih'])
+        && request.resource.data.kullaniciAdi is string
+        && request.resource.data.kullaniciAdi.matches('^[^\\s]{1,12}$')
+        && get(/databases/$(database)/documents/ahir_kullanicilar/$(request.resource.data.kullaniciAdi)).data.uid == request.auth.uid
+        && request.resource.data.mesaj is string
+        && request.resource.data.mesaj.size() > 0
+        && request.resource.data.mesaj.size() <= 300
+        && request.resource.data.tarih == request.time
+        && (
+          !exists(/databases/$(database)/documents/ahir_limits/$(request.auth.uid))
+          || request.time > get(/databases/$(database)/documents/ahir_limits/$(request.auth.uid)).data.sonMesajZamani + duration.value(3, 's')
+        );
+      allow update, delete: if false;
+    }
+
+    // Ahır hız sınırı kaydı — herkes SADECE kendi belgesini okuyup yazabilir.
+    match /ahir_limits/{uid} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['sonMesajZamani'])
+        && request.resource.data.sonMesajZamani == request.time;
+    }
+
+    // Galeri — herkes bakabilir, sadece admin ekleyip çıkarabilir.
+    // Fotoğraf, Firebase Storage KULLANILMADAN (ücretli Blaze planı
+    // istiyor), site.js'te küçültülüp base64 metne çevrilerek doğrudan
+    // "resim" alanına yazılıyor — bu yüzden ~900KB üst sınırı var.
+    match /galeri/{fotoId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['resim', 'tarih'])
+        && request.resource.data.resim is string
+        && request.resource.data.resim.size() < 900000
+        && request.resource.data.tarih == request.time;
+      allow update, delete: if isAdmin();
+    }
+
+    // Sosyal Hayat hikayesi (admin panelindeki "Sosyal Hayat Düzenle").
+    // "ana" belgesi hikayenin kendisi, "resim" belgesi ortadaki Berkay resmi.
+    // Herkes okuyabilir (oyun oynansın diye), sadece admin değiştirebilir.
+    match /sosyal_hikaye/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId in ['ana', 'resim'];
+    }
+
+    // Galeri fotoğraf önerileri — giriş yapmış (anonim de olsa) herkes
+    // önerebilir, sadece admin görüp onaylayabilir/silebilir.
+    // Spor sayfası: "karne" (Berkay'ın spor istatistikleri), "olimpiyat"
+    // (haftanın rezilliği adayları + geçmiş kazananlar) ve "motor" (Kasksız 85
+    // oyununda kaza anında çıkan resim). Herkes okur, admin yazar.
+    match /spor/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId in ['karne', 'olimpiyat', 'motor'];
+    }
+
+    // Olimpiyat oyları: belge ID'si = hafta + "_" + uid, yani herkes her hafta
+    // TEK oy verebilir, oyunu değiştiremez/silemez.
+    match /spor_oylar/{oyId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['hafta', 'secim', 'uid'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.hafta is string
+        && oyId == request.resource.data.hafta + '_' + request.auth.uid
+        && request.resource.data.secim is int
+        && request.resource.data.secim >= 0
+        && request.resource.data.secim < 10;
+      allow update, delete: if false;
+    }
+
+    match /galeri_oneriler/{oneriId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['resim', 'gonderenUid', 'gonderenKullaniciAdi', 'tarih'])
+        && request.resource.data.resim is string
+        && request.resource.data.resim.size() < 900000
+        && request.resource.data.gonderenUid == request.auth.uid
+        && request.resource.data.tarih == request.time;
+    }
+
+    // Ehliyet sayfası: 3 aracın şoför koltuğu resmi + çarpışma sesi.
+    // Herkes okur (oyun oynansın diye), sadece admin "ayarlar" belgesini yazar.
+    // Ortak rekor tablosu (spor): herkes kendi kaydını yazar, skor sadece yükselebilir.
+    match /rekorlar/{id} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.keys().hasOnly(['oyun', 'uid', 'ad', 'skor', 'tarih'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.oyun in ['boks', 'penalti', 'motor']
+        && id == request.resource.data.oyun + '_' + request.auth.uid
+        && request.resource.data.skor is int && request.resource.data.skor > 0
+        && ((request.resource.data.oyun == 'boks' && request.resource.data.skor <= 999)
+          || (request.resource.data.oyun == 'motor' && request.resource.data.skor <= 1500)
+          || (request.resource.data.oyun == 'penalti' && request.resource.data.skor <= 1000))
+        && request.resource.data.ad == get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.kullaniciAdi
+        && (resource == null || request.resource.data.skor > resource.data.skor);
+      allow delete: if isAdmin();
+    }
+
+    // Davetler: davet linkiyle kayıt olan kişi kendi kaydını bir kez yazar.
+    match /davetler/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['davetEden', 'davetEdilen', 'tarih'])
+        && request.resource.data.davetEden is string && request.resource.data.davetEden.size() <= 20
+        && request.resource.data.davetEdilen == get(/databases/$(database)/documents/kullanicilar/$(uid)).data.kullaniciAdi
+        && request.resource.data.davetEden != request.resource.data.davetEdilen;
+      allow update, delete: if false;
+    }
+
+    // Sayaçlar: ana sayfadaki "Berkay ehliyet alalı X gün" kartları.
+    // Herkes okur, sadece admin panelinden düzenlenir.
+    match /sayaclar/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId == 'liste';
+    }
+
+    match /ehliyet/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId == 'ayarlar';
+    }
+
+    // Sınırsız Çark ayarları (açık/kapalı, tur, hak, dilimler).
+    // Herkes okur, sadece admin değiştirir.
+    match /cark/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId == 'ayarlar';
+    }
+
+    // Çark sonuçları: kime ne çıktı. Sadece gerçek hesabı olan (kullanıcı
+    // adı olan) yazabilir, sadece çark açıkken, turda hakkı kadar. Maximus
+    // ancak kendi Maximus biletiyle ve bilet başına BİR kez çevrilir.
+    // Kişi kendi sonuçlarını görür, admin hepsini görür.
+    match /cark_sonuclari/{id} {
+      function carkAyar() {
+        return get(/databases/$(database)/documents/cark/ayarlar).data;
+      }
+      allow read: if request.auth != null
+        && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && carkAyar().acik == true
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.kullaniciAdi == get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.kullaniciAdi
+        && request.resource.data.odul is string
+        && request.resource.data.odul.size() > 0
+        && request.resource.data.odul.size() <= 80
+        && request.resource.data.istendi == false
+        && request.resource.data.tarih == request.time
+        && (
+          (request.resource.data.cark == 'sinirsiz'
+            && request.resource.data.keys().hasOnly(['uid', 'kullaniciAdi', 'cark', 'odul', 'maximusBileti', 'tur', 'sira', 'tarih', 'istendi'])
+            && request.resource.data.maximusBileti is bool
+            && request.resource.data.tur == carkAyar().tur
+            && request.resource.data.sira is int
+            && request.resource.data.sira >= 0
+            && request.resource.data.sira < carkAyar().hak
+            && carkAyar().get('sifirTur', -1) != carkAyar().tur
+            && id == string(carkAyar().tur) + '_' + request.auth.uid + '_s' + string(request.resource.data.sira))
+          ||
+          (request.resource.data.cark == 'maximus'
+            && request.resource.data.keys().hasOnly(['uid', 'kullaniciAdi', 'cark', 'odul', 'maximusBileti', 'bilet', 'tarih', 'istendi'])
+            && request.resource.data.maximusBileti == false
+            && request.resource.data.bilet is string
+            && id == 'mx_' + request.resource.data.bilet
+            && get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.uid == request.auth.uid
+            && get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.maximusBileti == true
+            && (!('sifirZaman' in carkAyar())
+              || get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.tarih > carkAyar().sifirZaman))
+        );
+      // Kişi sadece "ödülü iste" diyebilir; admin sadece "verildi" işaretler.
+      allow update: if request.auth != null && (
+        (resource.data.uid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['istendi', 'istenmeTarihi'])
+          && request.resource.data.istendi == true
+          && request.resource.data.istenmeTarihi == request.time)
+        || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verildi']))
+      );
+      allow delete: if isAdmin();
+    }
+  }
+}

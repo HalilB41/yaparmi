@@ -9,6 +9,7 @@
 //     maximus: true olan dilim → çıkarsa kullanıcı 1 Maximus bileti kazanır
 //     sifirTur → admin "herkesin hakkını sıfırla" dediği tur; o turda kimsenin hakkı kalmaz
 //     sifirZaman → o andan önce kazanılmış, kullanılmamış Maximus biletleri geçersiz
+//     kurallar → ["madde", ...] çark açılmadan önce "Okudum, anladım" dedirtilen maddeler
 //   cark_sonuclari/{id}  kime ne çıktı (admin panelinde hepsi görünür)
 //     Sınırsız: id = tur_uid_sN      Maximus: id = mx_<bilet belgesinin id'si>
 //     { uid, kullaniciAdi, cark, odul, maximusBileti, tur, sira | bilet, tarih, istendi, verildi }
@@ -26,7 +27,7 @@
   const durumEl = $("carkDurum");
   const odulListe = $("odulListe");
 
-  let ayarlar = { acik: false, tur: 0, hak: 1, sinirsiz: [], maximus: [], sifirTur: -1, sifirMs: 0 };
+  let ayarlar = { acik: false, tur: 0, hak: 1, sinirsiz: [], maximus: [], sifirTur: -1, sifirMs: 0, kurallar: [] };
   let profile = null;
   let authCozuldu = false;
   let sonuclar = []; // kullanıcının kendi sonuçları
@@ -216,6 +217,7 @@
 
     await dondur(cark, index);
     donuyor = false;
+    sayfaGuncelle();
     dilimleriGuncelle();
     arayuzGuncelle();
     modalAc(docId, veri);
@@ -390,14 +392,55 @@
     konfetiAnim = requestAnimationFrame(kare);
   }
 
+  // ---------------- Çark kuralları ("Okudum, anladım") ----------------
+  // Admin cark/ayarlar.kurallar'a madde yazdıysa çark, kişi onaylayana kadar açılmaz.
+  // Onay bu tarayıcıda hatırlanır; admin maddeleri değiştirirse yeniden sorulur.
+  const kuralKutu = $("carkKurallar");
+  const kuralListe = $("carkKuralListe");
+  const kuralOnay = $("carkKuralOnay");
+  let ayarlarGeldi = false;
+  let oturumOnayi = null; // localStorage çalışmazsa bu sayfa açıkken hatırla
+
+  function kuralAnahtar() { return "yaparmi_cark_kural_" + (profile ? profile.uid : ""); }
+  function kuralImza() { return JSON.stringify(ayarlar.kurallar); }
+  function kurallarOnaylandi() {
+    if (!ayarlar.kurallar.length) return true;
+    if (oturumOnayi === kuralAnahtar() + kuralImza()) return true;
+    try { return localStorage.getItem(kuralAnahtar()) === kuralImza(); } catch { return false; }
+  }
+  function kurallariCiz() {
+    kuralListe.innerHTML = "";
+    ayarlar.kurallar.forEach((m) => {
+      const li = document.createElement("li");
+      li.textContent = m;
+      kuralListe.appendChild(li);
+    });
+  }
+  kuralOnay.addEventListener("click", () => {
+    oturumOnayi = kuralAnahtar() + kuralImza();
+    try { localStorage.setItem(kuralAnahtar(), kuralImza()); } catch {}
+    sayfaGuncelle();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
   // ---------------- Giriş kontrolü ----------------
   function sayfaGuncelle() {
-    if (profile) {
+    if (profile && ayarlarGeldi) {
       kapi.hidden = true;
-      icerik.hidden = false;
+      if (donuyor) return; // çark dönerken ekran değişmesin
+      const onayli = kurallarOnaylandi();
+      kuralKutu.hidden = onayli;
+      icerik.hidden = !onayli;
       return;
     }
+    kuralKutu.hidden = true;
     icerik.hidden = true;
+    if (profile) { // ayarlar daha gelmedi
+      kapi.hidden = false;
+      girisBtn.hidden = true;
+      kapiYazi.textContent = "Yükleniyor…";
+      return;
+    }
     kapi.hidden = false;
     const bekliyor = !authCozuldu || (auth && auth.currentUser && !auth.currentUser.isAnonymous);
     girisBtn.hidden = bekliyor;
@@ -443,7 +486,14 @@
         maximus: v.maximus || [],
         sifirTur: Number.isInteger(v.sifirTur) ? v.sifirTur : -1,
         sifirMs: v.sifirZaman && v.sifirZaman.toMillis ? v.sifirZaman.toMillis() : 0,
+        kurallar: (Array.isArray(v.kurallar) ? v.kurallar : [])
+          .filter((s) => typeof s === "string" && s.trim())
+          .map((s) => s.trim().slice(0, 300))
+          .slice(0, 10),
       };
+      ayarlarGeldi = true;
+      kurallariCiz();
+      sayfaGuncelle();
       dilimleriGuncelle();
       odulleriCiz();
       arayuzGuncelle();
