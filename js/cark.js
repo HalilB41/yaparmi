@@ -7,6 +7,8 @@
 //     tur      → admin çarkı her açtığında 1 artar; haklar her turda yenilenir
 //     hak      → bir kullanıcının bir turda Sınırsız Çark'ı kaç kez çevirebileceği
 //     maximus: true olan dilim → çıkarsa kullanıcı 1 Maximus bileti kazanır
+//     sifirTur → admin "herkesin hakkını sıfırla" dediği tur; o turda kimsenin hakkı kalmaz
+//     sifirZaman → o andan önce kazanılmış, kullanılmamış Maximus biletleri geçersiz
 //   cark_sonuclari/{id}  kime ne çıktı (admin panelinde hepsi görünür)
 //     Sınırsız: id = tur_uid_sN      Maximus: id = mx_<bilet belgesinin id'si>
 //     { uid, kullaniciAdi, cark, odul, maximusBileti, tur, sira | bilet, tarih, istendi, verildi }
@@ -24,7 +26,7 @@
   const durumEl = $("carkDurum");
   const odulListe = $("odulListe");
 
-  let ayarlar = { acik: false, tur: 0, hak: 1, sinirsiz: [], maximus: [] };
+  let ayarlar = { acik: false, tur: 0, hak: 1, sinirsiz: [], maximus: [], sifirTur: -1, sifirMs: 0 };
   let profile = null;
   let authCozuldu = false;
   let sonuclar = []; // kullanıcının kendi sonuçları
@@ -118,6 +120,7 @@
     return liste.filter((s) => s.cark === "sinirsiz" && s.tur === ayarlar.tur);
   }
   function kalanHak(liste = sonuclar) {
+    if (ayarlar.sifirTur === ayarlar.tur) return 0;
     return Math.max(0, (ayarlar.hak || 1) - buTurdakiSinirsizlar(liste).length);
   }
   function siradakiSira() {
@@ -125,9 +128,13 @@
     for (let i = 0; i < (ayarlar.hak || 1); i++) if (!kullanilan.has(i)) return i;
     return -1;
   }
+  // Admin sıfırlamadan önce kazanılmış bilet geçersiz. (tarihMs 0 = az önce yazıldı, sunucu saati henüz gelmedi → geçerli)
+  function biletSifirlandi(s) {
+    return ayarlar.sifirMs > 0 && s.tarihMs > 0 && s.tarihMs <= ayarlar.sifirMs;
+  }
   function kullanilmamisBiletler(liste = sonuclar) {
     const kullanilan = new Set(liste.filter((s) => s.cark === "maximus").map((s) => s.bilet));
-    return liste.filter((s) => s.cark === "sinirsiz" && s.maximusBileti && !kullanilan.has(s.id));
+    return liste.filter((s) => s.cark === "sinirsiz" && s.maximusBileti && !kullanilan.has(s.id) && !biletSifirlandi(s));
   }
 
   function arayuzGuncelle() {
@@ -299,7 +306,7 @@
       sag.className = "odul-sag";
       if (s.maximusBileti) {
         sag.innerHTML = '<span class="odul-etiket"></span>';
-        sag.firstChild.textContent = kullanilanBilet.has(s.id) ? "Kullanıldı" : "Kullanılmadı";
+        sag.firstChild.textContent = kullanilanBilet.has(s.id) ? "Kullanıldı" : biletSifirlandi(s) ? "Sıfırlandı" : "Kullanılmadı";
       } else if (s.verildi) {
         sag.innerHTML = '<span class="odul-etiket is-verildi">✅ Verildi</span>';
       } else if (s.istendi) {
@@ -434,8 +441,11 @@
         hak: Number.isInteger(v.hak) && v.hak > 0 ? v.hak : 1,
         sinirsiz: v.sinirsiz || [],
         maximus: v.maximus || [],
+        sifirTur: Number.isInteger(v.sifirTur) ? v.sifirTur : -1,
+        sifirMs: v.sifirZaman && v.sifirZaman.toMillis ? v.sifirZaman.toMillis() : 0,
       };
       dilimleriGuncelle();
+      odulleriCiz();
       arayuzGuncelle();
     },
     (err) => {

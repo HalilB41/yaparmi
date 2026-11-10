@@ -312,6 +312,7 @@ service cloud.firestore {
             && request.resource.data.sira is int
             && request.resource.data.sira >= 0
             && request.resource.data.sira < carkAyar().hak
+            && carkAyar().get('sifirTur', -1) != carkAyar().tur
             && id == string(carkAyar().tur) + '_' + request.auth.uid + '_s' + string(request.resource.data.sira))
           ||
           (request.resource.data.cark == 'maximus'
@@ -320,7 +321,9 @@ service cloud.firestore {
             && request.resource.data.bilet is string
             && id == 'mx_' + request.resource.data.bilet
             && get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.uid == request.auth.uid
-            && get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.maximusBileti == true)
+            && get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.maximusBileti == true
+            && (!('sifirZaman' in carkAyar())
+              || get(/databases/$(database)/documents/cark_sonuclari/$(request.resource.data.bilet)).data.tarih > carkAyar().sifirZaman))
         );
       // Kişi sadece "ödülü iste" diyebilir; admin sadece "verildi" işaretler.
       allow update: if request.auth != null && (

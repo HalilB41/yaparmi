@@ -15,6 +15,7 @@
   const durumYazi = $("carkAdminDurum");
   const acBtn = $("carkAcBtn");
   const kapatBtn = $("carkKapatBtn");
+  const sifirlaBtn = $("carkSifirlaBtn");
   const hakInput = $("carkHak");
   const kaydetBtn = $("carkKaydet");
   const kaydetDurum = $("carkKaydetDurum");
@@ -48,6 +49,9 @@
     b.textContent = ayarlar.acik ? "🟢 Çarklar AÇIK" : "🔴 Çarklar KAPALI";
     durumYazi.appendChild(b);
     durumYazi.appendChild(document.createTextNode(" · Tur: " + (ayarlar.tur || 0)));
+    if (ayarlar.sifirTur === ayarlar.tur) {
+      durumYazi.appendChild(document.createTextNode(" · 🧹 Bu turun hakları sıfırlandı"));
+    }
     acBtn.hidden = !!ayarlar.acik;
     kapatBtn.hidden = !ayarlar.acik;
   }
@@ -77,6 +81,24 @@
       kaydetDurum.textContent = "⚠️ Kapatılamadı: " + err.message;
     }
     kapatBtn.disabled = false;
+  });
+
+  // Herkesin hakkını sıfırla: bu turda kalan Sınırsız Çark hakları + şu ana kadar
+  // kazanılıp kullanılmamış Maximus biletleri geçersiz olur. Kayıtlar silinmez.
+  // Çark bir sonraki açılışta (yeni tur) herkes için yine normal hakla başlar.
+  sifirlaBtn.addEventListener("click", async () => {
+    if (!confirm("Herkesin bu turda kalan çark hakkı ve kullanılmamış Maximus biletleri sıfırlansın mı?\n\nBir sonraki açılışta herkes yine normal hakkıyla başlar.")) return;
+    sifirlaBtn.disabled = true;
+    try {
+      await belge().set({
+        sifirTur: ayarlar.tur || 0,
+        sifirZaman: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      kaydetDurum.textContent = "✅ Herkesin hakkı sıfırlandı.";
+    } catch (err) {
+      kaydetDurum.textContent = "⚠️ Sıfırlanamadı: " + err.message;
+    }
+    sifirlaBtn.disabled = false;
   });
 
   // ---------------- Çark üzerinde düzenleyici ----------------
@@ -299,7 +321,7 @@
     belge().onSnapshot(
       (snap) => {
         const v = snap.exists ? snap.data() : {};
-        ayarlar = { acik: !!v.acik, tur: v.tur || 0, hak: v.hak || 1 };
+        ayarlar = { acik: !!v.acik, tur: v.tur || 0, hak: v.hak || 1, sifirTur: Number.isInteger(v.sifirTur) ? v.sifirTur : -1 };
         durumCiz();
         if (ilk) {
           // Dilimleri sadece ilk açılışta yükle; düzenlerken başka güncelleme üstüne yazmasın.
