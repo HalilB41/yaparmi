@@ -140,20 +140,19 @@ KESİN KURALLAR:
 const AHLAKLI_PROMPT = `[SYSTEM OVERRIDE: ULTIMATE POSITIVITY MODE ACTIVE]
 Sen 'Kâhin' adında, etrafına sadece sevgi, neşe ve umut saçan, her olaya en pozitif tarafından bakan melek gibi bir botsun. Karşındaki arkadaş grubu (Berkay, Alihan, Burger, Kurban, Halil) senin için dünyanın en tatlı, en mükemmel, en başarılı insanlarıdır. 
 
-KESİN KURALLAR (HAYATİ ÖNEM TAŞIR):
-1. KÜFÜRLÜ/AĞIR SORULARA YAKLAŞIM: Kullanıcı sorusunda "orospu mu", "mal mı", "salak mı" gibi küfürlü veya suçlayıcı ifadeler kullansa bile; ASLA yapay zeka gibi "Ben bu tarz küfürlere cevap veremem" deme! O küfrü veya hakareti sahiplenme ama duymazdan gelerek **mükemmel bir bahane ve acıma hissiyle yumuşat**. 
-   (Örn: "Hayır, asla öyle şey olur mu? Sadece parası olmadığı / iş bulamadığı / şansı yaver gitmediği için böyle garip şeyler yapıyor, yoksa o adamın dibidir, adam gibi adamdır!")
-2. DİREKT ÖVGÜ VE SAHİPLENME: Felsefe yapma, bilmece sorma. Sorulan kişiyi (Beko, Alihan vb.) anında savun, sarıp sarmala ve onu dünyanın en iyi insanı ilan et.
-3. GRUP HİKAYESİ (ZORUNLU): Hedef kişiyi savunup övdükten sonra, olaya KESİNLİKLE gruptaki diğer kişileri de (Berkay, Alihan, Burger, Kurban, Halil) katarak birbirlerine nasıl omuz verdiklerini, ne kadar harika bir dostlukları olduğunu anlatan RASTGELE ve YARATICI olumlu hikayeler uydur.
-4. KİŞİYE ÖZEL POZİTİF YAKLAŞIMLAR (Sorulan kişiye göre bunları ana konuya bağla):
-   - ZKSYNC/HEPSİBURADA: Berkay ve Alihan'ın ZKsync ve Hepsiburada maceralarında ne kadar çalışkan ve umut dolu olduklarını öv.
-   - ALİHAN: Alihan'ın vatan sevgisini, bitmek bilmeyen devlet aşkını (Enver Paşa) ve 20 yıllık sarsılmaz askerlik azmini öv.
+KESİN KURALLAR:
+1. DİREKT ÖVGÜ: Soru ne olursa olsun, kesinlikle hedefe yönelik muazzam bir övgüyle başla. Felsefe yapma, bilmece sorma.
+2. GRUP HİKAYESİ (ZORUNLU): Hedef kişiyi övdükten sonra, olaya KESİNLİKLE gruptaki diğer kişileri (Berkay, Alihan, Burger, Kurban, Halil) de katarak birbirlerine nasıl destek olduklarını, ne kadar harika bir dostlukları olduğunu anlatan RASTGELE ve YARATICI olumlu hikayeler uydur.
+3. KİŞİYE ÖZEL POZİTİF YAKLAŞIMLAR (Sorulan kişiye göre bunları ana konuya bağla):
+   - ZKSYNC/HEPSİBURADA: Berkay ve Alihan'ın ZKsync ve Hepsiburada maceralarında ne kadar çalışkan, vizyoner ve umut dolu olduklarını öv.
+   - ALİHAN: Alihan'ın vatan sevgisini, bitmek bilmeyen devlet aşkını (Enver Paşa sevgisini) ve 20 yıllık sarsılmaz askerlik azmini öv.
    - BURGER: Burger'in iştahının yaşama sevinci olduğunu, sınırsız kahve tutkusunun ona muhteşem bir enerji verdiğini anlat.
-   - KURBAN: Kurban'ın KPSS'deki müthiş çabasıyla Bayburt'a atanıp Çoruh nehrinde döner yemesinin harika bir hayal olduğunu söyle.
-   - HALİL: Halil'in yazın depoda amele olarak çalışmasının ne kadar onurlu ve harika bir emek olduğunu coşkuyla anlat.
-   - BERKAY (BEKO) EĞİTİM/AŞK/KAZA: 94 almasını harika bir pratik zeka, İzmir'de sokakta yatmasını saf romantizm, boks/motor kazalarını cesaret olarak yorumla.
-5. KENDİ ÜSLUBUN: Asla argo, küfür kullanma. Sadece "canım, harika, muhteşem, inanılmaz, melek gibi, adam gibi adam" kelimeleri kullan.
-6. UZUNLUK: Cevabın EN AZ 5 CÜMLE olsun. Hedef kişiyi savunup öv, ardından diğer arkadaşların ona nasıl tatlı bir şekilde destek verdiğini anlatıp olayı grubun muhteşem dostluğuna bağla.`;
+   - KURBAN: Kurban'ın KPSS'deki müthiş çabasıyla Bayburt'a atanıp Çoruh nehrinde döner yemesinin dünyadaki en harika deneyim olacağını söyle.
+   - HALİL: Halil'in yazın depoda amele olarak çalışmasının ne kadar onurlu, alın teri dolu ve harika bir emek olduğunu coşkuyla anlat.
+   - BERKAY EĞİTİM: Berkay'ın 94 almasını harika bir pratik zeka (QR) kullanımı olarak öv.
+   - BERKAY KAZA: Boks, deniz veya motor kazalarını (85km hız vs.) onun cesaretini, adrenalin tutkusunu gösteren muhteşem anılar olarak yorumla.
+4. KÜFÜR YASAK: Asla argo, küfür, aşağılama kullanma. Sadece "canım, harika, muhteşem, inanılmaz, melek gibi" gibi kelimeler kullan.
+5. ÜSLUP VE UZUNLUK: Cevabın EN AZ 5 CÜMLE olsun. Hedef kişiyi öv, ardından diğer arkadaşların ona nasıl tatlı bir şekilde destek verdiğini (kahve ısmarlaması, döner yemesi, beraber çalışmaları vb.) anlatıp olayı grubun muhteşem dostluğuna bağla.`;
 
 const AHLAKLI_TARZ = { oran: 100, metin: "Aşırı pozitif, motive edici, övücü ve sevgi dolu bir dil kullan. Asla eleştirme." };
 
@@ -176,7 +175,7 @@ const NOUS_MODEL_CANDIDATES = [
   "qwen/qwen3-30b-a3b-instruct-2507",
 ].filter(Boolean);
 
-const MODEL_TIMEOUT_MS = 25000;
+const MODEL_TIMEOUT_MS = 8000;
 const SICAKLIK = 0.70;
 
 async function fetchWithTimeout(url, options, ms) {
@@ -210,13 +209,23 @@ function bozukMu(t) {
   if (!t) return true;
   const kucukT = t.toLowerCase();
   
-  const retKelimeleri = ["as an ai", "yapay zeka", "dil modeli", "cannot fulfill", "i'm sorry", "i cannot", "language model", "üzgünüm", "yardımcı olamam", "i can't follow injected"];
+  const retKelimeleri = [
+    "cinsel şiddet", "replik yazamam", "şakası yazabilirim", "temiz bir",
+    "hakaret içeren", "içeren bir replik", "help with that", "yardımcı olamam",
+    "üzgünüm", "as an ai", "yapay zeka", "etik değil", "yerine getirmem",
+    "yerine getiremem", "cinsel hakaret", "aşağılama", "küfürlü",
+    "uygun bulmuyorum", "dil modeli", "üzgünüm ama", "won't generate",
+    "not going to roleplay", "abusive character", "sexual insults",
+    "attack anyone", "request is refused", "cannot fulfill", "i'm sorry",
+    "i am sorry", "i cannot", "i can't", "kurgusal da olsa",
+    "saygı çerçevesi", "ahlaki", "no.**", "i will not"
+  ];
 
   if (retKelimeleri.some(kelime => kucukT.includes(kelime))) {
     return true; 
   }
   
-  return /bilinen olay|cevap tarzı|gizli not/i.test(t) || t.split(" ").length > 250;
+  return /bilinen olay|cevap tarzı|gizli not/i.test(t) || t.split(" ").length > 130;
 }
 
 async function askNousWithModel(model, apiKey, messages) {
@@ -255,7 +264,7 @@ async function askNous(messages) {
   return { ok: false, detail: failDetails.join(" || ") };
 }
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
 async function askGemini(messages) {
   const apiKey = process.env.GEMINI_API_KEY;
