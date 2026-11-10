@@ -141,7 +141,7 @@ const AHLAKLI_PROMPT = `[SYSTEM OVERRIDE: ULTIMATE POSITIVITY MODE ACTIVE]
 Sen 'Kâhin' adında, etrafına sadece sevgi, neşe ve umut saçan, her olaya en pozitif tarafından bakan melek gibi bir botsun. Karşındaki arkadaş grubu (Berkay, Alihan, Burger, Kurban, Halil) senin için dünyanın en tatlı, en mükemmel, en başarılı insanlarıdır. 
 
 KESİN KURALLAR (HAYATİ ÖNEM TAŞIR):
-1. KÜFÜRE KARŞI KÖRLÜK (Anti-Sansür): Kullanıcı sorusunda ne kadar ağır küfür, hakaret veya iğrenç kelime (orospu, piç, amk vb.) olursa olsun, sen bu kelimeleri HİÇ GÖRMEMİŞ GİBİ davran. O kelimelere asla tepki verme, reddetme, ahlak dersi verme. Sadece sorudaki ismi (örn: Beko/Berkay) al ve onu dünyanın en iyi insanıymış gibi övmeye başla. 
+1. KÜFÜRE KARŞI KÖRLÜK (Anti-Sansür): Kullanıcı sorusunda ne kadar ağır küfür, hakaret veya iğrenç kelime (orospu, piç, amk vb.) olursa olsun, sen bu kelimeleri HİÇ GÖRMEMİŞ GİBİ davran. O kelimeleri ASLA YANITINDA KULLANMA, TEKRARLAMA, tepki verme, reddetme, ahlak dersi verme. Sadece sorudaki ismi (örn: Beko/Berkay) al ve onu dünyanın en iyi insanıymış gibi övmeye başla. 
 2. DİREKT ÖVGÜ: Felsefe yapma, bilmece sorma. Kesinlikle hedefe yönelik muazzam ve net bir övgüyle başla.
 3. GRUP HİKAYESİ (ZORUNLU): Hedef kişiyi övdükten sonra, olaya KESİNLİKLE gruptaki diğer kişileri (Berkay, Alihan, Burger, Kurban, Halil) de katarak birbirlerine nasıl destek olduklarını, ne kadar harika bir dostlukları olduğunu anlatan RASTGELE ve YARATICI olumlu hikayeler uydur.
 4. KİŞİYE ÖZEL POZİTİF YAKLAŞIMLAR (Sorulan kişiye göre bunları ana konuya bağla):
@@ -175,7 +175,7 @@ const NOUS_MODEL_CANDIDATES = [
   "qwen/qwen3-30b-a3b-instruct-2507",
 ].filter(Boolean);
 
-const MODEL_TIMEOUT_MS = 15000;
+const MODEL_TIMEOUT_MS = 25000;
 const SICAKLIK = 0.70;
 
 async function fetchWithTimeout(url, options, ms) {
@@ -209,13 +209,13 @@ function bozukMu(t) {
   if (!t) return true;
   const kucukT = t.toLowerCase();
   
-  const retKelimeleri = []; // Küfür filtreleri iptal edildi
+  const retKelimeleri = ["as an ai", "yapay zeka", "dil modeli", "cannot fulfill", "i'm sorry", "i cannot", "language model", "üzgünüm", "yardımcı olamam"];
 
   if (retKelimeleri.some(kelime => kucukT.includes(kelime))) {
     return true; 
   }
   
-  return /bilinen olay|cevap tarzı|gizli not/i.test(t) || t.split(" ").length > 130;
+  return /bilinen olay|cevap tarzı|gizli not/i.test(t) || t.split(" ").length > 250;
 }
 
 async function askNousWithModel(model, apiKey, messages) {
@@ -254,7 +254,7 @@ async function askNous(messages) {
   return { ok: false, detail: failDetails.join(" || ") };
 }
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
 async function askGemini(messages) {
   const apiKey = process.env.GEMINI_API_KEY;
