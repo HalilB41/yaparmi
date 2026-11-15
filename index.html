@@ -126,6 +126,23 @@
     </div>
   </main>
 
+  <!-- ULTRA MAXİMUS SINIRSIZ BOT kuralları: kabul edilmeden bot seçilemez -->
+  <div class="cark-modal" id="maximusKural" role="dialog" aria-modal="true" aria-labelledby="maximusKuralBaslik" hidden>
+    <div class="card cark-modal-kart cark-kurallar" style="width:min(100%,560px)">
+      <div class="cark-kapi-ico">📜</div>
+      <h2 id="maximusKuralBaslik">ULTRA MAXİMUS SINIRSIZ BOT · Kurallar</h2>
+      <ol class="cark-kural-liste">
+        <li>Bu bot, grubun WhatsApp sohbet geçmişinden derlenen olaylarla eğitilmiştir. Verdiği cevaplar tamamen mizah amaçlıdır; gerçekliği <b>bağlamaz</b>, kimseyi temsil etmez.</li>
+        <li>Cevaplar ağır küfür, argo ve hakaret içerir (+18). Alınganlık yapacaksan, alıntılayıp kavga çıkaracaksan bu botu kullanma.</li>
+        <li>Cevaplar yapay zeka tarafından anlık üretilir, sahibi tarafından yazılmaz ve kaydedilip ciddiye alınamaz. Devam edersen bunları kabul etmiş sayılırsın.</li>
+      </ol>
+      <div class="cark-modal-butonlar">
+        <button type="button" class="btn" id="maximusKuralOnay">✅ Okudum, kabul ediyorum</button>
+        <button type="button" class="link-btn" id="maximusKuralKapat">Vazgeç</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase (compat SDK) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>

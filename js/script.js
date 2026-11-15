@@ -116,17 +116,51 @@ async function getAnswer(question) {
 
 // ---------------- Bot seçici (Sınırsız / Ahlaklı) ----------------
 
+function botSec(btn) {
+  secilenBot = btn.dataset.bot === "ahlakli" ? "ahlakli" : "sinirsiz";
+  document.querySelectorAll(".bot-btn").forEach((b) => {
+    const aktif = b === btn;
+    b.classList.toggle("active", aktif);
+    b.setAttribute("aria-pressed", aktif ? "true" : "false");
+  });
+  lastAskedQuestion = null;
+}
+
+// ULTRA MAXİMUS SINIRSIZ BOT (kodda "ahlakli"): kurallar kabul edilmeden seçilemez.
+// Onay bu tarayıcıda hatırlanır.
+const MAXIMUS_KURAL_ANAHTAR = "yaparmi_maximus_kural_v1";
+const maximusKuralEl = document.getElementById("maximusKural");
+let maximusKuralOnayli = false;
+try { maximusKuralOnayli = localStorage.getItem(MAXIMUS_KURAL_ANAHTAR) === "1"; } catch {}
+let bekleyenBotBtn = null;
+
 document.querySelectorAll(".bot-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
-    secilenBot = btn.dataset.bot === "ahlakli" ? "ahlakli" : "sinirsiz";
-    document.querySelectorAll(".bot-btn").forEach((b) => {
-      const aktif = b === btn;
-      b.classList.toggle("active", aktif);
-      b.setAttribute("aria-pressed", aktif ? "true" : "false");
-    });
-    lastAskedQuestion = null;
+    if (btn.dataset.bot === "ahlakli" && !maximusKuralOnayli && maximusKuralEl) {
+      bekleyenBotBtn = btn;
+      maximusKuralEl.hidden = false;
+      const onay = document.getElementById("maximusKuralOnay");
+      if (onay) onay.focus();
+      return;
+    }
+    botSec(btn);
   });
 });
+
+if (maximusKuralEl) {
+  const kapat = () => { maximusKuralEl.hidden = true; bekleyenBotBtn = null; };
+  document.getElementById("maximusKuralOnay").addEventListener("click", () => {
+    maximusKuralOnayli = true;
+    try { localStorage.setItem(MAXIMUS_KURAL_ANAHTAR, "1"); } catch {}
+    const btn = bekleyenBotBtn;
+    maximusKuralEl.hidden = true;
+    bekleyenBotBtn = null;
+    if (btn) botSec(btn);
+  });
+  document.getElementById("maximusKuralKapat").addEventListener("click", kapat);
+  maximusKuralEl.addEventListener("click", (e) => { if (e.target === maximusKuralEl) kapat(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !maximusKuralEl.hidden) kapat(); });
+}
 
 // ---------------- Typewriter efekti (Google Çeviri tarzı) ----------------
 
