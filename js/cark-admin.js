@@ -27,12 +27,14 @@
   const sekmeSay = $("admCarkSay");
   const molaButonlar = $("carkMolaButonlar");
   const molaDurum = $("carkMolaDurum");
+  const molaPaneller = $("carkMolaPaneller");
   const MOLA_SAYISI = 5;
 
   let ayarlar = { acik: false, tur: 0, hak: 1, aktifMola: 0 };
   let sinirsiz = [];
   let maximus = [];
   let basladi = false;
+  let editorlerHazir = false;
   const belge = () => db.collection("cark").doc("ayarlar");
 
   function tarihYaz(ts) {
@@ -249,7 +251,7 @@
         listeEl.appendChild(b);
       });
     }
-    function yenile() { cizCark(); formDoldur(); listeCiz(); }
+    function yenile() { cizCark(); formDoldur(); listeCiz(); molaPanelCiz(); }
     function sec(i) { ed.secili = i; yenile(); if (i != null) adIn.focus(); }
 
     tuval.addEventListener("click", (e) => {
@@ -305,15 +307,92 @@
     if (mxBtn) mxBtn.addEventListener("click", () => ekle({ ad: "Sınırsız Maximus Çarkı", agirlik: 5, maximus: true }));
 
     ed.yukle = (l) => { ed.liste = l; ed.secili = null; yenile(); };
+    ed.yenile = yenile;
     yenile();
     return ed;
   }
 
   const sinirsizEd = editorKur($("carkSinirsizEditor"), true, CarkCiz.RENKLER);
   const maximusEd = editorKur($("carkMaximusEditor"), false, CarkCiz.MAXIMUS_RENKLER);
+  editorlerHazir = true;
   function hepsiniCiz() {
     sinirsizEd.yukle(sinirsiz);
     maximusEd.yukle(maximus);
+  }
+
+  // ---------------- Mola panelleri (açılır-kapanır) ----------------
+  // Her mola için tüm dilimler listelenir; buradan işaretlemek editördeki
+  // kutularla aynı listeyi değiştirir. Kaydetmek için "Dilimleri ve hakkı kaydet"
+  // ya da paneldeki "Kaydet" düğmesi.
+  const acikPaneller = new Set();
+  function molaPanelCiz() {
+    if (!editorlerHazir || !molaPaneller) return;
+    molaPaneller.innerHTML = "";
+    const gruplar = [
+      { ad: "🎡 Sınırsız Çark", ed: sinirsizEd },
+      { ad: "🌟 Maximus Çarkı", ed: maximusEd },
+    ];
+    for (let m = 1; m <= MOLA_SAYISI; m++) {
+      const det = document.createElement("details");
+      det.open = acikPaneller.has(m);
+      det.addEventListener("toggle", () => { if (det.open) acikPaneller.add(m); else acikPaneller.delete(m); });
+      const sum = document.createElement("summary");
+      const say = gruplar.reduce((t, g) => t + g.ed.liste.filter((d) => Array.isArray(d.mola) && d.mola.includes(m)).length, 0);
+      sum.textContent = "⏸️ Mola " + m + (ayarlar.aktifMola === m ? " (AKTİF)" : "");
+      const sayEl = document.createElement("span");
+      sayEl.className = "mp-say";
+      sayEl.textContent = say ? say + " dilim seçili" : "seçili dilim yok → normal şans";
+      sum.appendChild(sayEl);
+      det.appendChild(sum);
+      const ic = document.createElement("div");
+      ic.className = "mp-ic";
+      gruplar.forEach((g) => {
+        if (!g.ed.liste.length) return;
+        const h = document.createElement("p");
+        h.className = "mp-baslik";
+        h.textContent = g.ad;
+        ic.appendChild(h);
+        const liste = document.createElement("div");
+        liste.className = "mp-liste";
+        g.ed.liste.forEach((d, i) => {
+          if (!Array.isArray(d.mola)) d.mola = [];
+          const lab = document.createElement("label");
+          const secili = d.mola.includes(m);
+          lab.className = (secili ? "on" : "") + (d.maximus ? " mx" : "");
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.checked = secili;
+          cb.addEventListener("change", () => {
+            if (cb.checked) { if (!d.mola.includes(m)) d.mola.push(m); }
+            else d.mola = d.mola.filter((x) => x !== m);
+            g.ed.yenile();
+          });
+          lab.appendChild(cb);
+          lab.appendChild(document.createTextNode((d.maximus ? "🌟 " : "") + (d.ad || "(isimsiz " + (i + 1) + ")")));
+          liste.appendChild(lab);
+        });
+        ic.appendChild(liste);
+      });
+      const alt = document.createElement("div");
+      alt.className = "mp-alt";
+      const kb = document.createElement("button");
+      kb.type = "button";
+      kb.className = "admin-btn publish se-small";
+      kb.textContent = "💾 Kaydet";
+      kb.onclick = () => kaydetBtn.click();
+      alt.appendChild(kb);
+      if (ayarlar.aktifMola !== m) {
+        const ab = document.createElement("button");
+        ab.type = "button";
+        ab.className = "admin-btn reject se-small";
+        ab.textContent = "Bu molayı aktif et";
+        ab.onclick = () => { const b = molaButonlar && molaButonlar.querySelector('button[data-mola="' + m + '"]'); if (b) b.click(); };
+        alt.appendChild(ab);
+      }
+      ic.appendChild(alt);
+      det.appendChild(ic);
+      molaPaneller.appendChild(det);
+    }
   }
 
   kaydetBtn.addEventListener("click", async () => {
@@ -407,6 +486,7 @@
         };
         durumCiz();
         molaCiz();
+        molaPanelCiz();
         if (ilk) {
           // Dilimleri sadece ilk açılışta yükle; düzenlerken başka güncelleme üstüne yazmasın.
           ilk = false;
