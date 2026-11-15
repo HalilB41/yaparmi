@@ -10,6 +10,9 @@
 //     sifirTur → admin "herkesin hakkını sıfırla" dediği tur; o turda kimsenin hakkı kalmaz
 //     sifirZaman → o andan önce kazanılmış, kullanılmamış Maximus biletleri geçersiz
 //     kurallar → ["madde", ...] çark açılmadan önce "Okudum, anladım" dedirtilen maddeler
+//     aktifMola → 0 = yok, 1-5 = o mola aktif. Dilimlerdeki mola: [1,3] gibi listeyle eşleşir:
+//                 mola aktifken sonuç SADECE o molaya işaretli dilimlerden rastgele çıkar
+//                 (çark görünümü, dilim sayısı ve şans yazıları aynen kalır).
 //   cark_sonuclari/{id}  kime ne çıktı (admin panelinde hepsi görünür)
 //     Sınırsız: id = tur_uid_sN      Maximus: id = mx_<bilet belgesinin id'si>
 //     { uid, kullaniciAdi, cark, odul, maximusBileti, tur, sira | bilet, tarih, istendi, verildi }
@@ -27,7 +30,7 @@
   const durumEl = $("carkDurum");
   const odulListe = $("odulListe");
 
-  let ayarlar = { acik: false, tur: 0, hak: 1, sinirsiz: [], maximus: [], sifirTur: -1, sifirMs: 0, kurallar: [] };
+  let ayarlar = { acik: false, tur: 0, hak: 1, sinirsiz: [], maximus: [], sifirTur: -1, sifirMs: 0, kurallar: [], aktifMola: 0 };
   let profile = null;
   let authCozuldu = false;
   let sonuclar = []; // kullanıcının kendi sonuçları
@@ -43,8 +46,21 @@
         ad: d.ad.trim().slice(0, 80),
         agirlik: Math.max(0, Math.min(1000, Number(d.agirlik) || 0)),
         maximus: !!(maximusOlabilir && d.maximus),
+        mola: (Array.isArray(d.mola) ? d.mola : []).map(Number).filter((n) => n >= 1 && n <= 5),
       }))
       .filter((d) => d.agirlik > 0);
+  }
+
+  // Aktif mola varsa: o molaya işaretli dilimler arasından eşit şansla rastgele biri.
+  // O molada işaretli dilim yoksa (ya da mola yoksa) normal ağırlıklı seçim.
+  function dilimSec(dilimler) {
+    const mola = ayarlar.aktifMola;
+    if (mola > 0) {
+      const adaylar = [];
+      dilimler.forEach((d, i) => { if (d.mola.includes(mola)) adaylar.push(i); });
+      if (adaylar.length) return adaylar[Math.floor(Math.random() * adaylar.length)];
+    }
+    return agirlikliSec(dilimler);
   }
 
   function agirlikliSec(dilimler) {
@@ -177,7 +193,7 @@
     if (!cark.dilimler.length) return;
 
     let docId, veri;
-    const index = agirlikliSec(cark.dilimler);
+    const index = dilimSec(cark.dilimler);
     const dilim = cark.dilimler[index];
     const ortak = {
       uid: profile.uid,
@@ -490,6 +506,7 @@
           .filter((s) => typeof s === "string" && s.trim())
           .map((s) => s.trim().slice(0, 300))
           .slice(0, 10),
+        aktifMola: Number.isInteger(v.aktifMola) && v.aktifMola >= 1 && v.aktifMola <= 5 ? v.aktifMola : 0,
       };
       ayarlarGeldi = true;
       kurallariCiz();

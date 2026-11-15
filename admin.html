@@ -53,6 +53,19 @@
         <p class="muted">Her açışında yeni tur başlar ve herkesin Sınırsız Çark hakkı yenilenir. Maximus biletleri turdan tura kaybolmaz, çark açıkken kullanılır. "Herkesin hakkını sıfırla" bu turda kalan Sınırsız Çark haklarını ve kullanılmamış tüm Maximus biletlerini siler; çarkı bir sonraki açışında herkes yine normal hakkıyla başlar.</p>
         <p class="cark-admin-durum" id="carkAdminDurum">Yükleniyor…</p>
         <label class="cark-hak-label">Kişi başı Sınırsız Çark hakkı (her tur): <input type="number" id="carkHak" min="1" max="50" value="1" /></label>
+        <div class="cark-mola">
+          <b>⏸️ Aktif mola:</b>
+          <div class="cark-mola-butonlar" id="carkMolaButonlar">
+            <button type="button" class="admin-btn reject se-small" data-mola="0">Yok (normal şans)</button>
+            <button type="button" class="admin-btn reject se-small" data-mola="1">Mola 1</button>
+            <button type="button" class="admin-btn reject se-small" data-mola="2">Mola 2</button>
+            <button type="button" class="admin-btn reject se-small" data-mola="3">Mola 3</button>
+            <button type="button" class="admin-btn reject se-small" data-mola="4">Mola 4</button>
+            <button type="button" class="admin-btn reject se-small" data-mola="5">Mola 5</button>
+          </div>
+          <p class="muted cark-mola-not">Bir mola aktifken çark aynı görünür ama sonuç sadece o molaya işaretlediğin dilimlerden rastgele çıkar. Dilimleri aşağıdaki editörden seçip "Mola 1..5" kutularını işaretle. O molada hiç işaretli dilim yoksa normal şans işler.</p>
+          <p class="suggest-status" id="carkMolaDurum"></p>
+        </div>
       </div>
 
       <div class="panel card admin-section wide">

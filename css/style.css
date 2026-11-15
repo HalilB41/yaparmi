@@ -1533,6 +1533,14 @@ body.se-open { overflow: hidden; }
 .ce-yuzde { font-size: 1.1rem; color: var(--accent); }
 .ce-aciklama { margin: -6px 0 0; font-size: .82rem; }
 .ce-mx { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; }
+.ce-molalar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ce-molalar > span { font-size: .8rem; font-weight: 800; color: var(--ink-2); min-width: 108px; }
+.ce-molalar label { display: flex; align-items: center; gap: 4px; font-size: .85rem; font-weight: 700; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+.ce-chip .ce-chip-mola { opacity: .7; font-size: .7rem; margin-left: 4px; }
+.cark-mola { margin-top: 14px; padding: 14px; border-radius: 16px; background: var(--surface-2); display: flex; flex-direction: column; gap: 8px; }
+.cark-mola-butonlar { display: flex; flex-wrap: wrap; gap: 6px; }
+.cark-mola-butonlar .admin-btn.on { background: #e03131; color: #fff; border-color: #e03131; }
+.cark-mola-not { margin: 0; font-size: .82rem; }
 .ce-sil { align-self: flex-start; }
 .ce-arac { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .ce-arac span { font-size: .8rem; font-weight: 800; color: var(--ink-2); min-width: 108px; }

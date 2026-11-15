@@ -3,6 +3,7 @@
 //   - Çarkları aç / kapat (her açılış yeni tur = herkesin hakkı yenilenir)
 //   - Sınırsız Çark ve Sınırsız Maximus Çarkı dilimlerini düzenle
 //   - Kime ne çıktı (ödülü istesin istemesin) listesi, "Verildi" işareti
+//   - Mola 1-5: her dilime hangi molalarda çıkabileceği işaretlenir, üstten aktif mola seçilir
 // Veri yapısı için bkz. js/cark.js başındaki açıklama.
 // ============================================================
 (function () {
@@ -24,8 +25,11 @@
   const kaydetDurum = $("carkKaydetDurum");
   const tablo = $("carkSonucTablo");
   const sekmeSay = $("admCarkSay");
+  const molaButonlar = $("carkMolaButonlar");
+  const molaDurum = $("carkMolaDurum");
+  const MOLA_SAYISI = 5;
 
-  let ayarlar = { acik: false, tur: 0, hak: 1 };
+  let ayarlar = { acik: false, tur: 0, hak: 1, aktifMola: 0 };
   let sinirsiz = [];
   let maximus = [];
   let basladi = false;
@@ -42,6 +46,7 @@
         ad: String(d.ad).slice(0, 80),
         agirlik: Math.max(0, Math.min(1000, Math.round(Number(d.agirlik) || 0))),
         maximus: !!(maximusOlabilir && d.maximus),
+        mola: (Array.isArray(d.mola) ? d.mola : []).map(Number).filter((n) => n >= 1 && n <= MOLA_SAYISI),
       }));
   }
 
@@ -54,6 +59,9 @@
     durumYazi.appendChild(document.createTextNode(" · Tur: " + (ayarlar.tur || 0)));
     if (ayarlar.sifirTur === ayarlar.tur) {
       durumYazi.appendChild(document.createTextNode(" · 🧹 Bu turun hakları sıfırlandı"));
+    }
+    if (ayarlar.aktifMola) {
+      durumYazi.appendChild(document.createTextNode(" · ⏸️ Mola " + ayarlar.aktifMola + " aktif"));
     }
     acBtn.hidden = !!ayarlar.acik;
     kapatBtn.hidden = !ayarlar.acik;
@@ -104,6 +112,31 @@
     sifirlaBtn.disabled = false;
   });
 
+  // ---------------- Aktif mola ----------------
+  // cark/ayarlar.aktifMola = 0 (yok) | 1..5. Dilimlerin mola listesi dilimlerle birlikte kaydedilir.
+  function molaCiz() {
+    if (!molaButonlar) return;
+    molaButonlar.querySelectorAll("button").forEach((b) => {
+      b.classList.toggle("on", Number(b.dataset.mola) === (ayarlar.aktifMola || 0));
+    });
+  }
+  if (molaButonlar) molaButonlar.addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-mola]");
+    if (!b) return;
+    const mola = Number(b.dataset.mola) || 0;
+    molaButonlar.querySelectorAll("button").forEach((x) => { x.disabled = true; });
+    molaDurum.textContent = "Kaydediliyor…";
+    try {
+      await belge().set({ aktifMola: mola }, { merge: true });
+      molaDurum.textContent = mola
+        ? "✅ Mola " + mola + " aktif. Sonuçlar sadece Mola " + mola + " işaretli dilimlerden çıkacak."
+        : "✅ Mola kapalı, çark normal şansla dönüyor.";
+    } catch (err) {
+      molaDurum.textContent = "⚠️ Kaydedilemedi: " + err.message;
+    }
+    molaButonlar.querySelectorAll("button").forEach((x) => { x.disabled = false; });
+  });
+
   // ---------------- Çark kuralları ----------------
   // cark/ayarlar.kurallar = ["madde 1", "madde 2", ...]  (her satır bir madde)
   function kurallariOku() {
@@ -148,6 +181,9 @@
       '<input class="ce-sans" type="range" min="1" max="100" step="1" /></label>' +
       '<p class="ce-aciklama muted"></p>' +
       (maximusOlabilir ? '<label class="ce-mx"><input type="checkbox" /> 🌟 Bu dilim Maximus bileti versin</label>' : "") +
+      '<div class="ce-molalar"><span>⏸️ Hangi molada çıksın:</span>' +
+      Array.from({ length: MOLA_SAYISI }, (_, i) => '<label><input type="checkbox" class="ce-mola" value="' + (i + 1) + '" /> Mola ' + (i + 1) + "</label>").join("") +
+      "</div>" +
       '<div class="ce-arac">' +
       '<span>Araya ekle:</span>' +
       '<button type="button" class="admin-btn reject se-small ce-once">⬅️ Öncesine</button>' +
@@ -171,6 +207,7 @@
     const yuzde = q(".ce-yuzde");
     const aciklama = q(".ce-aciklama");
     const mxIn = q(".ce-mx input");
+    const molaIns = Array.from(kap.querySelectorAll(".ce-mola"));
     const listeEl = q(".ce-liste");
 
     function yuzdeHesap(i) {
@@ -192,6 +229,8 @@
       const kac = y > 0 ? Math.max(1, Math.round(100 / y)) : 0;
       aciklama.textContent = kac ? "Ortalama her " + kac + " çevirişte bir çıkar." : "";
       if (mxIn) mxIn.checked = !!d.maximus;
+      if (!Array.isArray(d.mola)) d.mola = [];
+      molaIns.forEach((c) => { c.checked = d.mola.includes(Number(c.value)); });
     }
     function listeCiz() {
       listeEl.innerHTML = "";
@@ -200,6 +239,12 @@
         b.type = "button";
         b.className = "ce-chip" + (i === ed.secili ? " on" : "") + (d.maximus ? " mx" : "");
         b.textContent = (d.maximus ? "🌟 " : "") + (d.ad || "(isimsiz)") + " · %" + Math.round(yuzdeHesap(i));
+        if (Array.isArray(d.mola) && d.mola.length) {
+          const m = document.createElement("span");
+          m.className = "ce-chip-mola";
+          m.textContent = "⏸" + d.mola.slice().sort().join(",");
+          b.appendChild(m);
+        }
         b.onclick = () => sec(i);
         listeEl.appendChild(b);
       });
@@ -224,6 +269,11 @@
       if (d.maximus && !d.ad.trim()) d.ad = "Sınırsız Maximus Çarkı";
       yenile();
     });
+    molaIns.forEach((c) => c.addEventListener("change", () => {
+      const d = ed.liste[ed.secili]; if (!d) return;
+      d.mola = molaIns.filter((x) => x.checked).map((x) => Number(x.value));
+      listeCiz();
+    }));
     q(".ce-sil").addEventListener("click", () => {
       if (ed.secili == null) return;
       ed.liste.splice(ed.secili, 1);
@@ -269,14 +319,14 @@
   kaydetBtn.addEventListener("click", async () => {
     sinirsiz = sinirsizEd.liste;
     maximus = maximusEd.liste;
-    const s = temiz(sinirsiz, true).filter((d) => d.ad.trim()).map((d) => ({ ad: d.ad.trim(), agirlik: d.agirlik, maximus: d.maximus }));
-    const m = temiz(maximus, false).filter((d) => d.ad.trim()).map((d) => ({ ad: d.ad.trim(), agirlik: d.agirlik }));
+    const s = temiz(sinirsiz, true).filter((d) => d.ad.trim()).map((d) => ({ ad: d.ad.trim(), agirlik: d.agirlik, maximus: d.maximus, mola: d.mola }));
+    const m = temiz(maximus, false).filter((d) => d.ad.trim()).map((d) => ({ ad: d.ad.trim(), agirlik: d.agirlik, mola: d.mola }));
     kaydetBtn.disabled = true;
     kaydetDurum.textContent = "Kaydediliyor…";
     try {
       await belge().set({ sinirsiz: s, maximus: m, hak: hakDegeri() }, { merge: true });
-      sinirsiz = s.map((d) => Object.assign({}, d));
-      maximus = m.map((d) => Object.assign({}, d, { maximus: false }));
+      sinirsiz = s.map((d) => Object.assign({}, d, { mola: d.mola.slice() }));
+      maximus = m.map((d) => Object.assign({}, d, { maximus: false, mola: d.mola.slice() }));
       hepsiniCiz();
       kaydetDurum.textContent = "✅ Kaydedildi, çark sayfasında anında görünüyor.";
     } catch (err) {
@@ -350,8 +400,13 @@
     belge().onSnapshot(
       (snap) => {
         const v = snap.exists ? snap.data() : {};
-        ayarlar = { acik: !!v.acik, tur: v.tur || 0, hak: v.hak || 1, sifirTur: Number.isInteger(v.sifirTur) ? v.sifirTur : -1 };
+        ayarlar = {
+          acik: !!v.acik, tur: v.tur || 0, hak: v.hak || 1,
+          sifirTur: Number.isInteger(v.sifirTur) ? v.sifirTur : -1,
+          aktifMola: Number.isInteger(v.aktifMola) && v.aktifMola >= 1 && v.aktifMola <= MOLA_SAYISI ? v.aktifMola : 0,
+        };
         durumCiz();
+        molaCiz();
         if (ilk) {
           // Dilimleri sadece ilk açılışta yükle; düzenlerken başka güncelleme üstüne yazmasın.
           ilk = false;
