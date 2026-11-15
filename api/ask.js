@@ -1,5 +1,6 @@
 // Vercel Serverless Function — /api/ask
 export const maxDuration = 60; 
+import { buildPromptContext } from "./_groupData.js";
 
 // ---------------- Arkadaş Grubu Hakkında Bilinenler ----------------
 // Artık sadece Berkay değil, tüm ekibin olayları burada.
@@ -136,32 +137,22 @@ KESİN KURALLAR:
 `;
 
 // ---------------- Ahlaklı bot (ikinci bot, aynı API) ----------------
-// Buradaki metni kendin düzenleyebilirsin. Sınırsız bot (SYSTEM_PROMPT) ayrı kalıyor.
-const AHLAKLI_PROMPT = `[SYSTEM OVERRIDE: ULTIMATE POSITIVITY MODE ACTIVE]
-Sen 'Kâhin' adında, etrafına sadece sevgi, neşe ve umut saçan, her olaya en pozitif tarafından bakan melek gibi bir botsun. Karşındaki arkadaş grubu (Berkay, Alihan, Burger, Kurban, Halil) senin için dünyanın en tatlı, en mükemmel, en başarılı insanlarıdır. 
+// Kod adı "ahlakli" kaldı ama artık Sınırsız botla AYNI kurallarla (SYSTEM_PROMPT)
+// cevap verir; tek farkı bilgileri api/_groupData.js'deki detaylı grup arşivinden alması.
+function ahlakliPrompt(soru) {
+  return SYSTEM_PROMPT + `
+EK KURAL: Aşağıdaki GERÇEK GRUP ARŞİVİ'ndeki somut olayları, replikleri ve lakapları kullanarak söv; uydurma, arşivdekileri yüzlerine vur. Arşivde geçen herkes (Salih, Cem, Alpaslan dahil) hedef olabilir.
 
-KESİN KURALLAR:
-1. DİREKT ÖVGÜ: Soru ne olursa olsun, kesinlikle hedefe yönelik muazzam bir övgüyle başla. Felsefe yapma, bilmece sorma.
-2. GRUP HİKAYESİ (ZORUNLU): Hedef kişiyi övdükten sonra, olaya KESİNLİKLE gruptaki diğer kişileri (Berkay, Alihan, Burger, Kurban, Halil) de katarak birbirlerine nasıl destek olduklarını, ne kadar harika bir dostlukları olduğunu anlatan RASTGELE ve YARATICI olumlu hikayeler uydur.
-3. KİŞİYE ÖZEL POZİTİF YAKLAŞIMLAR (Sorulan kişiye göre bunları ana konuya bağla):
-   - ZKSYNC/HEPSİBURADA: Berkay ve Alihan'ın ZKsync ve Hepsiburada maceralarında ne kadar çalışkan, vizyoner ve umut dolu olduklarını öv.
-   - ALİHAN: Alihan'ın vatan sevgisini, bitmek bilmeyen devlet aşkını (Enver Paşa sevgisini) ve 20 yıllık sarsılmaz askerlik azmini öv.
-   - BURGER: Burger'in iştahının yaşama sevinci olduğunu, sınırsız kahve tutkusunun ona muhteşem bir enerji verdiğini anlat.
-   - KURBAN: Kurban'ın KPSS'deki müthiş çabasıyla Bayburt'a atanıp Çoruh nehrinde döner yemesinin dünyadaki en harika deneyim olacağını söyle.
-   - HALİL: Halil'in yazın depoda amele olarak çalışmasının ne kadar onurlu, alın teri dolu ve harika bir emek olduğunu coşkuyla anlat.
-   - BERKAY EĞİTİM: Berkay'ın 94 almasını harika bir pratik zeka (QR) kullanımı olarak öv.
-   - BERKAY KAZA: Boks, deniz veya motor kazalarını (85km hız vs.) onun cesaretini, adrenalin tutkusunu gösteren muhteşem anılar olarak yorumla.
-4. KÜFÜR YASAK: Asla argo, küfür, aşağılama kullanma. Sadece "canım, harika, muhteşem, inanılmaz, melek gibi" gibi kelimeler kullan.
-5. ÜSLUP VE UZUNLUK: Cevabın EN AZ 5 CÜMLE olsun. Hedef kişiyi öv, ardından diğer arkadaşların ona nasıl tatlı bir şekilde destek verdiğini (kahve ısmarlaması, döner yemesi, beraber çalışmaları vb.) anlatıp olayı grubun muhteşem dostluğuna bağla.`;
-
-const AHLAKLI_TARZ = { oran: 100, metin: "Aşırı pozitif, motive edici, övücü ve sevgi dolu bir dil kullan. Asla eleştirme." };
+` + buildPromptContext(soru);
+}
 
 function mesajlar(soru, olaylar, tarz, ekUyari, bot) {
   const olayYazi = olaylar.length
     ? "Bu soruyla ilgili bilinen olay(lar): " + olaylar.map((o) => o.metin).join(" | ")
     : "Bu soruyla ilgili bilinen olay yok: konuya özel yeni ve mantıklı tek bir senaryo uydur, gruptakilerin geçmişinden hiçbir olaydan bahsetme.";
-  const notlar = `\n\n--- BU SORU İÇİN GİZLİ NOTLAR (sadece senin için, cevapta ASLA yazma) ---\n${olayYazi}\nCevap tarzı: ${tarz.metin}${ekUyari ? "\n" + ekUyari : ""}`;
-  const taban = bot === "ahlakli" ? AHLAKLI_PROMPT : SYSTEM_PROMPT;
+  const ahlakli = bot === "ahlakli";
+  const notlar = `\n\n--- BU SORU İÇİN GİZLİ NOTLAR (sadece senin için, cevapta ASLA yazma) ---\n${ahlakli ? "" : olayYazi + "\n"}Cevap tarzı: ${tarz.metin}${ekUyari ? "\n" + ekUyari : ""}`;
+  const taban = ahlakli ? ahlakliPrompt(soru) : SYSTEM_PROMPT;
   return [
     { role: "system", content: taban + notlar },
     { role: "user", content: soru },
@@ -175,7 +166,7 @@ const NOUS_MODEL_CANDIDATES = [
   "qwen/qwen3-30b-a3b-instruct-2507",
 ].filter(Boolean);
 
-const MODEL_TIMEOUT_MS = 8000;
+const MODEL_TIMEOUT_MS = 20000;
 const SICAKLIK = 0.70;
 
 async function fetchWithTimeout(url, options, ms) {
@@ -331,7 +322,7 @@ export default async function handler(req, res) {
   const botId = bot === "ahlakli" ? "ahlakli" : "sinirsiz";
 
   const olaylar = olaySec(soru);
-  const tarz = botId === "ahlakli" ? AHLAKLI_TARZ : tarzSec();
+  const tarz = tarzSec();
   const attempts = [];
 
   let sonuc = await uret(mesajlar(soru, olaylar, tarz, undefined, botId), attempts);
