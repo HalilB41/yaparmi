@@ -206,6 +206,13 @@ form.addEventListener("submit", async (e) => {
   // Artık sabit "Berkay" öneki yok — soru, kullanıcının yazdığı haliyle gidiyor.
   const question = rest;
 
+  // Arşiv kodu (berkay1, kubi1, ortak1, hersey1 ...) → arşiv sayfasına git.
+  const arsivKod = rest.toLocaleLowerCase("tr-TR").match(/^([a-zçğıöşü'’ ]+?)\s*1$/);
+  if (arsivKod) {
+    location.href = "arsiv.html?k=" + encodeURIComponent(arsivKod[1].trim());
+    return;
+  }
+
   if (lastAskedQuestion !== null && rest === lastAskedQuestion) {
     input.value = "";
     lastAskedQuestion = null;

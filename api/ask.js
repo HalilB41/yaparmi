@@ -792,6 +792,19 @@ async function uret(messages, attempts) {
   return null;
 }
 
+// "ortak1" → Sınırsız bottaki ortak grup olayları; "hersey1" → herkes + ortak.
+// Kişi için id ya da herhangi bir lakap + "1" (berkay1, beko1, kubi1, ibo1 ...).
+function arsivKodu(soru) {
+  const m = String(soru || "").toLocaleLowerCase("tr-TR").trim().match(/^([a-zçğıöşü'’ ]+?)\s*1$/);
+  if (!m) return null;
+  const kod = m[1].trim();
+  const ortak = { id: "ortak", name: "Ortak grup olayları (Sınırsız bot)", summary: "Sınırsız botun kullandığı kısa ortak olaylar.", facts: GRUP_OLAYLARI.map((o) => o.ad + ": " + o.metin) };
+  if (kod === "ortak") return { kod, kisiler: [ortak] };
+  if (kod === "hersey" || kod === "herşey") return { kod: "hersey", kisiler: [...GROUP_MEMBERS, ortak] };
+  const kisi = GROUP_MEMBERS.find((k) => k.id === kod || k.aliases.includes(kod));
+  return kisi ? { kod: kisi.id, kisiler: [kisi] } : null;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -803,6 +816,11 @@ export default async function handler(req, res) {
 
   const soru = question.trim();
   const botId = bot === "ahlakli" ? "ahlakli" : "sinirsiz";
+
+  // Arşiv kodu: "berkay1", "kubi1", "ortak1", "hersey1" → AI'a gitmeden arşivi JSON döner.
+  // Siteye arsiv.html?k=... ile gösteriliyor.
+  const arsiv = arsivKodu(soru);
+  if (arsiv) return res.status(200).json({ arsiv });
 
   const olaylar = olaySec(soru);
   const tarz = tarzSec();
