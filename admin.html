@@ -266,16 +266,31 @@
       <section class="adm-panel admin-grid" data-panel="galeri" hidden>
         <div class="adm-intro wide"><b>🖼️ Galeri</b> Gelen fotoğraf önerilerini yayınla/reddet ya da direkt fotoğraf ekle.</div>
         <div class="panel card admin-section">
-          <h2>📸 Galeri önerileri</h2>
+          <h2>📸 Bekleyen öneriler</h2>
+          <div class="sayac-butonlar oneri-toplu" id="oneriToplu" hidden>
+            <button type="button" class="admin-btn publish se-small" id="oneriHepsiYayinla">✅ Hepsini yayınla</button>
+            <button type="button" class="admin-btn reject se-small" id="oneriHepsiReddet">✖ Hepsini reddet</button>
+          </div>
           <div id="queueList"><p class="muted">Yükleniyor…</p></div>
         </div>
         <div class="panel card admin-section">
           <h2>➕ Galeriye direkt fotoğraf ekle</h2>
           <form class="admin-upload" id="adminUploadForm" autocomplete="off">
-            <input type="file" id="adminUploadFile" accept="image/*" required />
+            <input type="file" id="adminUploadFile" accept="image/*" multiple required />
             <button type="submit" class="admin-btn publish">Yayınla</button>
           </form>
           <p class="suggest-status" id="adminUploadStatus"></p>
+        </div>
+        <div class="panel card admin-section wide">
+          <h2>🕓 Öneri geçmişi</h2>
+          <p class="muted">Karar verdiğin her öneri burada kalır: kim, ne zaman önerdi ve sen ne zaman ne yaptın. Reddettiğini sonradan yayınlayabilir, yayınladığını galeriden kaldırabilirsin. Bu özellik eklenmeden önce karar verilen öneriler silindiği için listede yok.</p>
+          <div class="oneri-filtre" id="oneriFiltre" role="group" aria-label="Geçmiş filtresi">
+            <button type="button" class="active" data-filtre="">Tümü</button>
+            <button type="button" data-filtre="yayinlandi">✅ Yayınlanan</button>
+            <button type="button" data-filtre="reddedildi">✖ Reddedilen</button>
+            <button type="button" data-filtre="kaldirildi">🗑️ Galeriden kaldırılan</button>
+          </div>
+          <div id="oneriGecmis"><p class="muted">Yükleniyor…</p></div>
         </div>
       </section>
 

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Söz Defteri · yaparmi.com</title>
+  <meta name="description" content="Verilen sözler, iddialar ve ödenmeyen borçlar." />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#13111a" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%235a3fd4%22/%3E%3Ccircle cx=%2216%22 cy=%2214%22 r=%228.5%22 fill=%22%23fff%22/%3E%3Ccircle cx=%2213%22 cy=%2211%22 r=%222.4%22 fill=%22%23c9bdf5%22/%3E%3Crect x=%229%22 y=%2224%22 width=%2214%22 height=%223.5%22 rx=%221.7%22 fill=%22%23f5b82e%22/%3E%3C/svg%3E" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema"),r=localStorage.getItem("yaparmi_renk");if(t)document.documentElement.dataset.theme=t;if(r)document.documentElement.dataset.renk=r}catch(e){}</script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/images/ikon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page" id="sozSayfa">
+    <header class="page-head">
+      <span class="eyebrow"><i>🤝</i> Söz Defteri</span>
+      <h1>Söz <em>Defteri</em></h1>
+      <p class="lead">"Geçerse herkese dondurma" dendi mi buraya yazılır. Koşul gerçekleşince borç başlar, gün gün sayılır. Ödeyen kanıt fotoğrafını yükler, ödemeyen herkesin önünde durur.</p>
+    </header>
+
+    <section class="soz-duvar" id="sozDuvar" hidden>
+      <h2 class="tpl-baslik">🧱 Borç duvarı</h2>
+      <div class="soz-duvar-liste" id="sozDuvarListe"></div>
+    </section>
+
+    <div class="card cark-kapi" id="sozGiris" hidden>
+      <div class="cark-kapi-ico">🔐</div>
+      <p>Söz yazmak, şahit olmak ve borç kapatmak için sağ üstten giriş yap. Bakmak serbest.</p>
+    </div>
+
+    <details class="card tpl-form-kart soz-yeni" id="sozYeni" hidden>
+      <summary><h2>➕ Yeni söz / iddia yaz</h2></summary>
+      <form id="sozForm" class="tpl-form" autocomplete="off">
+        <label>Sözü veren <input type="text" id="sozVeren" maxlength="30" list="sozIsimler" placeholder="İbo" required /></label>
+        <label>Kime <input type="text" id="sozKime" maxlength="30" list="sozIsimler" placeholder="Herkese" /></label>
+        <label class="tpl-genis">Ne söz verdi? <input type="text" id="sozMetin" maxlength="200" placeholder="Herkese Magnum dondurma" required /></label>
+        <label class="tpl-genis">Koşul (varsa) <input type="text" id="sozKosul" maxlength="200" placeholder="Berkay sürüşten tekte geçerse" /></label>
+        <label>Son tarih (isteğe bağlı) <input type="date" id="sozSonTarih" /></label>
+        <label>Durum
+          <select id="sozDurum">
+            <option value="bekliyor">⏳ Koşul daha belli değil</option>
+            <option value="borc">💸 Koşul gerçekleşti, borç başladı</option>
+          </select>
+        </label>
+        <button type="submit" class="btn">Deftere yaz</button>
+      </form>
+      <datalist id="sozIsimler"></datalist>
+      <p class="suggest-status" id="sozFormDurum"></p>
+    </details>
+
+    <nav class="adm-tabs" role="tablist" aria-label="Söz durumları">
+      <button type="button" role="tab" data-tab="borc">💸 Borçlar <span class="adm-say" id="sozSay_borc" hidden></span></button>
+      <button type="button" role="tab" data-tab="bekliyor">⏳ Bekleyen <span class="adm-say" id="sozSay_bekliyor" hidden></span></button>
+      <button type="button" role="tab" data-tab="odendi">✅ Ödenen</button>
+      <button type="button" role="tab" data-tab="yandi">🔥 Yanan</button>
+    </nav>
+
+    <section class="adm-panel" data-panel="borc" hidden><div class="tpl-liste" id="sozListe_borc"><p class="muted">Yükleniyor…</p></div></section>
+    <section class="adm-panel" data-panel="bekliyor" hidden><div class="tpl-liste" id="sozListe_bekliyor"></div></section>
+    <section class="adm-panel" data-panel="odendi" hidden><div class="tpl-liste" id="sozListe_odendi"></div></section>
+    <section class="adm-panel" data-panel="yandi" hidden><div class="tpl-liste" id="sozListe_yandi"></div></section>
+  </main>
+
+  <div class="cark-modal" id="sozKanitModal" role="dialog" aria-modal="true" aria-label="Ödeme kanıtı" hidden>
+    <div class="card cark-modal-kart soz-kanit-kart">
+      <img id="sozKanitResim" alt="Ödeme kanıtı" />
+      <p class="muted" id="sozKanitBilgi"></p>
+      <button type="button" class="btn" id="sozKanitKapat">Kapat</button>
+    </div>
+  </div>
+
+  <!-- Firebase (compat SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/basarim.js"></script>
+  <script src="js/bildirim.js"></script>
+  <script src="js/soz.js"></script>
+</body>
+</html>

@@ -119,43 +119,92 @@ function ensureAuthed() {
     .catch(() => null);
 }
 
+// Toplu öneri: birden fazla fotoğraf seçilebilir (en fazla ONERI_LIMIT).
+// Her fotoğraf ayrı bir öneri olarak sırayla gönderilir; biri hata verirse
+// diğerleri yine gider, sonunda kaç tanesinin gittiği yazılır.
+const ONERI_LIMIT = 20;
+const suggestOnizleme = document.getElementById("suggestOnizleme");
+
+function onizlemeCiz() {
+  if (!suggestOnizleme) return;
+  suggestOnizleme.querySelectorAll("img").forEach((i) => URL.revokeObjectURL(i.src));
+  suggestOnizleme.innerHTML = "";
+  const dosyalar = Array.from(suggestFile.files || []);
+  suggestOnizleme.hidden = !dosyalar.length;
+  dosyalar.slice(0, ONERI_LIMIT).forEach((f) => {
+    const img = document.createElement("img");
+    img.alt = "";
+    img.src = URL.createObjectURL(f);
+    suggestOnizleme.appendChild(img);
+  });
+  if (dosyalar.length > ONERI_LIMIT) {
+    suggestStatus.textContent = dosyalar.length + " fotoğraf seçtin, ilk " + ONERI_LIMIT + " tanesi gönderilecek.";
+  } else if (dosyalar.length > 1) {
+    suggestStatus.textContent = dosyalar.length + " fotoğraf seçildi.";
+  } else {
+    suggestStatus.textContent = "";
+  }
+}
+if (suggestFile) suggestFile.addEventListener("change", onizlemeCiz);
+
 if (suggestForm) {
   suggestForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const file = suggestFile.files[0];
-    if (!file) return;
+    const dosyalar = Array.from(suggestFile.files || []).slice(0, ONERI_LIMIT);
+    if (!dosyalar.length) return;
     if (typeof db === "undefined" || !db) {
       suggestStatus.textContent = "Şu an bağlı değil, daha sonra tekrar dene.";
       return;
     }
 
-    suggestStatus.textContent = "Gönderiliyor...";
     const submitBtn = suggestForm.querySelector("button[type=submit]");
     if (submitBtn) submitBtn.disabled = true;
+    suggestFile.disabled = true;
 
+    let giden = 0;
+    const hatalar = [];
     try {
       const user = await ensureAuthed();
       if (!user) throw new Error("Giriş yapılamadı");
-
-      const dataUrl = await resizeImageToSquare(file, 720);
-
       const profile = window.YaparmiAuth && window.YaparmiAuth.getProfile ? window.YaparmiAuth.getProfile() : null;
 
-      await db.collection("galeri_oneriler").add({
-        resim: dataUrl,
-        gonderenUid: user.uid,
-        gonderenKullaniciAdi: profile ? profile.kullaniciAdi : null,
-        tarih: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-
-      suggestStatus.textContent = "Gönderildi! Admin onaylarsa galeriye eklenir. 🎉";
-      if (window.Basarim) Basarim.say("oneri");
-      suggestForm.reset();
+      for (let i = 0; i < dosyalar.length; i++) {
+        suggestStatus.textContent = dosyalar.length > 1
+          ? "Gönderiliyor… " + (i + 1) + " / " + dosyalar.length
+          : "Gönderiliyor...";
+        try {
+          const dataUrl = await resizeImageToSquare(dosyalar[i], 720);
+          await db.collection("galeri_oneriler").add({
+            resim: dataUrl,
+            gonderenUid: user.uid,
+            gonderenKullaniciAdi: profile ? profile.kullaniciAdi : null,
+            tarih: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          giden++;
+        } catch (err) {
+          console.error("Öneri gönderilemedi:", dosyalar[i].name, err.message);
+          hatalar.push(dosyalar[i].name);
+        }
+      }
     } catch (err) {
       console.error("Öneri gönderilemedi:", err.message);
-      suggestStatus.textContent = err.message || "Gönderilemedi, tekrar dene.";
+      hatalar.push(err.message);
     }
 
+    if (giden && !hatalar.length) {
+      suggestStatus.textContent = (giden > 1 ? giden + " fotoğraf gönderildi!" : "Gönderildi!") + " Admin onaylarsa galeriye eklenir. 🎉";
+    } else if (giden) {
+      suggestStatus.textContent = giden + " fotoğraf gönderildi, " + hatalar.length + " tanesi gönderilemedi (" + hatalar.join(", ") + ").";
+    } else {
+      suggestStatus.textContent = "Gönderilemedi, tekrar dene." + (hatalar.length ? " (" + hatalar[hatalar.length - 1] + ")" : "");
+    }
+    if (giden) {
+      if (window.Basarim) Basarim.say("oneri");
+      suggestForm.reset();
+      if (suggestOnizleme) { suggestOnizleme.innerHTML = ""; suggestOnizleme.hidden = true; }
+    }
+
+    suggestFile.disabled = false;
     if (submitBtn) submitBtn.disabled = false;
   });
 }

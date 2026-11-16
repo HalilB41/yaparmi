@@ -7,6 +7,14 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'admin';
     }
 
+    // Söz Defteri için: gerçek (anonim olmayan) hesap ve o hesabın kullanıcı adı.
+    function hesapli() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+    function kullaniciAdim() {
+      return get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.kullaniciAdi;
+    }
+
     // "Genel" kutusundaki sorular — herkes ekleyebilir, sadece admin okuyabilir
     // (admin panelinden "kim ne zaman ne sormuş" diye görmek için).
     match /sorular/{docId} {
@@ -277,6 +285,74 @@ service cloud.firestore {
           && request.resource.data.istenmeTarihi == request.time)
         || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verildi']))
       );
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- Söz Defteri (soz.html) ----------------
+    // Sadece gerçek hesabı olan (anonim değil) yazabilir, herkes okuyabilir.
+    // Durum geçişleri: bekliyor → borc | yandi, borc → odendi (kanıt şart).
+    // Admin her şeyi değiştirip silebilir (geri alma vb.).
+
+    match /sozler/{id} {
+      allow read: if true;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['veren', 'kime', 'metin', 'kosul', 'sonTarih', 'durum', 'kaydeden', 'kaydedenUid', 'sahitler', 'tarih', 'guncelleme', 'borcTarihi'])
+        && request.resource.data.veren is string && request.resource.data.veren.size() > 0 && request.resource.data.veren.size() <= 30
+        && request.resource.data.kime is string && request.resource.data.kime.size() <= 30
+        && request.resource.data.metin is string && request.resource.data.metin.size() > 0 && request.resource.data.metin.size() <= 200
+        && request.resource.data.kosul is string && request.resource.data.kosul.size() <= 200
+        && request.resource.data.sonTarih is string
+        && (request.resource.data.sonTarih == '' || request.resource.data.sonTarih.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+        && request.resource.data.kaydedenUid == request.auth.uid
+        && request.resource.data.kaydeden == kullaniciAdim()
+        && request.resource.data.sahitler == []
+        && request.resource.data.tarih == request.time
+        && request.resource.data.guncelleme == request.time
+        && ((request.resource.data.durum == 'bekliyor' && !('borcTarihi' in request.resource.data))
+          || (request.resource.data.durum == 'borc' && request.resource.data.borcTarihi == request.time));
+      allow update: if isAdmin() || (hesapli() && (
+        // Durum değişikliği
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['durum', 'guncelleme', 'degistiren', 'borcTarihi'])
+          && request.resource.data.guncelleme == request.time
+          && request.resource.data.degistiren == kullaniciAdim()
+          && (
+            (resource.data.durum == 'bekliyor' && request.resource.data.durum == 'borc'
+              && request.resource.data.borcTarihi == request.time)
+            || (resource.data.durum == 'bekliyor' && request.resource.data.durum == 'yandi'
+              && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['borcTarihi']))
+            || (resource.data.durum == 'borc' && request.resource.data.durum == 'odendi'
+              && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['borcTarihi'])
+              && exists(/databases/$(database)/documents/soz_kanitlar/$(id)))
+          ))
+        ||
+        // "Ben de duydum": kişi sadece kendi adını şahitlere ekleyebilir
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sahitler'])
+          && resource.data.durum in ['bekliyor', 'borc']
+          && !(kullaniciAdim() in resource.data.sahitler)
+          && request.resource.data.sahitler.size() == resource.data.sahitler.size() + 1
+          && request.resource.data.sahitler.hasAll(resource.data.sahitler)
+          && kullaniciAdim() in request.resource.data.sahitler)
+      ));
+      // Yazan kişi, henüz şahidi olmayan bekleyen sözünü silebilir; admin hepsini.
+      allow delete: if isAdmin() || (hesapli()
+        && resource.data.kaydedenUid == request.auth.uid
+        && resource.data.durum == 'bekliyor'
+        && resource.data.sahitler.size() == 0);
+    }
+
+    // Ödeme kanıtı fotoğrafı (base64). Sadece borç durumundaki söz için,
+    // bir kez yüklenir, değiştirilemez. Admin silebilir.
+    match /soz_kanitlar/{id} {
+      allow read: if true;
+      allow create: if hesapli()
+        && get(/databases/$(database)/documents/sozler/$(id)).data.durum == 'borc'
+        && request.resource.data.keys().hasOnly(['resim', 'yukleyen', 'yukleyenUid', 'tarih'])
+        && request.resource.data.resim is string
+        && request.resource.data.resim.size() < 900000
+        && request.resource.data.yukleyenUid == request.auth.uid
+        && request.resource.data.yukleyen == kullaniciAdim()
+        && request.resource.data.tarih == request.time;
+      allow update: if false;
       allow delete: if isAdmin();
     }
   }
