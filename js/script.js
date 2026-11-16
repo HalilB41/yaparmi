@@ -208,8 +208,8 @@ form.addEventListener("submit", async (e) => {
 
   // Arşiv kodu (berkay1, kubi1, ortak1, hersey1 ...) → arşiv sayfasına git.
   const arsivKod = rest.toLocaleLowerCase("tr-TR").match(/^([a-zçğıöşü'’ ]+?)\s*1$/);
-  if (arsivKod) {
-    location.href = "arsiv.html?k=" + encodeURIComponent(arsivKod[1].trim());
+  if (arsivKod && (secilenBot === "ahlakli" || /^her(s|ş)ey$/.test(arsivKod[1].trim()))) {
+    location.href = "arsiv.html?k=" + encodeURIComponent(arsivKod[1].trim()) + "&bot=" + secilenBot;
     return;
   }
 

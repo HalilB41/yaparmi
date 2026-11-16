@@ -7,7 +7,9 @@
   const baslik = document.getElementById("arsivBaslik");
   const lead = document.getElementById("arsivLead");
   const icerik = document.getElementById("arsivIcerik");
-  const kod = (new URLSearchParams(location.search).get("k") || "").trim();
+  const params = new URLSearchParams(location.search);
+  const kod = (params.get("k") || "").trim();
+  const bot = params.get("bot") === "ahlakli" ? "ahlakli" : "sinirsiz";
 
   function hata(metin) {
     lead.textContent = metin;
@@ -19,20 +21,20 @@
   fetch("/api/ask", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question: kod + "1" }),
+    body: JSON.stringify({ question: kod + "1", bot }),
   })
     .then((r) => r.json())
     .then((d) => {
       if (!d || !d.arsiv || !d.arsiv.kisiler || !d.arsiv.kisiler.length) { hata("Böyle bir kod yok: " + kod + "1"); return; }
       const kisiler = d.arsiv.kisiler;
       const toplam = kisiler.reduce((t, k) => t + (k.facts || []).length, 0);
-      if (kisiler.length === 1) {
+      if (kisiler.length === 1 && d.arsiv.kod !== "hersey") {
         baslik.innerHTML = "";
         baslik.appendChild(document.createTextNode(kisiler[0].name));
       } else {
-        baslik.innerHTML = "Tüm <em>Arşiv</em>";
+        baslik.innerHTML = "Tüm <em>Bilgiler</em>";
       }
-      lead.textContent = toplam + " madde · " + kisiler.length + " dosya";
+      lead.textContent = (bot === "ahlakli" ? "ULTRA MAXİMUS SINIRSIZ BOT" : "Sınırsız bot") + " · " + toplam + " madde · " + kisiler.length + " dosya";
       icerik.innerHTML = "";
       kisiler.forEach((k) => {
         const kart = document.createElement("section");

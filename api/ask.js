@@ -792,17 +792,37 @@ async function uret(messages, attempts) {
   return null;
 }
 
-// "ortak1" → Sınırsız bottaki ortak grup olayları; "hersey1" → herkes + ortak.
-// Kişi için id ya da herhangi bir lakap + "1" (berkay1, beko1, kubi1, ibo1 ...).
-function arsivKodu(soru) {
+// Arşiv kodu: kişi id'si ya da lakabı + "1" (berkay1, beko1, kubi1...), "ortak1", "hersey1".
+// Hangi bot seçiliyse o botun bilgisi döner:
+//   ULTRA MAXİMUS (ahlakli): kişi → GROUP_MEMBERS dosyası; ortak → SYSTEM_PROMPT + ek kural; hersey → hepsi
+//   Sınırsız:                kişi → GRUP_OLAYLARI'nda o kişi geçen olaylar; ortak → SYSTEM_PROMPT; hersey → hepsi
+function arsivKodu(soru, botId) {
   const m = String(soru || "").toLocaleLowerCase("tr-TR").trim().match(/^([a-zçğıöşü'’ ]+?)\s*1$/);
   if (!m) return null;
   const kod = m[1].trim();
-  const ortak = { id: "ortak", name: "Ortak grup olayları (Sınırsız bot)", summary: "Sınırsız botun kullandığı kısa ortak olaylar.", facts: GRUP_OLAYLARI.map((o) => o.ad + ": " + o.metin) };
-  if (kod === "ortak") return { kod, kisiler: [ortak] };
-  if (kod === "hersey" || kod === "herşey") return { kod: "hersey", kisiler: [...GROUP_MEMBERS, ortak] };
+  const maximus = botId === "ahlakli";
+  const promptMetni = maximus ? ahlakliPrompt("").split("SORUDA BELİRLİ BİR İSİM GEÇMEDİ")[0].trim() : SYSTEM_PROMPT.trim();
+  const ortak = {
+    id: "ortak",
+    name: maximus ? "ULTRA MAXİMUS SINIRSIZ BOT — ortak prompt" : "Sınırsız bot — ortak prompt",
+    summary: "Botun her soruda kullandığı karakter ve kural metni.",
+    facts: promptMetni.split("\n").map((x) => x.trim()).filter(Boolean),
+  };
+  const kisiDosyasi = (k) => {
+    if (maximus) return k;
+    const adlar = [k.id, ...k.aliases];
+    const olaylar = GRUP_OLAYLARI.filter((o) => adlar.includes(o.ad) || adlar.some((a) => kucult(o.metin).includes(" " + a)));
+    return { id: k.id, name: k.name, aliases: k.aliases, summary: "Sınırsız botun bu kişi için bildiği olaylar.", facts: olaylar.map((o) => o.ad + ": " + o.metin) };
+  };
+  if (kod === "ortak") return { kod, bot: botId, kisiler: [ortak] };
+  if (kod === "hersey" || kod === "herşey") {
+    const kisiler = maximus
+      ? [...GROUP_MEMBERS, ortak]
+      : [{ id: "olaylar", name: "Sınırsız bot — tüm olaylar", summary: "GRUP_OLAYLARI listesinin tamamı.", facts: GRUP_OLAYLARI.map((o) => o.ad + ": " + o.metin) }, ortak];
+    return { kod: "hersey", bot: botId, kisiler };
+  }
   const kisi = GROUP_MEMBERS.find((k) => k.id === kod || k.aliases.includes(kod));
-  return kisi ? { kod: kisi.id, kisiler: [kisi] } : null;
+  return kisi ? { kod: kisi.id, bot: botId, kisiler: [kisiDosyasi(kisi)] } : null;
 }
 
 export default async function handler(req, res) {
@@ -819,7 +839,7 @@ export default async function handler(req, res) {
 
   // Arşiv kodu: "berkay1", "kubi1", "ortak1", "hersey1" → AI'a gitmeden arşivi JSON döner.
   // Siteye arsiv.html?k=... ile gösteriliyor.
-  const arsiv = arsivKodu(soru);
+  const arsiv = arsivKodu(soru, botId);
   if (arsiv) return res.status(200).json({ arsiv });
 
   const olaylar = olaySec(soru);
