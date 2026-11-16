@@ -143,7 +143,7 @@ const GROUP_MEMBERS = [
   {
     id: "berkay",
     name: "Berkay (Beko)",
-    aliases: [
+    aliases: ["bekom", "kevaşe berkay", 
       "berkay",
       "beko",
       "berko",
@@ -157,7 +157,7 @@ const GROUP_MEMBERS = [
       "İzmir Sokakta Yatma Vakası: Bir kızla buluşmak için otobüse binip İzmir'e gitti; kız gelmeyince geri dönmek yerine iki gün sokakta yatıp hastalandı, ardından bir kafede sadece 20 dakika uyanıp tekrar uyudu.",
       "Motorla 85 km/s & Kaza: Kasksız şekilde motorla bayır aşağı 85 km/s hızla inerken 'kubiiiiiiiii 85 i gördüm 85' diye haykırdı, ardından motordan düşüp sakatlandı.",
       "Direksiyon Dersi Kazası: Direksiyon dersinde arkadan araç gelirken heyecanlanıp ani fren yapınca arkadaki araç çarptı; aracın kapısı çöktü ve kendi eli sakatlandı.",
-      "Ehliyet Sınavı Başarıları: Yazılı sınavı tam puanla (100) geçip ilk seferde kalan İbo'ya nispet yaptı; direksiyon sınavını da tekte geçerek iddia üzerine İbo'dan büyük boy patates ve kolalı Salon Burger kazandı.",
+      "Ehliyet Yazılı Başarısı: Yazılı sınavı tam puanla (100) geçip ilk seferde kalan İbo'ya nispet yaptı; direksiyon sınavını ise ilk denemede (11 Ekim) GEÇEMEDİ, ikinci denemede (24 Ekim) geçti ve İbo'dan büyük boy patates ve kolalı Salon Burger'i aldı.",
       "Boks Makinesi Vakası: NCity'deki boks makinesine vururken elini yaralayıp sakatladı ve buluşmayı erken terk etmek zorunda kaldı.",
       "Kayalıklardan Atlama Macerası: Denize kayalıklardan atlamaya kalkıştığında suya değil kayalara çakılıp tüm vücudunu soydu; Kerpe'ye giderken 'Tepeden atlıcaz mı' diye soran İbo'ya 'güzel ülkem izin vermiyor' dedi.",
       "Popeyes ve Fast Food Bağımlılığı: Sık sık Popeyes'den patates siparişi verir; gece yarısı bile 'Obez gibi yiyioz ama fizik hala sağlam mentalite' diyerek yemek yemesini savunur ve Mete'nin mekanında 'fena kayıntı' yapıp bedava pide yer.",
@@ -199,12 +199,38 @@ const GROUP_MEMBERS = [
       "Gece Yarısı Çıkartma (Sticker) Spamı: Sabaha karşı 03:12'de dakikalar içinde onlarca çıkartmayı art arda atarak grubu çıkartma bombardımanına tuttu.",
       "Şarjı %1 Gezmesi: Dışarıdayken telefon şarjını %1'e kadar düşürüp 'Şarjım 1 kapanacak tel Kubiyle gelirim' diyerek ortadan kaybolur.",
       "Argo ve Babag / Cano Üslubu: Hemen her cümlesinde 'babag', 'cano', 'yavru', 'taşağım' hitaplarını kullanır; gülerken klavyeye rastgele basarak (ĞEŞXPDŞXŞDŞX) kahkaha atar.",
+      "Direksiyon Sınavı Gerçeği (DÜZELTME): 11 Ekim'deki ilk sürüş sınavında KALDI; grup İbo'yu 'geçti' diye trolledi, dondurma bile dağıtıldı. 24 Ekim'de ikinci sınavı geçti ('Bu sefer kanıtlarım var, e-devlete düşünce ss atarım'). İbo: 'Ehliyeti tekte geçemeyenler konuşmasın.'",
+      "Direksiyon Dersi Kazası (30 Eylül): Arkadan araç gelirken heyecanla ani fren yaptı, arkadaki çarptı, aracın kapısı çöktü, eli sakatlandı; 'ucuz atlattım', 'arabasını sikiyim olan bana oldu'.",
+      "Kurban'ın Arabasıyla Sakarya Turu: Ehliyeti alınca Kurban Citroën'ini verdi; 'toz attırdı, solladım herkesi, Ferrari olsa bayır aşağı 280 görürdük' diye övündü.",
+      "Hepsiburada'da İş Çürütme Efsanesi: Hepsiburada yevmiye grubuna girdiği gün iş kesildi, 5 gün iş çıkmadı; İbo 'sen girdin Hepsiburada çürüdü, grup 180 kişiden 600 oldu' dedi. Berkay 'bütün İzmit'e instadan duyurdum, öğrencisiz alım var diye' diyerek itiraf etti.",
+      "Hepsiburada'da Yatış: 'Mez2'de yattık, yatarak para kazanıyoz', '5'te iş bitti 8'e kadar yatış', 'bir paleti 55 dakikada yaptım', İbo 'Beko'yu 3-4 kere gördüm hepsinde yatıyordu', 'max 1 saat çalıştı'. Listeden elenip Metin'e yazarak geri alındı.",
+      "Metin Torpili: 7 Kasım'da Hepsiburada sorumlusu Metin'e İbo'yu söyleyip aldırdı ('değerimi bil lan göt'); 'Metin'e 6-7 kişi gelcez dedim, halısaha takımımı çıkardın dedi'.",
+      "Kimliğini Unutma Vakası (1 Kasım): Hepsiburada servisine binerken kimliğini evde unuttu; Alihan 'nasıl bir hata İbo, nasıl bir çocuk', Kurban 'salam'. Duraktan söyleyince son anda yetişti.",
+      "Sahte Şikayet ve Gruptan Çıkış (23 Ekim): İbo 'üniversite mezunu değil diye şikayet ettim' sahte ekran görüntüsü atınca 'Adam değilsin sen aq' deyip gruptan çıktı; geri eklenince 'Benim saf bir kalbim var inanırım ben'.",
+      "70k Hayali: 'Her gün çalışcam 70k toplicam', 'götüm delinene kadar çalışcam', 'Kasımda parayı basıcaz' dedi; sonuç haftada 1 gün iş, İbo: 'ayda 70k yerine 9k alıp yarağımı yersin'.",
+      "Ayaklar Mahvoldu (14 Kasım): Üst üste vardiyadan sonra 'ayaklarımı sökmek istiyorum, çok kötüyüm, dayanamıyorum'; 39 numara ayak ('39 ilk defa gördüm'). Grup 'kutudaki anal plug'a oturdu' şakası yaptı, Burger ciddiye alıp 'ayaklarını yukarıda tut' dedi.",
+      "Koreli Çocuk Cehennemi: Hepsiburada'da yanına gelen 'Koreli bir çocuk feleğimizi sikti, molaya kadar cehennemi yaşattı'.",
+      "Papci Spam'i (30 Ekim): Kurban'a art arda 40'tan fazla 'Papci / Papi.' mesajı attı; 'Krxi satan vatan milleti satar'.",
+      "Trendyol'dan Kovulma (10 Eylül): Kurban'la birlikte Trendyol deposuna alınmadı/kovuldu; aynı gün NCity'de boks makinesinde eli kırıldı.",
+      "Dayı ve Manifest: Dayısını Manifest konserine götürdü ('Esin fanıymış'), doğum gününü dayısının kafesinde kutladı; 'İbo adama Manifest açtırdım gidiyoz'.",
+      "Kerpe Kalma Krizi: Alihan'ın evine kalmaya gitmek istedi ('Burger gelcek kalmaya, Berkands gelcek'), 'sizin evde botu şişircem' dedi, Alihan 'sikerim götünü o zaman'.",
+      "Domalma Fotoğrafı (22 Eylül): Halısaha fotosunu atınca 'daha çok domalıyorum gibi geldi bana', Alihan 'istemsiz domalmışsın'; Timur abi'yle Jr muhabbeti.",
+      "Berkay Para Biriktiremez Listesi: İbo'nun 30 ve 100 maddelik 'Berkay çalışmaz, erken uyanamaz, faturalarını yatırmaz, ajanda kullanmaz…' listesine muhatap oldu; Kurban 'teknolojiye ayak uyduramaz yanlış' dedi.",
+      "Hepsiburada Anketi Kavgası (11 Eylül): İbo 'Berkay 30 günde max kaç gün dayanır' anketi açınca 'Ulan sen kimsin aq, ben hatta pişmiş adamım, kendini 1 tutma benle üzülürsün'; İbo 'ulan ben has ameleyim 2 gün 12+12 çalışamadım'.",
+      "26.500 TL Küçümsemesi: 'Milleti sikmeye yer arıyorlar, 26k napiyim götüme mi sokiyim aq'; 'üretimde nefes alamıyon, tır boşaltırım daha iyi, ben 2-3 ay üretimde çalıştım'.",
+      "ZK Sync Umudu: 'Olası bir ZK sync airdropunda ordayız', 'ZK'de böyle olacaktık işte' (Alihan'la 1.5 yıl kastıkları airdrop 0 TL getirdi).",
+      "Halısaha Rolü: Kadroda sağ kanat oynamak isterken Ersin Mamut/Sergen hoca sola yazdı; 'Senin için 10 atacam çıkmadan hem de'; Erdem'e 'yağmur görünce mağarasına kaçan Kürt'.",
+      "Amedspor Yorumları: 'Amed birinci şaka gibi, Kürtlere hak sen', 'Amed'in hakkını verdiler', Kocaeli'yi 'karısı yaptı'.",
+      "Kuponlar: Türkiye–İtalya 3-0 maçında 'Türkiye yener' oynadı; İbo'nun 2800 TL kuponuna '500 denemede 1 tane tuttu'.",
+      "Hedefi 'Reset': 'Sonra yatış 2 gün reset alcam', 'pazar gelmem yüksek ihtimal', 'kitabına söverim' — ama ertesi gün 'önümüzdeki hafta full varım'.",
+      "Şarjı %1 Klasiği: 'Şarjım 1 kapanacak tel Kubi'yle gelirim'; iOS 26/27 gecesi 'ne garip olmuş aq'.",
+      "Mete'nin Orospusu: Mete'nin mekânında bedava pide/kayıntı yaptığı için Kurban 'Beko da Mete'nin orospusu oldu'.",
     ],
   },
   {
     id: "alihan",
     name: "Alihan K (Ali / Aliş)",
-    aliases: ["alihan", "ali", "aliş", "bedko", "8k ceket", "8k'lık ceket"],
+    aliases: ["aliş", "enver alihan", "alihan", "ali", "aliş", "bedko", "8k ceket", "8k'lık ceket"],
     summary:
       "Sürekli giydiği 8.000 TL'lik ceketiyle diline dolanan, stajda hocasından torpille 100 alan, kuryelikte müşterinin köfte ekmeğini yiyen, deposu işinde 11'e kadar yatıp kaytaran, 5 yıldır HOI4'te donanmayı öğrenemeyen ve kahve haklarını İbo'ya kaptıran grup üyesi.",
     facts: [
@@ -253,12 +279,32 @@ const GROUP_MEMBERS = [
       "Borsa / Halka Arz Tavan Tepkisi: İbo erken hisse sattırdığında 'İt Sare sattırdın gördün mü ebenin amını, mal tavan attı yine' diye çıkıştı.",
       "İbo'nun 100 Maddelik Berkay Listesine Kahkahası: İbo'nun Berkay'ı gömdüğü listeyi okuyunca 'Amk boğuluyodum allah çarpsın yarıldım amk' diye tepki verdi.",
       "Klavye Yazım Tarzı: Hızlı yazmaktan harfleri sık sık karıştırır (fren yerine tren, beko yerine bedko, başka yerine baska) ve rastgele büyük-küçük harfli kahkahalar (ĞAĞZĞAĞXĞWĞX) atar.",
+      "20 Kasım Mahkemesi: 'Beko mez3'te böyle… 20 Kasım'da mahkeme var yarramı yiyin, sınırsız para gelcek bize' — ne mahkemesi olduğu belirsiz, grup 'kaç k gelcek' diye sordu.",
+      "Sevgili ve Gizlilik: Sevgilisine çiçek aldı (Burger: 'ilk defa almıyor'); Burger 'yazdı mı lâ bugün kimse sana' deyince 'yazabilir mi sence, şu üçünün diline düşsen nolcak, 3'ünün 2'si Kürt'.",
+      "Kuryelik Dönemi (14 Eylül'den itibaren): Volta elektrikli araçla 'bazen uçuyom, 30 km gidiyor'; müşteri gelmeyince köfte ekmeği yedi ('500 tane yedim şiştim'); 'bugün 15 paket attım'; Berkay 'bu iş en çok sana yaradı parada vermiyon yemeğe'.",
+      "Ben Metin'i Tanıyom: Hepsiburada sorumlusu Metin'i tanıdığı için hep listede ('listede yine varım'); İbo 'askerlik arkadaşın herhalde, Alihan torpilli'. 6 Kasım'da 4 kişi yerine 3 yazdı, Beko'ya isim bile vermedi.",
+      "Arslanbey'de Okul: Kartepe Arslanbey'deki depo ilanına 'benim okul orda aq, yakın' dedi; 'biz bile 5'te çıkıyoz okuldan'. KYK başvurusu yaptı, sonuca e-devletten baktı.",
+      "800'ün Kazası: Kerpe dönüşü '800 kaza yapmış aq, 800'e bindirmiyom sizi boşuna' (aile aracı/800).",
+      "Kurban'ı Satma (27 Eylül): Halısahaya Kurban'ı çağırmadı; Kurban 'Alihan sattı, götlük yaptı, Alihan'la gitmem'; 'siksen gelmem'.",
+      "Anime Yakalanması: Animeye hater olduğu halde 'Alihan anime izliyor' diye Berkay ifşa etti; Kurban'la Death Note izleme planı.",
+      "Instagram ve Elo Boost: 'Benim insta geri açılmış, geri kapattım, LoL elo boost diye biri takip etmiş'.",
+      "Staj Yerine Aşk: 'Ben asker olmasam mı burda çalışsam bir ömür çalışırım, 100k alıyolar buradaki yaptığım işten' → İbo 'sen kaç alıyon 8000₺'.",
+      "Tarla Israrı: Aquapark için 'ya Sakarya'nızı sikeyim haftaya hafta içi tarla yapıcaz, para mı dayanıyor amcık'; İbo 'tarlanı sikeyim'.",
+      "Mert ve Naz Atılması (14 Kasım): Hepsiburada WhatsApp grubunda Mert 'kızlara komiklik olsun diye' yazınca atıldı, Naz da; Alihan emoji attığı için 'ben de emoji koydum ya 😢' diye korktu.",
+      "Kütüphane Üst Kat ve Osuruk: 'Üst kata gel mükemmel bir yer var' (İbo 20 dk bekledi), 'kim osurdu götünü yarıyım onun'.",
+      "Ahiret Dersi: Kütüphane sabahı 'kelle paça içtim, ben cumaya gidicem siz ders çalışın, ahiret dersi çalışıyorum, kuru poğaça yiyin siz'.",
+      "Yevmiyede 11'e Kadar Uyku: Berkay'la gittiği depo işinde 'gram yorulmadım, 11'e kadar yattım' (Berkay 'feleğim sikildi').",
+      "Otobüs Durdurma Kahramanlığı (1 Kasım): Burger otobüsü kaçırınca 41 P 0604 plakalı büyük beyaz otobüsü durdurdu, canlı konum attı, 'orduevinde Burger'i bekledik 2 saat'.",
+      "Harry Kane Ballon d'Or: 'Harry Kane almasa acayip şaşırıcaktım, 72 gol ne ananın amı' (Berkay: Messi'nin hakkıydı).",
+      "Rüyada Kubi'ye Cips: 'Rüyamda Kubi'ye 3 tane cips aldım'; Berkay 'bize de alaydın'.",
+      "Kerpe'de Salih'le Amelelik: '67k'yı bebeğim gibi yerim', 'Kerpe'de anamızı siktiler Salih'le'.",
+      "Hepsiburada Kazancı: 13 Kasım vardiyasında 6750 TL (Kurban 11.250); 'ben bu dersi sevmedim hiçbir sik anlamadım'.",
     ],
   },
   {
     id: "kurban",
     name: "Kurban (Kubi)",
-    aliases: ["kurban", "kubi", "bayburtlu", "çorbacı", "kubizm", "labanzubu"],
+    aliases: ["kurbo", "papci", "papi", "kurban", "kubi", "bayburtlu", "çorbacı", "kubizm", "labanzubu"],
     summary:
       "Aslen Bayburtlu, borsada küçük kârlarla kaçtığı için 'Çorbacı' lakaplı, 30K parası varken 12 TL bakiye SS'i atan, 6 ay KPSS çalışıp denemede Berkay'a geçilen, Belgrad tatili için ekmek yiyin diyen, çatlak ekranlı telefonuyla gece baskınlarına yakalanan grup üyesi.",
     facts: [
@@ -307,12 +353,33 @@ const GROUP_MEMBERS = [
       "Kadınla 30 Dakika Konuşma İfşası: Arkadaşlarından birinin yolda bir kadınla 30 dakika konuşmasını gruba ifşaladı.",
       "Bannerlord & Mezarcı Flood'u: Oyundaki meşhur küfürlü flood'u gruba yapıştırarak Berkay'ın Bannerlord gazını körükledi.",
       "Aramayın Tepkisi: Uyurken veya meşgulken arandığında gruba net bir şekilde 'Aramayın amk' yazar.",
+      "Atamam Var: Havuz suyu kursuna 'ya atamam var aq neden bedavadan başvurayım' dedi (atama bekliyor/hakkı var); İbo 'önlisanstan alırlar belki'.",
+      "Arabası: Kendi arabası (Citroën) var; 12 Kasım'da ehliyeti yeni alan Berkay'a Sakarya'da verdi; Berkay'ı '600 TL taksi ücreti yazar' diyerek hastaneye götürdü.",
+      "22/24 Liste Kavgası (1 Kasım): İbo 'Kubi'yi almamışlar, 24. emoji Kurban'ındı' deyince Metin'e 'bizi almadın' yazdı, aslında 22. sıradaydı → 'siz gerizekalı mısınız, senin yüzünden adama yanlış yazdık, beyinsiz, özürlü, yazmayı öğren'.",
+      "En Zor Gün (13 Kasım): 'En zor günümdü dayı, saniye başı süpürge ağır şeyler geldi, eğil kalk belim sikildi, 100 palet dizdik, ayak tabanlarım belim regl olmuş kız gibiyim, o gayle çalıştım lavuk yardı beni'. 11.250 TL kazandı.",
+      "Serviste Uyuma: Dönüş servisinde o kadar uyudu ki 'tokat atsam uyanmaz', Salih 'yanındaki çocuk uyanmadı serviste kalacaktı Kubi'.",
+      "Shoulder Press Kazası (23 Ekim): '30-30 shoulder press kafama düştü' → Berkay 'düşse ölürsün'.",
+      "Halısahaya Alınmadı: 'Beni almadılar, pro oyuncu istememişler maçta'; Burger 'adamlar Kurban'ı hiç görmedi oynarken, bu adama kurban olsunlar'.",
+      "Kahve Hakkı Hırsızı: Kütüphanede İbo olmayınca 'rahat çalışıyoz' deyip İbo'nun kullanacağı kahve hakkını kullandı; İbo 'veri tabanı hatası'.",
+      "Roblox Bağımlılığı: Sabah 9'da 'Roblox'tayım 3.5 saattir, 5.6 QB oldum'; 'akşam Roblox'ta patlatcaz, boss kesek'; İbo'ya 'İbo para yatırır kesin keriz'.",
+      "Papci: Berkay ve Alihan ona gece gündüz 'Papci / papi papi / Muhsin the Papci' diye takılır.",
+      "2 Gün Üst Üste Sonrası Chill: 'Siz gidin aga 2 gün üst üste gittim chillerim biraz'; 'Yol sıkıyor 3 saat çöpe gidiyor, yol olmasa her gün giderim'.",
+      "Trendyol'dan Kovulma: 10 Eylül'de Berkay'la birlikte Trendyol deposundan alınmadı/kovuldu.",
+      "Kütüphane Sabahı Seka/Alev Atlı: İbo yanlış kütüphaneye gidince 'Yaw sakat ne Seka'sı siktir git Seka'ya gelmem, Alev Atlı'ya gidek dedim, duyduğunu da anlamıyor keriz, 4'lü yeri tut kitap koy dümenden'.",
+      "Protein ve Tiktok: 'Alihan'ı bugün bir tiktok paylaşımı yaparız, Protein Ocean üyelik geliyor'; 'şu kolla kaç kg bench atarım' (Berkay: en az 200).",
+      "Bannerlord Mezarcı Flood'u: Oyundaki meşhur 'ben mezarcı anneni sikeyim mezarcı' küfürlü metni gruba yapıştırdı.",
+      "Belgrad Mottosu: 'Paranızı boşa harcamayın, otobüse binmeyin ekmek yiyin, Belgrad'a para biriktirin, Belgrad'da 4k'ya alcaz'.",
+      "İbo'nun Çarkı: yaparmi.com çarkında hesabına 15 hak yüklendi ('sunucu sahibi tarafından, direk sınırsız'); İbo 'o denemelikti, molalarda çevrilecek, içecek çalma hakkı da var'. 'Çarkımı patlata patlata çevircem'.",
+      "Mc Destek Şifresi: Gruba 'mcdestek, şifre Mc745965*' diye hesap bilgisi paylaştı (Burger: 'Hb net mi').",
+      "Kaymakam Vakası: KPSS sorusunda 'kaymakamı halk seçer' işaretledi; 'yoldaki çocuk bile biliyor Almanya olduğunu velet'.",
+      "Kerpe Sabahı Trolü: '5.15'te çıkıyoz 5.30 otobüsüne' deyip 'şaka yaptım 6.15'tekine' dedi; 'geçen 6'da döndük'.",
+      "Metin Hayatımızı Mahvetti: Gece 3'te 'Metin hayatımızı mahvetti', 'Mez4'e gidilmez diyor'; 'Metin'e ayar çekicem'.",
     ],
   },
   {
     id: "burger",
     name: "Burger king (Burger / Burgen)",
-    aliases: ["burger", "burgen", "burger king", "ulubatlı"],
+    aliases: ["burgen", "ulubatlı burger", "burger", "burgen", "burger king", "ulubatlı"],
     summary:
       "3.5 saat uykuyla üniversiteye 'boklu 201' otobüsüyle gidip çıkışta 'kütüp sefası' yapan, Enver Paşa'yı hararetle savunan, İbo'ya 'Galileo İbo' ve 'Bezelye' lakaplarını takan, sabaha kadar 50 AI video üreten, kaçak Realme telefonlu rap ve aforizma tutkunu.",
     facts: [
@@ -361,12 +428,32 @@ const GROUP_MEMBERS = [
       "Gece Sohbeti Tepkileri: Video ve çıkartmalara verdiği ani, yüksek enerjili tepkilerle gece sohbetlerini canlı tutar.",
       "Kütüphanede İbo'yu Abartılı Şekilde Döndürme Hikayesi: Kurban'ın 'İzin almış Ulubatlı Burger'den İbo'yu abartılı bir şekilde döndürmeye' esprisine 'Sonra geberdi' diye eşlik etti.",
       "Klavye Kahkahası: Gülerken genellikle büyük harflerle rastgele tuşlara basarak (KSKSJOSKSJSOWPSOOS, LDKDKKDLDLDELKDLKE) tepki verir.",
+      "Tekel Bayisi İşi (Ekim sonundan itibaren): Tuborg dolap dizme işinde çalışıyor; gruba sürekli bira listeleri atar ('10 kırmızı, 7 6'lı carls, elephant, luna, desperados, sınırsız sarı'); 'sıfırdan dolap dizdik hard sex var bugün', 'Baran'la 14 mağaza atacaz'.",
+      "Hepsiburada'ya Cuma-Cumartesi Gelemez: 'Ben cuma cumartesi gelmem çalışıyom o günler' → İbo 'beni satıcan mı pezevenk 😭'; 'önümüzdeki haftalar pompa var'.",
+      "Otobüs Şoförü Lavabo Faciası (1 Kasım): Hepsiburada servisine giderken bindiği otobüsün şoförü 'lavaboya gitmem lazım' deyip indi; Halkevi'nde indi, Alihan başka otobüsü durdurdu, '623'ün ağzını sikim, anasını avradını'.",
+      "Telefon Taksit Kavgası (11 Kasım): 256 GB telefonu 'banka kartıyla 60/3 taksit' yapmak istedi; İbo 'banka kartına taksit yok mal, kredi kartı lazım'; Kurban '60k biriktir faiz haram'; Burger 'enflasyona yedircem faizi'. 'Sınırsız iPhone al bana'.",
+      "KPSS Sınavı (4 Ekim): 'Hazır ve nazırım, kardeşim kalamaz, hakkını verdik'; İbo'ya 'daha 23 gün var sana ihtiyar'; 10 Ekim 'hak ettim iyi bir tatil İmamoğlu gibi'.",
+      "yaparmi.com Danışmanlığı: 12 Kasım'da İbo herkes için 10-15 cümle 'ayırt edici özellik' isteyince 'başka bilgiler bulup sana söyleyim, onlara da sövsün'; 'düzgün bot yap da düzgün soru sorayım'; 'ben burger yerken ne zaman bayıldım, Berkan gibi götünden uydurma'.",
+      "Bota Sapık Sorular: Gece 1'de bota sorduğu sorular grupta ifşa oldu ('Burger'in sorduğu çok belli'); 'üsttekini ben sordum'.",
+      "McDonald's Beleş Kahve: 'McDonald's'da beleş kahve var alın'; Alihan'ın kahvelerini 'yine çalıcam, poğaça da alacam Milli İrade'den'.",
+      "İbo'nun Yastığı: İbo Instagram'dan ortopedik güzellik yastığı alınca 'denize fırlatsan daha çok faydası dokunurdu'.",
+      "Hepsiburada Serüveni: 'Ben 8 saatlik çalışmalara gelirim anca' → 'pembe götlü müsün'; 1 Kasım gece vardiyasına gitti; 'öyle bir iş yaptık ki yapılacak iş bırakmadık'; 'ZP kaşarı olmak vardı şimdi', 'Mez4 sesli ama rahat'.",
+      "Yuvam Akarca ve 201: Okula 'o boklu 201'le gider, 'Yuvam Akarca'dayım', 'Sakarya'da mısın' (İbo'ya); 'A. Serdivanım'.",
+      "Halısaha Sakatlığı (26 Ekim): 'Bileğim şişmiş, dizimde tümsek var'; 'ben bu erkek müsveddelerinin amına koyim'; 'Larry Bird ve Magic Johnson bize yetişmen imkansız'.",
+      "Ayak Yorumu: Berkay'ın 39 numara ayağına 'Ayak Halilişko'nun babasına benziyor', 'A. Minik ayak', 'A. Orgum'; ama ciddiye alıp 'ayaklarını uzanırken yukarıda tut, altına destek koy' tavsiyesi verdi.",
+      "İboş ve Köle: İbo'ya 'İboş, A. Bezelyem, Kuponcu Halil, köle, yatak yala, kes aq kuponcusu siktir git paletini ZP'den çek, Seni araba diye sürer vites diye takarım halil caaan'.",
+      "Aforizma Deposu: 'Bu sene bizim senemiz', 'İşte o gün geldiğinde teraziyi biz tekmeleyecez', 'Her şeyi oldurmaya çalışırken hayatın bize sert bir pençe koyduğu evre', 'Kro şe ya da şom ağzına mermiyi boşalttım', 'Yine seyahat yine tonlar cennetin yolunu bana sorma'.",
+      "Hindistan ve Belgrad: 'Hindistan'a para vererek mi gidiliyor bir de, Viking baba siker'; 'Belgrad'da go-kart'a gideriz, offf Belgrad'da ne yeriz'.",
+      "Overshare Analizi: Berkay/Alihan iş yoklukta 'insanlar sormadan anlatmamak lazım, sonra o iş yalan oluyor, oversharing var adamlarda; bak Bayburtlu'ya hiç çaktırıyor mu, satıcı Kurbo'.",
+      "Kütüphane Sahibi: 'Mekan bizim olm çek bir sıcak çikolata', 'kütüp sefası yapcam gelen var mı', 'ben yarın okuldan sonra'.",
+      "11.11 Takıntısı: İbo tam 11:11'de '11.11.11' yazınca 'oha sınırsız, mesajı da tam 11:11'de atmış'.",
+      "Kubi'nin Bağırışı: Kurban'ın sesli mesajı için 'çok iyi bağırıyor, alarm sesi/bildirim sesi yapcam'.",
     ],
   },
   {
     id: "halil",
     name: "Halil B. (İbo)",
-    aliases: [
+    aliases: ["kuponcu halil", "kuponcu", "iboş", 
       "halil",
       "ibo",
       "galileo",
@@ -423,6 +510,31 @@ const GROUP_MEMBERS = [
       "Tarih Seçimi ve Saat Disiplini: Buluşmalarda herkesin geç kalmasından bıkıp 'Saat 10'a kadar sizin keyfinizi bekleyemem, gelen gelir gelmeyen yarağımı yer' diyerek net saat koyar.",
       "Ense Takıntısı: Gruptaki şakalarda en sık kullandığı tehdit ve pazarlık unsuru 'ense'dir ('ense hariç', 'ensen benim', 'sikerim enseni').",
       "Sert Mizah Üslubu: Yakın arkadaş grubunun doğası gereği en sert şakaları ve direkt yüzüne vurma ('roast') cümlelerini en çok kuran kişidir.",
+      "KPSS Günü (25 Ekim): 'Boku yedim sınavda, güncel bilgiler insanazordu ağlıcam'; Alihan 'basitti'; Berkay'la 'Doruklu soru' muhabbeti.",
+      "kuponcuhalil.com (30 Ekim): 'Artık kupon analizlerim bu sitede gelin para kazanın'; Alihan 'günün kuponu diye kupon veriyo bir de, sen harbi manyaksın'. katiphoca.com: 'yeni site nasıl, sıralamaya isim yazdırın, abonelikleri açarsam enayiler alır belki' → Berkay 'OnlyFans mı açtın'.",
+      "2800 TL'lik Kupon (23 Ekim): 50 TL'ye 2800 TL tutturdu ('kuponun reisi benim, yatın aşağı'); aslında 100 TL basacakken kuponu ikiye böldü, diğeri yattı ('gitti 5k'). Hepsini borca ödedi ('3000 geldi bugün, borç ödicem 😭'). 30 Ekim 1-4 ile yine tuttu.",
+      "Staj + Hepsiburada + Staj: Gece Hepsiburada vardiyasından çıkıp 8 saat staja gitti, 'ayakta uyudum, ordaki abi sordu uyuyamadım dedim', 'eve gidince 13 saat uyudum', 'sınırsız premium amele olucam'.",
+      "ZP Orospusu: Hepsiburada'da toplama yerine ZP'ye atıldı: 'aynı robot süpürgeden 30 tane diyor, amele siken ZP', 'ZP orospusuyum', yanına verilen iki kişi 'hayatında LEGO oynamış herhalde, tost makinesinin üstüne promax TV koyuyorlar'; Selim adlı işçiye hayran ('tam promax amele benim gibi').",
+      "Tik Yerine Kalp Faciası (6 Kasım): Hepsiburada'da ilk tik attığı halde listeye giremedi, 40 kişiden 25 alındı sadece Alihan vardı; 'tik yerine kalp atan 5 kişiden 4'ü listede, bundan sonra farklı emoji atak taktik değişek'.",
+      "Berkay Yüzünden İş Yok Kampanyası: 27 Ekim–6 Kasım arası her gün 'Beko sen girdin Hepsiburada çürüdü, şikayet edicem, çık işten, kafanı sikeyim'; 'sen gruba girdiğinde 180 kişi vardı 600 olmuş'.",
+      "Havuz Suyu Operatörlüğü: E-yaygın'dan 09.11'de başlayan Havuz Suyu Operatörlüğü kursuna başvurdu ('54 ile atanan oldu, ne olur ne olmaz'), herkesi başvurttu; Berkay bile başvurdu ('göreceksiniz Berkay atanıcak maşallah').",
+      "Monitör ve Sınırsız Oyun: 9 Kasım monitör aldı ('kablolar götüme girecek'), 'LoL full ekran oynıcam', 'Beyler 11 güne LoL başlamak lazım LoL önemli'; Kurban 'İbo'ya Alistar aldırcam, altın kostüm yakışır'.",
+      "Ayakların İsyanı (15 Kasım): 'Ayaklarım Berkay'ın dünkü haline döndü sınırsız ağrıyor, zonkluyor'; yine de 'ayaklar kopsa da Beko için gelirim'; 'banka arayıp ayaklarınız ağrıyorsa ödemeyin demiyor, borç var borç'.",
+      "Sahte Şikayet Şakası: Berkay'ı 'üni mezunu değil' diye şikayet etmiş gibi görsel atıp gruptan çıkmasına sebep oldu; 'olm şakasına yazdım, fake olduğu da çok belli, mal Berkay'.",
+      "Alihan CİMER Şakası (30 Eylül): 'Alihan'ı CİMER'ledim, Atatürk'e küfür edip yan gelip yatamazsın pezevenk, dünya 5'ten büyüktür'.",
+      "Zehirlenme (20 Eylül): '100₺'ye tavuk şiş dürüm yerinden 2 dürüm yedim karnım ağrıyor ölcem' → Kurban 'hak ettin'.",
+      "Gizli Çekim Arşivcisi: Kurban'ın uyumasını, Berkay'ın 115 dk puan hesaplamasını, NCity yürüyüşünü ('Engelliye yardım'), 3 saniyelik yatışı çeker ('gizli çekim', 'ciddiyet ✍️').",
+      "Enver Paşa Tartışması Lideri: 'Yüzsüz Enver, askeri soğukta şehit etti, kafasına sıkması lazımdı, Atatürk gerekirse Allah olur'; Falih Rıfkı Atay Çankaya alıntısı attı; Burger 'Geminiden almış, Galileo İbo'.",
+      "Kütüphane Diktatörü: 'Yarın 9'da kütüphane önünde olmayan yarağımı yiyebilir, saat 10'a kadar sizin keyfinizi bekleyemem'; '10 kişiye yer tutamam'; 'koltukta yasak iç kısımda oturcaz'.",
+      "Sare Hissesi: Alihan'a 'it Sare sattırdın' diye kızdırdı, hisse tavan attı; 'açgözlü olmasın çarşamba sat dedik parası geldi bugün'.",
+      "Hepsiburada Yasaklı: 'Aga ben ordan yasaklıyım, 2 sene önce ordaydık yövmiyeciyiz' dedi ama Ekim'de tekrar başvurdu; 'niye ayrıldım ki ben ordan aq malım'.",
+      "Trendyol 46k İlanı: '32.968 net + ikramiye + 4000 devamsızlık' Trendyol ilanını attı ('46k maaş aq').",
+      "Halk Arzı Kredi Çekme: 'Halka arz var haftaya ben sizden katılcam, %50 kâr sizin, kredi çekicem katılcam, bana borç versene' → Kurban '30k var 60 vercem başka kapıya amele'.",
+      "Çakmak İlanı: 'Beyler bu çakmak var bende 10000 TL'ye satıyom alın, İYİKİ VARSINIZ LAN'.",
+      "Burgerim Yalvarışları: Burger gelmeyince 'Burgerimmm gel lütfen ağlarım bak, sensiz çalışamam, sana sınırsız içicek sonsuz dondurma'.",
+      "Grup Gay Dolu: Hepsiburada grubunda kimse vardiyaya ifade atmayınca 'grup gay dolu', 'enayiler'.",
+      "Staj Boşluğu: 'Stajda boş boş oturuyoz, 2-3 kere git gel yaptım o kadar', 'staj olmasa valla işe giderdim 2250₺ ise osura osura giderdim'.",
+      "Motor Yemini Güncel: 'Şu borçları bitireyim motor çekicem, sen test edicen zaten ehliyetin var' (Berkay'a); 'ay sonu motor almalıyım'.",
     ],
   },
   {
@@ -477,6 +589,17 @@ const GROUP_MEMBERS = [
       "Gece Yarısı Şaşkınlık Tepkileri: Gece 04:12'de Berkay'ın videosuna 'Hay aq' diyerek tepki verir.",
       "Erdem'e Pamuk Şeker Yakıştırması: Yağmurlu havada maça gelmeyen Erdem muhabbetinde 'Pamuk şeker' diyerek takıldı.",
       "Az ve Öz Konuşma Tarzı: Uzun flood'lar atmak yerine genelde kısa, net, durum tespiti yapan mesajlarla sohbete girer.",
+      "Belediyeden Hepsijet'e (13 Kasım): 'Ben köfte yaparken mutluydum'; Hepsijet'te 'şef dibimde bekliyor nefes aldırmıyor, palet çektim illere göre kargoları ayıkladım, 30k adım attım sik kadar yerde, çok toz yuttum, amele oğlu amele oldum, bir gay benle arkadaş olmaya çalıştı götümü kurtardım'.",
+      "Hepsiburada'ya Geç Kayıt: Formu geç doldurdu ('Koü turizm' yazdı), ilk gruba alınmadı ('sen bize kalın gelirsin dediler'), 10 Kasım'da alındı; 13 Kasım'da 2250 TL'lik vardiyayı 'giderayak kaptı' (Kurban); 'tik atmayı unuttum uyuyakaldım'.",
+      "Kalede Parmak Faciası (26 Ekim): 'Parmaklarım o kadar ağrıyor ki, ezildi bütün parmaklarım, kalede yokum artık başkasını bulun'; Kurban 'Salih Türkçe rap için parmak kemiklerini kırdı'; sonra 'beyler ben artık TD'yim'.",
+      "Çiğ Köfte Borcu: Kupon tutan İbo'ya 'Beko 300 atsana çiğ köfte alcam' → 'borç ödicem' → 'vay garibanım'.",
+      "OnlyFans Hesabı: 'İbo'nun OF hesabı olsa maaşımın %63'ü onun olur'.",
+      "KPSS'de Kalem: 'Aga KPSS'de elime kalem sokucam kaleye geçmicem'.",
+      "Sponsor Esprileri: Halısaha forması için 'Uğur Katık döner tozluk sponsorumuz, Hizmet Market göğüs'; 'Enes Ünal 2 gol yazdım'.",
+      "Anıtkabir: 10 Kasım'da 'Anıtkabir'e gidiyom' diyerek vardiyayı pas geçti; 'meth bağımlısı Leyla ablayı gördü' videosu.",
+      "Sümük Hikayesi: Hepsijet'te 'keşke sümüğümü atsaydım abucum kadardı, soldaki kamyonda bir yere gitti hapşurunca, sağdakini duşta çıkarttım'.",
+      "Jr İfşası: 'Jr de infaz videoları izliyor' (Kubi porno baskınıyla aynı gece).",
+      "Kerpe'de Ölüm: 'Beko'nun abisi para aldı ölüyorduk Kerpe yolunda, burnunu kırarım' (Berkay: Kerpe'ye gitmedik ki).",
     ],
   },
   {
@@ -526,6 +649,11 @@ const GROUP_MEMBERS = [
       "Kuryelik İçin Ehliyet Süresi Takibi: Ehliyet süresini gün gün takip edip kuryelik planı yapacak kadar geleceğe dönük gelir hesabı yapar.",
       "Üretim / Depo Yerine Zanaat Savunusu: Asgari ücretli geçici işler yerine ustalık öğrenmenin Türkiye'de en kazançlı yol olduğunu savunur.",
       "Hem Eğlenceye Hem İşe Uyum Sağlaması: Bir yandan CS ve rap beatleriyle uğraşırken diğer yandan ev geçindirme ve vardiya sorumluluğunu taşır.",
+      "Motor Kazası (16 Eylül): Hasarlı motor fotoğrafı attı 'Beko senin göt gibi oldu hahaha'; herkes geçmiş olsun dedi, İbo 'Berkay kaza 2'.",
+      "Vardiya İsyanı: '4 haftadır 8-4'üm, 12-8'i de kaldırdılar, kafayı yicem amiri de sikicem memuru da'; İbo '12-8'e dönsen işten çıktığın gibi gelebilcen mi, 1 gün gitmesen atarlar mı'.",
+      "İşi Bıraktı (6 Ağustos): 'Gençler işe postayı koydum bana amele işi lazım hayat siken'; Kartepe deposuna 'gideriz beraber 2-3 tır yükleyelim' diye ilk yazan.",
+      "Sistem Aldı mı: Alihan 'Lan Cem sistem mi aldın' (13 Ekim); 'CS gelen var mı gençolar' çağrısı Berkay'ın ehliyet gününe denk geldi ('yastayız oyun yok').",
+      "Soldaki Gay mi: Berkay'ın ehliyet gecesi atılan fotoğrafa 'Soldaki gay mi' yorumu.",
     ],
   },
   {
@@ -543,7 +671,78 @@ const GROUP_MEMBERS = [
       "Alihan ve Berkay'ın Ameleliğini Denetlemesi: Öğlen 11:47'de 'Lan Alihan Berkay gitmediniz mi amk ameleliğe' diyerek hesap sordu.",
       "Vatan Sana Canım Feda Videoları: Gruba iki farklı günde 'Vatan sana canım feda' açıklamalı videolar paylaştı.",
       "Harçlık İsteme Videosu ve Kurban'ın Anketi: Gece 'Harçlık yollayın bana' diye video atıp banka bilgilerini paylaşınca Kurban hemen 10 - 100 - 1000 - 0 seçenekli harçlık anketi açtı.",
+      "IBAN Paylaşımı (12 Ekim): Harçlık videosunun ardından gruba IBAN'ını ve tam adını (Alparslan Yusuf Bağmancı) attı; Kurban 10/100/1000/0 anketi açtı.",
+      "Yevmiye Denetçisi: 12 Ağustos öğlen 'Lan Alihan Berkay gitmediniz mi amk ameleliğe'.",
+      "Depoda Övgü: Tır boşaltma işinde görevli Alpaslan'ı övdü, İbo Berkay'a 'Alpaslan da övdü adamı zaten iyiymiş' dedi.",
     ],
+  },
+  {
+    "id": "grup",
+    "name": "Grup — ortak olaylar, kavgalar, planlar",
+    "aliases": [
+      "grup",
+      "hepsiburada",
+      "hepsi burada",
+      "aquapark",
+      "aqua park",
+      "sakarya",
+      "kerpe",
+      "kütüphane",
+      "kütüp",
+      "halısaha",
+      "halı saha",
+      "yaparmi",
+      "çark",
+      "seka",
+      "ncity",
+      "trendyol",
+      "amele",
+      "amelelik",
+      "yevmiye",
+      "yövmiye",
+      "kupon",
+      "halka arz",
+      "sınırsız",
+      "enver",
+      "kerpe",
+      "belgrad",
+      "hindistan",
+      "lunapark",
+      "tarla",
+      "metin",
+      "mez2",
+      "mez4",
+      "zp",
+      "jet"
+    ],
+    "summary": "Grubun ortak serüvenleri: Kerpe gezisi, hiç gidilemeyen Sakarya Aquapark, kütüphane sabahları, halısaha saat krizleri, halka arz/çorbacı savaşı, Enver Paşa tartışması, 'Berkay yüzünden iş yok' dönemi ve Kasım'daki 'Sınırsız' Hepsiburada maratonu.",
+    "facts": [
+      "Kerpe Gezisi (10-11 Temmuz): Kandıra otogarı/Yenidoğan D100 karışıklığı, sabah 05:17 İbo 'kalksanıza' bombardımanı, 6.15/6.45 otobüs tartışması, 'Fahişe team' albümü, Alihan 'Berkay'ı kaç paraya sikersin / enseye 200 TL', İbo tepeden atlamadı ('gidince oturuyon orda'), Alihan'ın 800'ü kaza yaptı.",
+      "Alihan'ın Evinde Maç Gecesi (10 Temmuz): Burak, Berkan, Kubi, Beko, İbo, Ali; 'erken gelirseniz evi temizlersiniz, cips kola alın'; '1 saatte Kuruçeşme'den Yenidoğan'a gelemediniz'; Kurban: 'ev Alihanların üst kata döndü'.",
+      "Sakarya Aquapark Fiyaskosu: 10 Temmuz'dan itibaren İbo her gün 'acilen Aquapark'; 7 kişi 1560-1590 TL; tarih 6 Ağustos → Perşembe → Pazar → Eylül ilk hafta diye değişti; Cem vardiya, Salih izin iptali, Kurban 'pazar gitmem köle değilim', Alihan 'tarla'; 20 Ağustos'ta tesisin 1 Eylül'de kapanacağı öğrenildi, HİÇ GİDİLEMEDİ ('hayat bitti').",
+      "Alternatif Gezi Hayalleri: Tuzla lunapark 800 TL sınırsız, İzmit fuarı 150 TL (Kurban 'siksen vermem'), Hindistan'da gondol (uçak 16k, 'Arcus airdrop gelsin ısmarlarım'), Belgrad (Kurban birikim planı), go-kart, Nusret — hiçbiri olmadı.",
+      "Halka Arz / Çorbacı Savaşı (Temmuz-Ağustos): İbo-Kurban karşılıklı 'çorbacı'; Sare hissesi erken satıldı tavan attı; Kurban gizli satış ekran görüntüsüyle yakalandı ('ben bankayım zaten'); İbo 'total zarar 71 TL' ss'i; Kurban '%110 kâr payı' pazarlığı; 'zarar ortaklığı' tartışması.",
+      "İlk Tır Boşaltma Günü (31 Temmuz): Berkay+Kurban Gebze'de 1800 TL, 3 saat mola, sayım hatasından 3 kez aynı koliler; Alpaslan övüldü; aynı gün Alihan staj 100 torpil, İbo laptop 36k, Salih '6 saat mola yaptım'.",
+      "Among Us Dönemi (Ağustos): Epic'te bedava/8 TL, 'Amongudss girek', Kurban telefondan; Alpaslan'ın doğum günü aynı gün.",
+      "67k Üretim İlanı Tartışması (9 Ağustos): Alihan '1 ay çalışırım bebeğim gibi yerim', Berkay 'üretimde nefes alamıyon', Salih 'götünden kan alırlar', İbo 'Berkay 2 yıldır evde 31, Alihan sizin gibi gay mi'.",
+      "Kütüphane Sezonu (Eylül): Her sabah İbo 4'lü masa için sırada; Seka/Alev Atlı/Milli İrade/Belsa; Alihan cuma namazı ve kelle paça; 'kim osurdu'; NCity yemek kavgası ('son dk kararlarınızı götünüze sokun'); Berkay'ın lahmacun gazı; Kurban'ın Berkay'a kopya verme iddiası; Alihan'ın kahve haklarının İbo ve Burger tarafından sömürülmesi.",
+      "Enver Paşa Tartışması (8 Eylül): İbo'nun Sarıkamış sorusuna Berkay 'Atatürk', Burger 'İsmail Hakkı/İngiltere'; Burger 'Enver Paşa masum, bu vatana hizmet etmiş adam'; İbo Falih Rıfkı Atay alıntısı; Burger 'taraflı işte, Galileo İbo'; Alihan sonradan 'haklı' dedi. Alihan 'Enver Alihan', Burger ve Alihan Enver cephesi, İbo-Berkay Atatürk cephesi.",
+      "Deneme Depremi (18-20 Eylül): Berkay 93 (tarih 27/27), Kurban 91; kopya/QR suçlaması; İbo'nun 30 ve 100 maddelik 'Berkay … yapamaz' listesi (Alihan 'boğuluyodum'); 5 ay bedava staj tartışması ('köle' vs 'boş gez'); haşhaş sorusu C.",
+      "yaparmi.com Doğuşu (21 Eylül): İbo siteyi açtı; 22 Eylül'de AI cevapları gruba düşünce Berkay 'özele giriyor, bir daha yapma'; Kurban 'kızın köpeği bile Berkay'dan kaçar' cevabına yarıldı; 29 Ekim 'sansürsüz bot', 9 Kasım 'ahlaklı bot' + 'sınırsız çark'; Burger baş eleştirmen.",
+      "Halısaha 6-7 Krizi (22 Eylül): Kurban 18-19 saatini alınca herkes isyan ('6-7'yi en son 12 yaşımda aldım'), Timur abi 6'da işten çıkıyor, Alihan 11-12'ye çevirdi; Salih mangal yüzünden gelmedi; Burger 14 günlük bacak açma apk'sı; Berkay'ın domalma fotoğrafı.",
+      "Berkay'ın Ehliyet Dizisi: 8 Ağustos yazılı tam puan; 25 Eylül Salon Burger/ense iddiası; 30 Eylül direksiyon dersi kazası; 11 Ekim ilk sürüş sınavı KALDI (grup İbo'yu 'geçti' diye trolledi, dondurma dağıtıldı); 24 Ekim ikinci sınav geçti; 12 Kasım Kurban'ın arabasıyla Sakarya'da tur.",
+      "Hepsiburada Yevmiye Grubuna Kayıt (22-23 Ekim): Form, 'tik atın', Metin/Metin Oktay/Çağla sorumlular, Kuruçeşme/Orduevi/Halkevi servis durakları; Salih ilk grupta alınmadı; Berkay sahte şikayet yüzünden gruptan çıktı; aynı gece İbo'nun 2800 TL kuponu tuttu.",
+      "'Berkay Yüzünden İş Yok' Dönemi (27 Ekim-6 Kasım): Berkay girince 5 gün iş çıkmadı; İbo her gün 'şikayet edicem çık işten'; Berkay 'bütün İzmit'e instadan duyurdum'; sabah vardiyası 10 saniyede doldu; 1 Kasım Kurban-İbo 22/24 kavgası; Burger'in otobüs şoförü lavabo macerası; Berkay kimliğini unuttu; 6 Kasım 'tik yerine kalp atanlar alındı'.",
+      "Sınırsız Hepsiburada Maratonu (7-15 Kasım): Kasım indirim sezonu, neredeyse her gece vardiya; 'Sınırsız / Sınırsız Maximus / Plus / Pro XL' dili; Mez2 (sakin, çay) vs Mez4 (sesli ama rahat) vs ZP (İbo'nun cehennemi) vs Jet; 2250 TL'lik 14-00 vardiyası iptal; 13 Kasım Kurban 11.250, Alihan 6750; Berkay elendi sonra Metin'e yazıp geri alındı; 14 Kasım Berkay'ın ayakları + anal plug şakası + Koreli çocuk; Mert/Naz gruptan atıldı; paralar 18 Kasım'da yatacak; 'ordaki yövmiyeciler 3k alıyormuş bize az veriyorlar'.",
+      "Halısaha Sakatlık Gecesi (26 Ekim): Salih'in parmakları ezildi ('kalede yokum artık'), Burger'in bileği şişti; 'intihar ederiz, 2 günde 2 lose' (ehliyet+halısaha+KPSS); Alihan Harry Kane Ballon d'Or, GS-FB tahminleri ('klasik Fenerli').",
+      "Papci Flood'u (30 Ekim): Berkay 40+ 'Papci' mesajı attı, Alihan 'papi papi'; İbo arada 'Berkay işten çıkar mısın, şikayet ettirme'.",
+      "Cem'in Kazası ve Alihan'ın Kuryeliği (16 Eylül): Cem'in hasarlı motoru ('Beko senin göt gibi oldu'), herkes geçmiş olsun; Alihan aynı gün Volta ile kurye, müşterinin köfte ekmeğini yedi.",
+      "Gece Sohbetleri (17 ve 21 Eylül): FIFA kart çekimleri (97/95), Biscolata/Kerimcan Durmaz klibi, Kubizm/Sembolizm, 'Kubi'nin telefonu çatlak, İbo'nun kulakları yok', Rıdo'nun topu, Berkan'ın sapık fotosu (onlarca mesaj silindi), 8k ceket ilk kez, Burger 3.5 saat uyku, 'o boklu 201'.",
+      "Kürt Ekseni: İbo, Kurban ve Salih birbirine 'Kürt' der; Alihan '3'ünün 2'si Kürt'; Berkay 'aptal Kürt İbo'; Amedspor muhabbeti ('Amed'i sikim' Alihan, 'Amed yenecek' Salih).",
+      "İttifaklar: İbo↔Berkay ana eksen (sürekli 'Berkay napıcak?' / 'o götünü ben kaldırdım'); Berkay+Kurban yevmiye ve oyun ikilisi (Trendyol'dan beraber kovuldu, Mez2 yatışı); Kurban+Burger BTD6/Warband; Alihan+Salih Kerpe amelesi; Burger+Berkay 'Burgerim/Bekom'; Alihan torpil ekseni (Metin'i tanıyor).",
+      "Lakap Sözlüğü: Çorbacı (erken satan), Kanzi, Papci, Labanzubu, Kubizm, Galileo İbo, Bezelye İbo/Eğrelti otu Berkay, 8k ceket, ense, boğazım kurudu, gondol, packet (Salon Burger), Seka/sekasex, has amele/promax amele, pembe götlü (az çalışan), koparma, yarıldım, 'Beyler apollo', PlayStation pazarı flood'u, 'Mesaj bekleniyor. Bu işlem biraz zaman alabilir.' ss spam'i.",
+      "Yan Karakterler: Metin/Metin Oktay/Çağla (Hepsiburada sorumluları), Selim (promax amele), Koreli çocuk, Jr (infaz videoları), Berkan (sapık, Ruken fotoları), Timur abi, Sebo, Rıdo/Rıdvan Akmeşe, Mete (mekân), Erdem (pamuk şeker, yağmurda kaçan), Ersin Mamut/Sergen hoca, Deniz abi (hamsi kafa), Adnan, Burak, İdris, Naz, Mert, Kaan, Anıl, Arda."
+    ]
   },
 ];
 
@@ -792,37 +991,35 @@ async function uret(messages, attempts) {
   return null;
 }
 
-// Arşiv kodu: kişi id'si ya da lakabı + "1" (berkay1, beko1, kubi1...), "ortak1", "hersey1".
-// Hangi bot seçiliyse o botun bilgisi döner:
-//   ULTRA MAXİMUS (ahlakli): kişi → GROUP_MEMBERS dosyası; ortak → SYSTEM_PROMPT + ek kural; hersey → hepsi
-//   Sınırsız:                kişi → GRUP_OLAYLARI'nda o kişi geçen olaylar; ortak → SYSTEM_PROMPT; hersey → hepsi
+// Arşiv kodu (soru kutusuna yazılır, AI'a gitmez, arsiv.html'de madde madde gösterilir):
+//   Sınırsız bot seçiliyken: SADECE "hersey1" → GRUP_OLAYLARI'nın tamamı (kısıtlı eski bilgiler).
+//   ULTRA MAXİMUS (kodda "ahlakli") seçiliyken:
+//     kişi id'si/lakabı + "1" (berkay1, beko1, kubi1...) → o kişinin arşiv dosyası
+//     "ortak1"  → isim geçmeyen sorularda kullanılan 8 kişilik özet profiller
+//     "hersey1" → tüm arşiv
 function arsivKodu(soru, botId) {
   const m = String(soru || "").toLocaleLowerCase("tr-TR").trim().match(/^([a-zçğıöşü'’ ]+?)\s*1$/);
   if (!m) return null;
   const kod = m[1].trim();
-  const maximus = botId === "ahlakli";
-  const promptMetni = maximus ? ahlakliPrompt("").split("SORUDA BELİRLİ BİR İSİM GEÇMEDİ")[0].trim() : SYSTEM_PROMPT.trim();
-  const ortak = {
-    id: "ortak",
-    name: maximus ? "ULTRA MAXİMUS SINIRSIZ BOT — ortak prompt" : "Sınırsız bot — ortak prompt",
-    summary: "Botun her soruda kullandığı karakter ve kural metni.",
-    facts: promptMetni.split("\n").map((x) => x.trim()).filter(Boolean),
-  };
-  const kisiDosyasi = (k) => {
-    if (maximus) return k;
-    const adlar = [k.id, ...k.aliases];
-    const olaylar = GRUP_OLAYLARI.filter((o) => adlar.includes(o.ad) || adlar.some((a) => kucult(o.metin).includes(" " + a)));
-    return { id: k.id, name: k.name, aliases: k.aliases, summary: "Sınırsız botun bu kişi için bildiği olaylar.", facts: olaylar.map((o) => o.ad + ": " + o.metin) };
-  };
-  if (kod === "ortak") return { kod, bot: botId, kisiler: [ortak] };
-  if (kod === "hersey" || kod === "herşey") {
-    const kisiler = maximus
-      ? [...GROUP_MEMBERS, ortak]
-      : [{ id: "olaylar", name: "Sınırsız bot — tüm olaylar", summary: "GRUP_OLAYLARI listesinin tamamı.", facts: GRUP_OLAYLARI.map((o) => o.ad + ": " + o.metin) }, ortak];
-    return { kod: "hersey", bot: botId, kisiler };
+  const hersey = kod === "hersey" || kod === "herşey";
+
+  if (botId !== "ahlakli") {
+    if (!hersey) return null;
+    return {
+      kod: "hersey", bot: botId,
+      kisiler: [{ id: "olaylar", name: "Sınırsız bot — tüm bilgiler", summary: "Sınırsız botun bildiği olayların tamamı.", facts: GRUP_OLAYLARI.map((o) => o.ad + ": " + o.metin) }],
+    };
   }
+
+  if (kod === "ortak") {
+    return {
+      kod, bot: botId,
+      kisiler: [{ id: "ortak", name: "Ortak — grup özet profilleri", summary: "Soruda isim geçmeyince botun kullandığı kısım.", facts: GROUP_MEMBERS.map((k) => k.name + ": " + k.summary) }],
+    };
+  }
+  if (hersey) return { kod: "hersey", bot: botId, kisiler: GROUP_MEMBERS };
   const kisi = GROUP_MEMBERS.find((k) => k.id === kod || k.aliases.includes(kod));
-  return kisi ? { kod: kisi.id, bot: botId, kisiler: [kisiDosyasi(kisi)] } : null;
+  return kisi ? { kod: kisi.id, bot: botId, kisiler: [kisi] } : null;
 }
 
 export default async function handler(req, res) {
