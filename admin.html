@@ -22,7 +22,7 @@
     <header class="page-head">
       <span class="eyebrow"><i>⚙️</i> Yönetim</span>
       <h1>Admin <em>paneli</em></h1>
-      <p class="lead">Hikâyeyi düzenle, resimleri ve sesleri değiştir, galeri önerilerini onayla, kâhine sorulanlara bak.</p>
+      <p class="lead">Kâhin, çark, topluluk, içerik, oyunlar ve galeri — her şey kendi sekmesinde.</p>
     </header>
 
     <div class="panel card admin-section" id="adminGate">
@@ -34,13 +34,33 @@
 
     <div id="adminContent" hidden>
       <nav class="adm-tabs" role="tablist" aria-label="Admin bölümleri">
-        <button type="button" role="tab" data-tab="icerik">📝 İçerik</button>
-        <button type="button" role="tab" data-tab="oyunlar">🏍️ Spor ve ehliyet</button>
-        <button type="button" role="tab" data-tab="galeri">🖼️ Galeri <span class="adm-say" id="admOneriSay" hidden></span></button>
         <button type="button" role="tab" data-tab="kahin">🔮 Kâhin</button>
         <button type="button" role="tab" data-tab="cark">🎡 Çark <span class="adm-say" id="admCarkSay" hidden></span></button>
+        <button type="button" role="tab" data-tab="topluluk">📊 Topluluk</button>
+        <button type="button" role="tab" data-tab="icerik">📝 İçerik</button>
+        <button type="button" role="tab" data-tab="oyunlar">🎮 Oyunlar</button>
+        <button type="button" role="tab" data-tab="galeri">🖼️ Galeri <span class="adm-say" id="admOneriSay" hidden></span></button>
       </nav>
+
+      <!-- ================= KÂHİN ================= -->
+      <section class="adm-panel admin-grid" data-panel="kahin" hidden>
+        <div class="adm-intro wide"><b>🔮 Kâhin</b> Bota sorulan her şey burada: kim, ne sordu, bot ne dedi, hangi model cevapladı.</div>
+        <div class="panel card admin-section wide">
+          <h2>Sorulanlar</h2>
+          <p class="muted">Giriş yapıp soran kullanıcı adıyla, diğerleri "Misafir" olarak görünür. Son 200 soru.</p>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Soru</th><th>Cevap</th><th>Model</th></tr></thead>
+              <tbody id="soruTableBody"><tr><td colspan="5" class="muted">Yükleniyor…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ÇARK ================= -->
       <section class="adm-panel admin-grid" data-panel="cark" id="carkAdmin" hidden>
+        <div class="adm-intro wide"><b>🎡 Çark</b> Sırayla: ① çarkı aç/kapat ② mola seç ③ kuralları yaz ④ dilimleri düzenle ⑤ kime ne çıktı.</div>
+
       <div class="panel card admin-section wide">
         <div class="se-top">
           <h2>🎡 Çark durumu</h2>
@@ -108,16 +128,63 @@
           </table>
         </div>
       </div>
-      </section>
-      <section class="adm-panel admin-grid" data-panel="icerik" hidden>
-      <div class="panel card admin-section wide">
-        <div class="se-top">
-          <h2>👥 Sosyal hayat hikâyesi</h2>
-          <button type="button" class="admin-btn publish" id="sosyalEditBtn">Düzenleyiciyi aç</button>
-        </div>
-        <p class="muted">Hikâye, oyundaki haliyle tam ekran açılır. Yazılara ve seçeneklere tıklayıp olduğu yerde düzenleyebilirsin.</p>
-      </div>
+            </section>
 
+      <!-- ================= TOPLULUK ================= -->
+      <section class="adm-panel admin-grid" data-panel="topluluk" hidden>
+        <div class="adm-intro wide"><b>📊 Topluluk</b> Günün sorusu / anket / haftanın rezili oluştur, grup sayaçlarını artır, vardiya kayıtlarını yönet. Hepsi <a href="/topluluk" target="_blank">topluluk sayfasında</a> görünür.</div>
+
+        <div class="panel card admin-section">
+          <h2>🗳️ Yeni anket</h2>
+          <p class="muted">Tür seç, başlığı ve seçenekleri yaz (her satır bir seçenek). "Günün Sorusu" ve "Haftanın Rezili" de aynı yerden açılır.</p>
+          <div class="tpl-form adm-form">
+            <label>Tür <select id="anketTur"><option value="gunun">🌞 Günün Sorusu</option><option value="anket">🗳️ Anket</option><option value="rezillik">🤡 Haftanın Rezili</option></select></label>
+            <label class="tpl-genis">Başlık <input type="text" id="anketBaslik" maxlength="160" placeholder="Berkay yarın işe gider mi?" /></label>
+            <label class="tpl-genis">Seçenekler (satır satır) <textarea id="anketSecenekler" rows="4" placeholder="Evet&#10;Hayır&#10;Mez4'te yatar"></textarea></label>
+            <button type="button" class="admin-btn publish" id="anketOlustur">➕ Oluştur ve aç</button>
+          </div>
+          <p class="suggest-status" id="anketOlusturDurum"></p>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2>🔢 Grup sayaçları</h2>
+          <p class="muted">"Berkay napıcak" gibi sayaçlar. +1 / −1 ile artır, kaydet.</p>
+          <div id="grupSayacAdmin"><p class="muted">Yükleniyor…</p></div>
+          <div class="sayac-butonlar" style="margin-top:10px">
+            <button type="button" class="admin-btn reject" id="grupSayacEkle">➕ Sayaç ekle</button>
+            <button type="button" class="admin-btn publish" id="grupSayacKaydet">💾 Kaydet</button>
+          </div>
+          <p class="suggest-status" id="grupSayacDurum"></p>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>📋 Anketler</h2>
+          <p class="muted">Açık olanları kapat, doğru cevabı işaretle (liderlikte "kim bildi" buradan hesaplanır), gereksizleri sil.</p>
+          <div id="anketAdminListe"><p class="muted">Yükleniyor…</p></div>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>🏭 Vardiya kayıtları</h2>
+          <p class="muted">Kullanıcıların girdiği vardiyalar. Yevmiyeyi düzeltip kaydedebilir, yanlış kaydı silebilirsin. Son 200.</p>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Vardiya</th><th>Bölüm</th><th>₺</th><th>Not</th><th>İşlem</th></tr></thead>
+              <tbody id="vardiyaAdminTablo"><tr><td colspan="7" class="muted">Yükleniyor…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= İÇERİK ================= -->
+      <section class="adm-panel admin-grid" data-panel="icerik" hidden>
+        <div class="adm-intro wide"><b>📝 İçerik</b> Sosyal Hayat hikâyesi ve ana sayfadaki zaman sayaçları ("Berkay ehliyet alalı X gün").</div>
+        <div class="panel card admin-section wide">
+          <div class="se-top">
+            <h2>👥 Sosyal hayat hikâyesi</h2>
+            <button type="button" class="admin-btn publish" id="sosyalEditBtn">Düzenleyiciyi aç</button>
+          </div>
+          <p class="muted">Hikâye, oyundaki haliyle tam ekran açılır. Yazılara ve seçeneklere tıklayıp olduğu yerde düzenleyebilirsin.</p>
+        </div>
       <div class="panel card admin-section wide">
         <div class="se-top">
           <h2>⏱️ Sayaçlar</h2>
@@ -130,8 +197,12 @@
         <div id="sayacAdmin"><p class="muted">Yükleniyor…</p></div>
         <p class="suggest-status" id="sayacDurum"></p>
       </div>
-      </section>
+            </section>
+
+      <!-- ================= OYUNLAR ================= -->
       <section class="adm-panel admin-grid" data-panel="oyunlar" hidden>
+        <div class="adm-intro wide"><b>🎮 Oyunlar</b> Kasksız 85 kaza resmi ve ehliyet oyununun şoför resimleri / çarpışma sesi.</div>
+
       <div class="panel card admin-section">
         <h2>🏍️ Kasksız 85 kaza resmi</h2>
         <p class="muted">Spor sayfasındaki motor oyununda kaza anında çıkan resim. Resim yoksa 💥 görünür.</p>
@@ -189,39 +260,23 @@
           </div>
       </div>
 
-        <!-- Tam ekran Sosyal Hayat editörü: oyunun birebir aynısı, yerinde düzenleme -->
-      </section>
+            </section>
+
+      <!-- ================= GALERİ ================= -->
       <section class="adm-panel admin-grid" data-panel="galeri" hidden>
-      <div class="panel card admin-section">
-        <h2>📸 Galeri önerileri</h2>
-        <div id="queueList"><p class="muted">Yükleniyor…</p></div>
-      </div>
-
-      <div class="panel card admin-section">
-        <h2>➕ Galeriye direkt fotoğraf ekle</h2>
-        <form class="admin-upload" id="adminUploadForm" autocomplete="off">
-          <input type="file" id="adminUploadFile" accept="image/*" required />
-          <button type="submit" class="admin-btn publish">Yayınla</button>
-        </form>
-        <p class="suggest-status" id="adminUploadStatus"></p>
-      </div>
-
-      </section>
-      <section class="adm-panel admin-grid" data-panel="kahin" hidden>
-      <div class="panel card admin-section wide">
-        <h2>🔮 Kâhine sorulanlar</h2>
-        <p class="muted">Giriş yapıp soru soranların kullanıcı adı görünür, diğerleri "Misafir" olarak listelenir.</p>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Tarih</th><th>Kullanıcı</th><th>Soru</th><th>Cevap</th><th>Model</th></tr>
-            </thead>
-            <tbody id="soruTableBody">
-              <tr><td colspan="5" class="muted">Yükleniyor…</td></tr>
-            </tbody>
-          </table>
+        <div class="adm-intro wide"><b>🖼️ Galeri</b> Gelen fotoğraf önerilerini yayınla/reddet ya da direkt fotoğraf ekle.</div>
+        <div class="panel card admin-section">
+          <h2>📸 Galeri önerileri</h2>
+          <div id="queueList"><p class="muted">Yükleniyor…</p></div>
         </div>
-      </div>
+        <div class="panel card admin-section">
+          <h2>➕ Galeriye direkt fotoğraf ekle</h2>
+          <form class="admin-upload" id="adminUploadForm" autocomplete="off">
+            <input type="file" id="adminUploadFile" accept="image/*" required />
+            <button type="submit" class="admin-btn publish">Yayınla</button>
+          </form>
+          <p class="suggest-status" id="adminUploadStatus"></p>
+        </div>
       </section>
 
         <div id="sosyalEditor" class="se-overlay" hidden>
@@ -298,6 +353,7 @@
   <script src="js/sosyal-hikaye.js"></script>
   <script src="js/sosyal-editor.js"></script>
   <script src="js/spor-admin.js"></script>
+  <script src="js/topluluk-admin.js"></script>
   <script src="js/ehliyet-admin.js"></script>
 </body>
 </html>

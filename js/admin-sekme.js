@@ -7,7 +7,7 @@
   if (!sekmeler.length) return;
 
   function ac(ad) {
-    if (!paneller.some((p) => p.dataset.panel === ad)) ad = "icerik";
+    if (!paneller.some((p) => p.dataset.panel === ad)) ad = "kahin";
     sekmeler.forEach((b) => {
       const on = b.dataset.tab === ad;
       b.classList.toggle("active", on);

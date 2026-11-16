@@ -8,24 +8,26 @@
   const lead = document.getElementById("arsivLead");
   const icerik = document.getElementById("arsivIcerik");
   const params = new URLSearchParams(location.search);
-  const kod = (params.get("k") || "").trim();
-  const bot = params.get("bot") === "ahlakli" ? "ahlakli" : "sinirsiz";
+  const token = (params.get("t") || "").trim();
+  let bot = "sinirsiz";
 
   function hata(metin) {
     lead.textContent = metin;
     icerik.innerHTML = "";
   }
 
-  if (!kod) { hata("Kod yok. Kâhin'in soru kutusuna örn. berkay1, kubi1, ortak1 ya da hersey1 yaz."); return; }
+  if (!token) { hata("Bu sayfaya doğrudan girilmez. Kâhin'in soru kutusuna arşiv kodunu yaz, sana özel link açılır."); return; }
 
   fetch("/api/ask", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question: kod + "1", bot }),
+    body: JSON.stringify({ arsivToken: token }),
   })
     .then((r) => r.json())
     .then((d) => {
-      if (!d || !d.arsiv || !d.arsiv.kisiler || !d.arsiv.kisiler.length) { hata("Böyle bir kod yok: " + kod + "1"); return; }
+      if (!d || !d.arsiv || !d.arsiv.kisiler || !d.arsiv.kisiler.length) { hata(d && d.error ? d.error + " Kâhin'den yeni link al." : "Arşiv açılamadı."); return; }
+      bot = d.arsiv.bot === "ahlakli" ? "ahlakli" : "sinirsiz";
+      try { history.replaceState(null, "", "arsiv.html"); } catch {}
       const kisiler = d.arsiv.kisiler;
       const toplam = kisiler.reduce((t, k) => t + (k.facts || []).length, 0);
       if (kisiler.length === 1 && d.arsiv.kod !== "hersey") {

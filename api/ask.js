@@ -1,5 +1,6 @@
 // Vercel Serverless Function — /api/ask
 export const maxDuration = 60; 
+import { createHmac, randomBytes } from "node:crypto";
 
 // ---------------- Arkadaş Grubu Hakkında Bilinenler ----------------
 // Artık sadece Berkay değil, tüm ekibin olayları burada.
@@ -822,43 +823,70 @@ function matchesAlias(normalizedQuestion, alias) {
  * Soruda adı veya lakabı geçen kişilerin detaylı arşivini çeker.
  * Hiç isim geçmiyorsa tüm grubun kısa özetini döner (token tasarrufu sağlar).
  */
-function buildPromptContext(question) {
+// ---------------- Alakalı olay seçimi ----------------
+// Soru kelimelerine göre her maddeye puan verilir; en alakalı EN_FAZLA madde gider.
+// Hiç eşleşme yoksa rastgele birkaç madde + özet gider. Böylece prompt küçük ve isabetli kalır.
+const DURAK = new Set(["berkay","beko","alihan","kurban","kubi","burger","halil","ibo","salih","cem","alpaslan","bir","bu","şu","ne","mi","mı","mu","mü","ile","için","gibi","daha","çok","var","yok","olur","olmaz","yapar","yapmaz","yapabilir","nasıl","neden","kim","hangi","kadar","ama","veya","değil","sence","acaba","peki","yani","hiç","bile","sonra","önce","diye","olarak"]);
+function kokler(metin) {
+  return kucult(metin).trim().split(" ")
+    .filter((w) => w.length >= 3 && !DURAK.has(w))
+    .map((w) => w.slice(0, w.length >= 6 ? 5 : 4));
+}
+function alakaPuan(soruKokleri, metin) {
+  const m = kucult(metin);
+  let puan = 0;
+  for (const k of soruKokleri) if (m.includes(k)) puan += 1;
+  return puan;
+}
+function alakaliMaddeler(soru, kisi, enFazla) {
+  const kok = kokler(soru);
+  const puanli = kisi.facts.map((f, i) => ({ f, i, p: alakaPuan(kok, f), r: Math.random() }));
+  puanli.sort((a, b) => b.p - a.p || a.r - b.r);
+  const secili = puanli.slice(0, enFazla);
+  const eslesen = secili.filter((x) => x.p > 0).length;
+  return { maddeler: secili.map((x) => x.f), eslesen };
+}
+
+function buildPromptContext(question, soran) {
   const normalized = (question || "").toLocaleLowerCase("tr-TR");
+  const kisiler = GROUP_MEMBERS.filter((m) => m.id !== "grup" && m.aliases.some((alias) => matchesAlias(normalized, alias)));
+  const grup = GROUP_MEMBERS.find((m) => m.id === "grup");
+  const parcalar = [];
 
-  const matchedMembers = GROUP_MEMBERS.filter((member) =>
-    member.aliases.some((alias) => matchesAlias(normalized, alias))
-  );
-
-  if (matchedMembers.length > 0) {
-    const detailedSections = matchedMembers.map(
-      (m) =>
-        `### ${m.name} — DETAYLI DOSYA:\n${m.facts
-          .map((f, i) => `${i + 1}. ${f}`)
-          .join("\n")}`
-    );
-
-    const otherNames = GROUP_MEMBERS.filter(
-      (m) => !matchedMembers.some((matched) => matched.id === m.id)
-    )
-      .map((m) => m.name)
-      .join(", ");
-
-    return [
-      "SORUDA ADI GEÇEN KİŞİLERİN GERÇEK GRUP ARŞİVİ:",
-      detailedSections.join("\n\n"),
-      `\n(Gruptaki diğer üyeler: ${otherNames})`,
-    ].join("\n\n");
+  if (kisiler.length > 0) {
+    parcalar.push("SORUDA ADI GEÇEN KİŞİLERİN GERÇEK GRUP ARŞİVİ (sadece bu soruyla en alakalı maddeler seçildi):");
+    for (const m of kisiler.slice(0, 3)) {
+      const { maddeler, eslesen } = alakaliMaddeler(question, m, kisiler.length > 1 ? 5 : 8);
+      parcalar.push(`### ${m.name}\nÖZET: ${m.summary}\n${eslesen ? "SORUYLA İLGİLİ OLAYLAR" : "SORUYLA DOĞRUDAN İLGİLİ OLAY YOK — bunlardan uygun olanı bağla"}:\n` +
+        maddeler.map((f, i) => `${i + 1}. ${f}`).join("\n"));
+    }
+    if (grup) {
+      const { maddeler, eslesen } = alakaliMaddeler(question, grup, 3);
+      if (eslesen) parcalar.push("### İlgili ortak grup olayları:\n" + maddeler.filter((_, i) => i < eslesen).map((f, i) => `${i + 1}. ${f}`).join("\n"));
+    }
+    const digerler = GROUP_MEMBERS.filter((m) => m.id !== "grup" && !kisiler.includes(m)).map((m) => m.name).join(", ");
+    parcalar.push(`(Gruptaki diğer üyeler: ${digerler})`);
+  } else {
+    parcalar.push("SORUDA BELİRLİ BİR İSİM GEÇMEDİ — TÜM GRUP ÖZET PROFİLLERİ:");
+    parcalar.push(GROUP_MEMBERS.filter((m) => m.id !== "grup").map((m) => `- **${m.name}:** ${m.summary}`).join("\n"));
+    if (grup) {
+      const { maddeler, eslesen } = alakaliMaddeler(question, grup, 4);
+      parcalar.push("### " + (eslesen ? "Soruyla ilgili ortak grup olayları" : "Rastgele ortak grup olayları") + ":\n" + maddeler.map((f, i) => `${i + 1}. ${f}`).join("\n"));
+    }
   }
 
-  // Soruda spesifik isim geçmiyorsa (örn: "Grupta en çok kim satar?") özet modu devreye girer
-  const fallbackSummaries = GROUP_MEMBERS.map(
-    (m) => `- **${m.name}:** ${m.summary}`
-  ).join("\n");
-
-  return [
-    "SORUDA BELİRLİ BİR İSİM GEÇMEDİ — TÜM GRUP ÖZET PROFİLLERİ:",
-    fallbackSummaries,
-  ].join("\n\n");
+  // Soruyu soran kişi arşivdeki biriyse ona da küçük bir dosya ver.
+  if (soran) {
+    const sn = kucult(soran).trim();
+    const kisi = GROUP_MEMBERS.find((m) => m.id !== "grup" && (m.id === sn || m.aliases.includes(sn) || kucult(m.name).includes(" " + sn + " ")));
+    if (kisi) {
+      const { maddeler } = alakaliMaddeler(question, kisi, 3);
+      parcalar.push(`SORUYU SORAN KİŞİ: ${soran} = arşivdeki ${kisi.name}. ÖZET: ${kisi.summary}\nOna da laf sokmak için: ` + maddeler.map((f, i) => `${i + 1}. ${f}`).join(" | "));
+    } else {
+      parcalar.push(`SORUYU SORAN KİŞİ: ${soran} (arşivde yok, ona sövme).`);
+    }
+  }
+  return parcalar.join("\n\n");
 }
 
 /**
@@ -881,24 +909,31 @@ ${context}`;
 // ---------------- Ahlaklı bot (ikinci bot, aynı API) ----------------
 // Kod adı "ahlakli" kaldı ama artık Sınırsız botla AYNI kurallarla (SYSTEM_PROMPT)
 // cevap verir; tek farkı bilgileri api/_groupData.js'deki detaylı grup arşivinden alması.
-function ahlakliPrompt(soru) {
+function ahlakliPrompt(soru, soran) {
   return SYSTEM_PROMPT + `
-EK KURAL: Aşağıdaki GERÇEK GRUP ARŞİVİ'ndeki somut olayları, replikleri ve lakapları kullanarak söv; uydurma, arşivdekileri yüzlerine vur. Arşivde geçen herkes (Salih, Cem, Alpaslan dahil) hedef olabilir.
+EK KURALLAR:
+- Aşağıdaki GERÇEK GRUP ARŞİVİ'ndeki somut olayları, replikleri ve lakapları kullanarak söv; uydurma, arşivdekileri yüzlerine vur. Arşivde geçen herkes (Salih, Cem, Alpaslan dahil) hedef olabilir.
+- Verilen maddelerden soruyla EN alakalı 2-3 tanesini seç, hepsini sayma. Hedef kişiden 3. şahıs olarak (o/onun) bahset.
+- İSTİSNA (2. kuralı esnetir): Soruyu soran kişi arşivdeki gruptan biriyse, cevabın SONUNDA tek cümleyle ona da kendi rezilliğinden laf sok; ağır küfür asıl hedefe, sorana hafif iğneleme.
+- Önceki konuşma geçmişi verildiyse tekrar etme; aynı kişi tekrar sorarsa 'yine mi sen' tadında kısa bir gönderme yapabilirsin.
 
-` + buildPromptContext(soru);
+` + buildPromptContext(soru, soran);
 }
 
-function mesajlar(soru, olaylar, tarz, ekUyari, bot) {
+function mesajlar(soru, olaylar, tarz, ekUyari, bot, gecmis, soran) {
   const olayYazi = olaylar.length
     ? "Bu soruyla ilgili bilinen olay(lar): " + olaylar.map((o) => o.metin).join(" | ")
     : "Bu soruyla ilgili bilinen olay yok: konuya özel yeni ve mantıklı tek bir senaryo uydur, gruptakilerin geçmişinden hiçbir olaydan bahsetme.";
   const ahlakli = bot === "ahlakli";
   const notlar = `\n\n--- BU SORU İÇİN GİZLİ NOTLAR (sadece senin için, cevapta ASLA yazma) ---\n${ahlakli ? "" : olayYazi + "\n"}Cevap tarzı: ${tarz.metin}${ekUyari ? "\n" + ekUyari : ""}`;
-  const taban = ahlakli ? ahlakliPrompt(soru) : SYSTEM_PROMPT;
-  return [
-    { role: "system", content: taban + notlar },
-    { role: "user", content: soru },
-  ];
+  const taban = ahlakli ? ahlakliPrompt(soru, soran) : SYSTEM_PROMPT;
+  const msgs = [{ role: "system", content: taban + notlar }];
+  for (const g of gecmis || []) {
+    msgs.push({ role: "user", content: g.soru });
+    msgs.push({ role: "assistant", content: g.cevap });
+  }
+  msgs.push({ role: "user", content: soru });
+  return msgs;
 }
 
 const NOUS_MODEL_CANDIDATES = [
@@ -909,6 +944,9 @@ const NOUS_MODEL_CANDIDATES = [
 ].filter(Boolean);
 
 const MODEL_TIMEOUT_MS = 20000;
+// ULTRA MAXİMUS bot (ahlakli) daha uzun düşünür: 1. model 30 sn, 2. 25 sn, sonrakiler 20 sn.
+const MAXIMUS_TIMEOUTS = [30000, 25000, 20000, 20000];
+const TOPLAM_BUTCE_MS = 56000; // Vercel maxDuration 60 sn; kalan süre 6 sn'nin altına inince yeni deneme yapılmaz.
 const SICAKLIK = 0.70;
 
 async function fetchWithTimeout(url, options, ms) {
@@ -961,14 +999,14 @@ function bozukMu(t) {
   return /bilinen olay|cevap tarzı|gizli not/i.test(t) || t.split(" ").length > 130;
 }
 
-async function askNousWithModel(model, apiKey, messages) {
+async function askNousWithModel(model, apiKey, messages, timeoutMs) {
   let response;
   try {
     response = await fetchWithTimeout("https://inference-api.nousresearch.com/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ model, messages, max_tokens: 900, temperature: SICAKLIK }),
-    }, MODEL_TIMEOUT_MS);
+    }, timeoutMs || MODEL_TIMEOUT_MS);
   } catch (err) {
     return { ok: false, retryable: true, detail: `Nous (${model}) ${err.name === "AbortError" ? "zaman aşımı" : "bağlantı hatası: " + err.message}` };
   }
@@ -984,12 +1022,17 @@ async function askNousWithModel(model, apiKey, messages) {
   return { ok: true, answer: text, model };
 }
 
-async function askNous(messages) {
+async function askNous(messages, zamanlar, baslangic) {
   const apiKey = process.env.NOUS_API_KEY;
   if (!apiKey) return { ok: false, skipped: true, detail: "Nous atlandı: NOUS_API_KEY tanımlı değil" };
   const failDetails = [];
+  let i = 0;
   for (const model of [...new Set(NOUS_MODEL_CANDIDATES)]) {
-    const result = await askNousWithModel(model, apiKey, messages);
+    const kalan = TOPLAM_BUTCE_MS - (Date.now() - baslangic);
+    if (kalan < 6000) { failDetails.push("süre bütçesi bitti"); break; }
+    const istenen = (zamanlar && zamanlar[i]) || MODEL_TIMEOUT_MS;
+    i++;
+    const result = await askNousWithModel(model, apiKey, messages, Math.min(istenen, kalan));
     if (result.ok) return result;
     failDetails.push(result.detail);
     if (!result.retryable) break;
@@ -999,11 +1042,12 @@ async function askNous(messages) {
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
-async function askGemini(messages) {
+async function askGemini(messages, baslangic) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return { ok: false, skipped: true, detail: "Gemini atlandı: GEMINI_API_KEY tanımlı değil" };
+  const kalan = TOPLAM_BUTCE_MS - (Date.now() - (baslangic || Date.now()));
+  if (kalan < 6000) return { ok: false, detail: "Gemini atlandı: süre bütçesi bitti" };
   const system = messages.find((m) => m.role === "system");
-  const user = messages.find((m) => m.role === "user");
   const response = await fetchWithTimeout(
     `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
     {
@@ -1011,7 +1055,7 @@ async function askGemini(messages) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system.content }] },
-        contents: [{ role: "user", parts: [{ text: user.content }] }],
+        contents: messages.filter((m) => m.role !== "system").map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
         generationConfig: { temperature: SICAKLIK, maxOutputTokens: 600 },
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
@@ -1021,7 +1065,7 @@ async function askGemini(messages) {
         ],
       }),
     },
-    MODEL_TIMEOUT_MS
+    Math.min(MODEL_TIMEOUT_MS, kalan)
   );
   if (!response.ok) {
     const errText = await response.text();
@@ -1033,16 +1077,17 @@ async function askGemini(messages) {
   return { ok: true, answer: text, model: "gemini/" + GEMINI_MODEL };
 }
 
-async function uret(messages, attempts) {
+async function uret(messages, attempts, zamanlar, baslangic) {
+  baslangic = baslangic || Date.now();
   try {
-    const nous = await askNous(messages);
+    const nous = await askNous(messages, zamanlar, baslangic);
     if (nous.ok) return nous;
     attempts.push(nous.detail || "Nous: bilinmeyen hata");
   } catch (err) {
     attempts.push("Nous hata: " + err.message);
   }
   try {
-    const gemini = await askGemini(messages);
+    const gemini = await askGemini(messages, baslangic);
     if (gemini.ok) return gemini;
     attempts.push(gemini.detail || "Gemini: bilinmeyen hata");
   } catch (err) {
@@ -1082,10 +1127,42 @@ function arsivKodu(soru, botId) {
   return kisi ? { kod: kisi.id, bot: botId, kisiler: [kisi] } : null;
 }
 
+// ---------------- Gizli arşiv linki ----------------
+// Arşiv kodu yazılınca veri değil, 15 dakika geçerli rastgele bir token döner (arsiv.html?t=...).
+// Token imzalı: ARSIV_SECRET (yoksa NOUS_API_KEY'den türetilir) ile HMAC. Link paylaşılsa bile 15 dk sonra ölür.
+function arsivGizli() {
+  return process.env.ARSIV_SECRET || process.env.NOUS_API_KEY || "yaparmi-arsiv-gizli";
+}
+function b64url(buf) { return Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function arsivTokenUret(kod, botId) {
+  const govde = b64url(JSON.stringify({ k: kod, b: botId, e: Date.now() + 15 * 60 * 1000, n: randomBytes(6).toString("hex") }));
+  const imza = createHmac("sha256", arsivGizli()).update(govde).digest("hex").slice(0, 20);
+  return randomBytes(4).toString("hex") + "." + govde + "." + imza;
+}
+function arsivTokenCoz(token) {
+  const p = String(token || "").split(".");
+  if (p.length !== 3) return null;
+  const imza = createHmac("sha256", arsivGizli()).update(p[1]).digest("hex").slice(0, 20);
+  if (imza !== p[2]) return null;
+  try {
+    const v = JSON.parse(Buffer.from(p[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"));
+    if (!v || typeof v.e !== "number" || v.e < Date.now()) return null;
+    return v;
+  } catch { return null; }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { question, bot } = req.body || {};
+  const { question, bot, arsivToken, gecmis: gecmisHam, soran: soranHam } = req.body || {};
+
+  // Gizli link ile arşiv isteği
+  if (arsivToken) {
+    const v = arsivTokenCoz(arsivToken);
+    if (!v) return res.status(200).json({ error: "Link geçersiz ya da süresi dolmuş." });
+    const arsiv = arsivKodu(v.k + "1", v.b);
+    return res.status(200).json(arsiv ? { arsiv } : { error: "Böyle bir kod yok." });
+  }
   if (!question || typeof question !== "string" || question.trim().length === 0) {
     return res.status(400).json({ error: "Geçersiz soru" });
   }
@@ -1097,19 +1174,28 @@ export default async function handler(req, res) {
   // Arşiv kodu: "berkay1", "kubi1", "ortak1", "hersey1" → AI'a gitmeden arşivi JSON döner.
   // Siteye arsiv.html?k=... ile gösteriliyor.
   const arsiv = arsivKodu(soru, botId);
-  if (arsiv) return res.status(200).json({ arsiv });
+  if (arsiv) return res.status(200).json({ arsivLink: "arsiv.html?t=" + arsivTokenUret(arsiv.kod, botId) });
+
+  // Hafıza: son 3 soru-cevap (istemciden gelir, kısaltılır) + soruyu soran kullanıcı adı
+  const gecmis = (Array.isArray(gecmisHam) ? gecmisHam : [])
+    .filter((g) => g && typeof g.soru === "string" && typeof g.cevap === "string")
+    .slice(-3)
+    .map((g) => ({ soru: g.soru.slice(0, 300), cevap: g.cevap.slice(0, 700) }));
+  const soran = typeof soranHam === "string" && soranHam.trim() ? soranHam.trim().slice(0, 20) : "";
 
   const olaylar = olaySec(soru);
   const tarz = tarzSec();
   const attempts = [];
+  const baslangic = Date.now();
+  const zamanlar = botId === "ahlakli" ? MAXIMUS_TIMEOUTS : null;
 
-  let sonuc = await uret(mesajlar(soru, olaylar, tarz, undefined, botId), attempts);
+  let sonuc = await uret(mesajlar(soru, olaylar, tarz, undefined, botId, gecmis, soran), attempts, zamanlar, baslangic);
 
   if (sonuc && botId === "sinirsiz") {
     const fazla = alakasizOlaylar(sonuc.answer, olaylar);
     if (fazla.length) {
       const uyari = "UYARI: Önceki denemende sana verilmeyen olaylardan (" + fazla.map((o) => o.ad).join(", ") + ") bahsettin. Bu sefer onları KESİNLİKLE anma.";
-      const ikinci = await uret(mesajlar(soru, olaylar, tarz, uyari, botId), attempts);
+      const ikinci = await uret(mesajlar(soru, olaylar, tarz, uyari, botId, gecmis, soran), attempts, zamanlar, baslangic);
       if (ikinci && alakasizOlaylar(ikinci.answer, olaylar).length < fazla.length) sonuc = ikinci;
     }
   }

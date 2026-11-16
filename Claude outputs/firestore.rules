@@ -172,9 +172,48 @@ service cloud.firestore {
 
     // Sayaçlar: ana sayfadaki "Berkay ehliyet alalı X gün" kartları.
     // Herkes okur, sadece admin panelinden düzenlenir.
+    // "liste": ana sayfa zaman sayaçları; "grup": topluluk sayfasındaki grup sayaçları.
     match /sayaclar/{docId} {
       allow read: if true;
-      allow write: if isAdmin() && docId == 'liste';
+      allow write: if isAdmin() && docId in ['liste', 'grup'];
+    }
+
+    // Topluluk: anketler (günün sorusu / anket / haftanın rezili). Admin açar, herkes okur.
+    match /anketler/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    // Oylar: belge ID = anketId_uid → kişi başı tek oy, anket açıkken, kendi adıyla.
+    match /anket_oylar/{id} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.keys().hasOnly(['anketId', 'uid', 'kullaniciAdi', 'secim', 'tarih'])
+        && request.resource.data.uid == request.auth.uid
+        && id == request.resource.data.anketId + '_' + request.auth.uid
+        && request.resource.data.kullaniciAdi == get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.kullaniciAdi
+        && request.resource.data.secim is int && request.resource.data.secim >= 0 && request.resource.data.secim < 10
+        && get(/databases/$(database)/documents/anketler/$(request.resource.data.anketId)).data.acik == true
+        && request.resource.data.tarih == request.time;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    // Vardiya takvimi: belge ID = tarih_uid → günde bir kayıt; kişi kendi kaydını yazar/siler, admin hepsini.
+    match /vardiyalar/{id} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.keys().hasOnly(['uid', 'kullaniciAdi', 'tarih', 'vardiya', 'bolum', 'tl', 'not', 'olusturma'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.kullaniciAdi == get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.kullaniciAdi
+        && request.resource.data.tarih is string && request.resource.data.tarih.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && id == request.resource.data.tarih + '_' + request.auth.uid
+        && request.resource.data.vardiya in ['gece', 'gunduz', 'sabah']
+        && request.resource.data.tl is int && request.resource.data.tl >= 0 && request.resource.data.tl <= 99999
+        && request.resource.data.bolum is string && request.resource.data.bolum.size() <= 30
+        && request.resource.data.not is string && request.resource.data.not.size() <= 120;
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tl']);
+      allow delete: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
     }
 
     match /ehliyet/{docId} {
@@ -197,8 +236,8 @@ service cloud.firestore {
       function carkAyar() {
         return get(/databases/$(database)/documents/cark/ayarlar).data;
       }
-      allow read: if request.auth != null
-        && (resource.data.uid == request.auth.uid || isAdmin());
+      // Liderlik tablosu için giriş yapmış herkes okuyabilir (kim ne kazandı görünür).
+      allow read: if request.auth != null;
       allow create: if request.auth != null
         && request.auth.token.firebase.sign_in_provider != 'anonymous'
         && carkAyar().acik == true

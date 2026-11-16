@@ -84,6 +84,8 @@ let sonModel = ""; // cevabı hangi model verdi (admin panelinde görünür)
 
 // Hangi bot seçili: "sinirsiz" (Sınırsız bot) veya "ahlakli" (Ahlaklı bot)
 let secilenBot = "sinirsiz";
+// Hafıza: son 3 soru-cevap sunucuya gönderilir (bot tekrar etmesin, "yine mi sen" diyebilsin).
+let sohbetGecmisi = [];
 
 async function getAnswer(question) {
   // En fazla 40 saniye bekle; sunucu takılırsa kutu sonsuza kadar
@@ -94,7 +96,12 @@ async function getAnswer(question) {
     const res = await fetch("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, bot: secilenBot }),
+      body: JSON.stringify({
+        question,
+        bot: secilenBot,
+        gecmis: sohbetGecmisi.slice(-3),
+        soran: (window.YaparmiAuth && YaparmiAuth.getProfile && YaparmiAuth.getProfile() && YaparmiAuth.getProfile().kullaniciAdi) || "",
+      }),
       signal: controller.signal,
     });
     const data = await res.json().catch(() => ({}));
@@ -104,6 +111,8 @@ async function getAnswer(question) {
     }
     if (!data.answer) throw new Error("Boş cevap");
     sonModel = data.model || "";
+    sohbetGecmisi.push({ soru: question, cevap: data.answer });
+    if (sohbetGecmisi.length > 3) sohbetGecmisi.shift();
     return data.answer;
   } catch (err) {
     console.warn("AI cevabı alınamadı, yedek cevap kullanılıyor:", err.message);
@@ -209,7 +218,14 @@ form.addEventListener("submit", async (e) => {
   // Arşiv kodu (berkay1, kubi1, ortak1, hersey1 ...) → arşiv sayfasına git.
   const arsivKod = rest.toLocaleLowerCase("tr-TR").match(/^([a-zçğıöşü'’ ]+?)\s*1$/);
   if (arsivKod && (secilenBot === "ahlakli" || /^her(s|ş)ey$/.test(arsivKod[1].trim()))) {
-    location.href = "arsiv.html?k=" + encodeURIComponent(arsivKod[1].trim()) + "&bot=" + secilenBot;
+    // Sunucu 15 dk geçerli rastgele bir link üretir; kod adresde görünmez.
+    askBtn.disabled = true;
+    try {
+      const r = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: rest, bot: secilenBot }) });
+      const d = await r.json();
+      if (d && d.arsivLink) { location.href = d.arsivLink; return; }
+    } catch (e) { console.warn("Arşiv linki alınamadı:", e.message); }
+    askBtn.disabled = false;
     return;
   }
 
