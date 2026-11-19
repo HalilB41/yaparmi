@@ -15,8 +15,10 @@
 (function () {
   "use strict";
 
+  let stil = null;
   const css = (ad, yedek) => {
-    const v = getComputedStyle(document.documentElement).getPropertyValue(ad).trim();
+    if (!stil) { stil = getComputedStyle(document.documentElement); requestAnimationFrame(() => { stil = null; }); }
+    const v = stil.getPropertyValue(ad).trim();
     return v || yedek;
   };
   const sayiYaz = (p) => {
@@ -58,12 +60,11 @@
       this.boyutla();
       this.olaylar();
       document.addEventListener("tema-degisti", () => this.ciz());
-      const dongu = (t) => {
-        // son fiyat etiketi hafifçe nabız atsın (grafik "canlı" dursun)
-        if (this._kirli || t - this._sonAnim > 120) { this._sonAnim = t; this.cizGercek(t); this._kirli = false; }
-        requestAnimationFrame(dongu);
-      };
-      requestAnimationFrame(dongu);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden && this._kirli) this.ciz(); });
+      // Sadece bir şey değişince çiz (veri, fare, boyut, tema). Sürekli döngü yok.
+      // Ekranda görünmüyorsa (sekme gizli, admin'de başka sekme) hiç çizme.
+      this._gorunur = true;
+      if ("IntersectionObserver" in window) new IntersectionObserver((e) => { this._gorunur = e[0].isIntersecting; if (this._gorunur) this.ciz(); }).observe(canvas);
     }
 
     boyutla() {
@@ -76,7 +77,17 @@
       this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       this.ciz();
     }
-    ciz() { this._kirli = true; }
+    ciz() {
+      if (this._bekliyor) return;
+      this._bekliyor = true;
+      requestAnimationFrame(() => {
+        this._bekliyor = false;
+        if (!this._gorunur || document.hidden || !this.c.isConnected || this.c.offsetParent === null) { this._kirli = true; return; }
+        this._kirli = false;
+        this.renkler = null;
+        this.cizGercek(0);
+      });
+    }
 
     veri(mumlar) { this.ham = mumlar || []; this.topla(); this.ciz(); }
     periyot(ms) { this.per = ms; this.sag = 0; this.topla(); this.ciz(); }
@@ -361,7 +372,7 @@
         ctx.fillStyle = "#fff"; ctx.font = "800 11px Manrope, system-ui, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
         ctx.fillText(sayiYaz(p), this.plotSag + 7, y);
         if (this.sag === 0 && n) {
-          const nabiz = 0.5 + 0.5 * Math.sin((zaman || 0) / 260);
+          const nabiz = 0.8;
           const x = cizimAcik ? this.simdiX : xOf(n - 1);
           ctx.fillStyle = renk; ctx.globalAlpha = 0.25 * nabiz;
           ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();

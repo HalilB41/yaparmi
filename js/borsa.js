@@ -71,7 +71,7 @@
     dinle();
     eskiMumlar();
     setInterval(() => { if (document.visibilityState === "visible") api("tick").catch(() => {}); }, 10000);
-    setInterval(() => { if (d) { arenaCiz(); akisCiz(); } }, 15000);
+    setInterval(() => { if (d && !document.hidden) { arenaCiz(); akisCiz(); } }, 15000);
   }
 
   // ---------------- Firestore dinleyicileri ----------------

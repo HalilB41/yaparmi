@@ -135,11 +135,14 @@ body {
 html { background: var(--bg); }
 
 /* ---------------- Arka plan (tüm sayfalar) ----------------
-   1) body::before → vurgu rengi + güneş sarısıyla yavaşça kayan ışık lekeleri
+   1) body::before → vurgu rengi + güneş sarısıyla ışık lekeleri
    2) body::after  → açık temada nokta ızgarası, koyu temada yıldızlar
-   İkisi de sabit (position: fixed), içeriğin arkasında kalır. */
+   İkisi de sabit (position: fixed), içeriğin arkasında kalır.
+   Performans: bilerek animasyonsuz ve filter'sız. Hareketli/bulanık tam ekran katman,
+   üst bardaki backdrop-filter ile birleşince her karede yeniden çizim yaptırıp siteyi kasıyordu. */
 body::before, body::after {
   content: "";
+  transform: translateZ(0);
   position: fixed;
   inset: 0;
   z-index: -1;
@@ -152,8 +155,6 @@ body::before {
     radial-gradient(34vmax 30vmax at 92% 18%, color-mix(in srgb, var(--sun) 40%, transparent), transparent 70%),
     radial-gradient(42vmax 36vmax at 78% 96%, color-mix(in srgb, var(--accent) 34%, #ff5fa2 30%), transparent 72%),
     radial-gradient(30vmax 28vmax at 6% 88%,  color-mix(in srgb, #3fc3d6 34%, transparent), transparent 70%);
-  filter: blur(8px);
-  animation: arka-kay 38s ease-in-out infinite alternate;
 }
 body::after {
   background-image: radial-gradient(color-mix(in srgb, var(--ink) 16%, transparent) 1px, transparent 1.3px);
@@ -174,7 +175,6 @@ body::after {
   background-size: 340px 340px;
   opacity: .55;
   -webkit-mask-image: none; mask-image: none;
-  animation: yildiz 6s ease-in-out infinite alternate;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) body::before { opacity: .9; }
@@ -190,18 +190,9 @@ body::after {
     background-size: 340px 340px;
     opacity: .55;
     -webkit-mask-image: none; mask-image: none;
-    animation: yildiz 6s ease-in-out infinite alternate;
   }
 }
-@keyframes arka-kay {
-  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  50%  { transform: translate3d(3vmax, -2vmax, 0) rotate(6deg) scale(1.05); }
-  100% { transform: translate3d(-3vmax, 2vmax, 0) rotate(-4deg) scale(1.02); }
-}
-@keyframes yildiz { from { opacity: .35; } to { opacity: .7; } }
-@media (prefers-reduced-motion: reduce) {
-  body::before, body::after { animation: none !important; }
-}
+
 h1, h2, h3, h4 { font-family: var(--display); color: var(--ink); letter-spacing: -0.02em; line-height: 1.15; }
 h2 { font-size: 1.35rem; }
 h3 { font-size: 1.08rem; }
@@ -1803,8 +1794,10 @@ table.admin-table input.adm-tl { width: 90px; padding: 6px 8px; border-radius: 8
 .bx-istat dt { font-size: .72rem; color: var(--muted); font-weight: 700; }
 .bx-istat dd { margin: 2px 0 0; font-weight: 800; font-family: var(--mono); font-size: .92rem; }
 .bx-nokta { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--err); margin-right: 6px; vertical-align: middle; }
-.bx-nokta.ok { background: var(--ok); box-shadow: 0 0 0 0 var(--ok); animation: bx-nabiz 1.8s infinite; }
-@keyframes bx-nabiz { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }
+.bx-nokta.ok { background: var(--ok); position: relative; }
+.bx-nokta.ok::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--ok); animation: bx-nabiz 1.8s ease-out infinite; will-change: transform, opacity; }
+@keyframes bx-nabiz { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(3.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bx-nokta.ok::after { animation: none; } }
 
 .bx-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
 .bx-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
