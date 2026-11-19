@@ -1,5 +1,5 @@
 // ============================================================
-// borsa-grafik.js — BERKAYCOIN grafiği (borsa.html ve admin.html ortak).
+// borsa-grafik.js — BERKAY grafiği (borsa.html ve admin.html ortak).
 // Canvas üzerine mum / çizgi grafik, hacim, fare ile kaydırma-yakınlaştırma,
 // artı imleç, yatay çizgiler (giriş / likidasyon) ve admin için
 // "geleceğe fiyat çizme" modu.
@@ -393,10 +393,17 @@
     shortAc: (p, N, D) => ({ q: (D / p) * Math.expm1(N / D), p1: p * Math.exp(-N / D) }),
     geriAl: (p, q, D) => { const x = Math.min((q * p) / D, 0.98); return { N: -D * Math.log1p(-x), p1: p / (1 - x) }; },
   };
-  E.pnl = (poz, p, D) => (poz.yon === "long" ? E.sat(p, poz.boyut, D).N - poz.notional : poz.notional - E.geriAl(p, poz.boyut, D).N);
-  E.lik = (poz, D) => poz.yon === "long"
-    ? Math.max(0, (D * Math.expm1((poz.notional - LIK * poz.teminat) / D)) / poz.boyut)
-    : (D * (1 - Math.exp(-(poz.notional + LIK * poz.teminat) / D))) / poz.boyut;
+  // Kaldıraç K/Z = "şimdi kapatsan" (kapanış da fiyatı iter). v:2 = ara sürümden kalan düz hesaplı pozisyon.
+  E.pnl = (poz, p, D) => {
+    if (poz.v === 2) return poz.yon === "long" ? poz.boyut * (p - poz.giris) : poz.boyut * (poz.giris - p);
+    return poz.yon === "long" ? E.sat(p, poz.boyut, D).N - poz.notional : poz.notional - E.geriAl(p, poz.boyut, D).N;
+  };
+  E.lik = (poz, D) => {
+    if (poz.v === 2) { const f = (LIK * poz.teminat) / poz.boyut; return poz.yon === "long" ? Math.max(0, poz.giris - f) : poz.giris + f; }
+    return poz.yon === "long"
+      ? Math.max(0, (D * Math.expm1((poz.notional - LIK * poz.teminat) / D)) / poz.boyut)
+      : (D * (1 - Math.exp(-(poz.notional + LIK * poz.teminat) / D))) / poz.boyut;
+  };
   window.BorsaEgri = E;
   window.BorsaGun = (t) => new Date(t + 3 * 3600000).toISOString().slice(0, 10);
 })();

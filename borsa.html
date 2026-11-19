@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Berkay Borsası · BERKAYCOIN · yaparmi.com</title>
-  <meta name="description" content="BERKAYCOIN: spot, 20x kaldıraç ve Berkay Market." />
+  <title>Berkay Borsası · BERKAY · yaparmi.com</title>
+  <meta name="description" content="BERKAY: spot, 20x kaldıraç ve Berkay Market." />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#eceefa" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#0a0c1b" media="(prefers-color-scheme: dark)" />
@@ -23,7 +23,7 @@
       <div>
         <span class="eyebrow"><i>📈</i> Borsa</span>
         <h1>Berkay <em>Borsası</em></h1>
-        <p class="lead">BERKAYCOIN al, sat, 20x'e kadar kaldıraçla oyna. Biriktirdiğin BKC ile Berkay Market'ten gerçek ürün al.</p>
+        <p class="lead">BERKAY al, sat, 20x'e kadar kaldıraçla oyna. Biriktirdiğin BERKAY ile Berkay Market'ten gerçek ürün al.</p>
       </div>
     </header>
 
@@ -38,7 +38,7 @@
       <section class="card bx-serit">
         <div class="bx-coin">
           <span class="bx-coin-logo" aria-hidden="true">B</span>
-          <div><b>BERKAYCOIN</b><span>BKC / BTL</span></div>
+          <div><b>BERKAY</b><span>BERKAY / TL</span></div>
         </div>
         <div class="bx-fiyat"><span id="bxFiyat">—</span><small id="bxDegisim">—</small></div>
         <dl class="bx-istat">
@@ -65,7 +65,7 @@
               <button type="button" data-tip="cizgi">〰️ Çizgi</button>
             </div>
           </div>
-          <div class="bx-grafik-kutu"><canvas id="bxGrafik" aria-label="BERKAYCOIN fiyat grafiği"></canvas></div>
+          <div class="bx-grafik-kutu"><canvas id="bxGrafik" aria-label="BERKAY fiyat grafiği"></canvas></div>
           <p class="bx-ipucu">Sürükle: kaydır · Tekerlek: yakınlaştır · Çift tık: sıfırla</p>
         </section>
 
@@ -81,12 +81,12 @@
               <button type="button" class="al on" data-yon="al">Al</button>
               <button type="button" class="sat" data-yon="sat">Sat</button>
             </div>
-            <label class="bx-alan"><span id="bxSpotEtiket">Harcanacak BTL</span>
-              <div class="bx-girdi"><input type="number" id="bxSpotMiktar" min="0" step="any" inputmode="decimal" placeholder="0" /><em id="bxSpotBirim">BTL</em></div>
+            <label class="bx-alan"><span id="bxSpotEtiket">Harcanacak TL</span>
+              <div class="bx-girdi"><input type="number" id="bxSpotMiktar" min="0" step="any" inputmode="decimal" placeholder="0" /><em id="bxSpotBirim">TL</em></div>
             </label>
             <div class="bx-yuzde" data-hedef="spot"><button type="button" data-y="25">25%</button><button type="button" data-y="50">50%</button><button type="button" data-y="75">75%</button><button type="button" data-y="100">Hepsi</button></div>
             <dl class="bx-tahmin" id="bxSpotTahmin"></dl>
-            <button type="button" class="bx-gonder al" id="bxSpotBtn">BKC al</button>
+            <button type="button" class="bx-gonder al" id="bxSpotBtn">BERKAY al</button>
           </div>
 
           <div id="bxKaldirac" hidden>
@@ -95,7 +95,7 @@
               <button type="button" class="sat" data-yon="short">Short 📉</button>
             </div>
             <label class="bx-alan">Teminat
-              <div class="bx-girdi"><input type="number" id="bxTeminat" min="1" step="any" inputmode="decimal" placeholder="0" /><em>BTL</em></div>
+              <div class="bx-girdi"><input type="number" id="bxTeminat" min="1" step="any" inputmode="decimal" placeholder="0" /><em>TL</em></div>
             </label>
             <div class="bx-yuzde" data-hedef="kaldirac"><button type="button" data-y="25">25%</button><button type="button" data-y="50">50%</button><button type="button" data-y="75">75%</button><button type="button" data-y="100">Hepsi</button></div>
             <label class="bx-alan">Kaldıraç <b id="bxXYazi">10x</b>
@@ -104,12 +104,12 @@
             </label>
             <dl class="bx-tahmin" id="bxKTahmin"></dl>
             <button type="button" class="bx-gonder al" id="bxKBtn">Long aç</button>
-            <p class="bx-not">Teminatın %90'ı erirse pozisyon <b>likide</b> olur ve teminat gider. Teminat BTL'dir; BTL'n yoksa Spot'tan BKC sat.</p>
+            <p class="bx-not">Kaldıraçla açtığın pozisyon da fiyatı <b>iter</b> (long yükseltir, short düşürür), kapatınca da geri iter. Bu yüzden K/Z <b>"şimdi kapatsan eline geçecek"</b> tutardır: fiyat sadece senin alımınla yükseldiyse kâr görünmez, kâr için başkalarının da alması lazım. Teminatın %90'ı erirse pozisyon <b>likide</b> olur. Teminat TL'dir; TL'n yoksa Spot'tan BERKAY sat.</p>
           </div>
 
           <div class="bx-cuzdan">
-            <div><span>BKC</span><b id="bxBkc">—</b></div>
-            <div><span>BTL</span><b id="bxBtl">—</b></div>
+            <div><span>BERKAY</span><b id="bxBkc">—</b></div>
+            <div><span>TL</span><b id="bxBtl">—</b></div>
             <div><span>Toplam değer</span><b id="bxToplam">—</b></div>
             <div><span>Gerçekleşen K/Z</span><b id="bxGercek">—</b></div>
           </div>
@@ -120,7 +120,7 @@
       <section class="card bx-bolum">
         <div class="bx-bolum-ust"><h2>⚡ Açık pozisyonlarım</h2></div>
         <div class="admin-table-wrap"><table class="admin-table bx-tablo">
-          <thead><tr><th>Yön</th><th>Teminat</th><th>Büyüklük</th><th>Giriş</th><th>Şimdi</th><th>Likidasyon</th><th>K/Z</th><th></th></tr></thead>
+          <thead><tr><th>Yön</th><th>Teminat</th><th>Büyüklük</th><th>Ort. giriş</th><th>Şimdi</th><th>Likidasyon</th><th title="Şimdi kapatsan eline geçecek kâr/zarar">K/Z (kapatırsan)</th><th></th></tr></thead>
           <tbody id="bxPozlarim"><tr><td colspan="8" class="muted">Açık pozisyonun yok.</td></tr></tbody>
         </table></div>
       </section>
@@ -137,7 +137,7 @@
       </div>
 
       <section class="card bx-bolum" id="market">
-        <div class="bx-bolum-ust"><h2>🛒 Berkay Market</h2><small>BKC biriktir, gerçek ürün al. Siparişini admin teslim eder.</small></div>
+        <div class="bx-bolum-ust"><h2>🛒 Berkay Market</h2><small>BERKAY biriktir, gerçek ürün al. Siparişini admin teslim eder.</small></div>
         <div class="bx-market" id="bxMarket"><p class="muted">Yükleniyor…</p></div>
         <h3 class="bx-alt-baslik">📦 Siparişlerim</h3>
         <div id="bxSiparisler" class="bx-liste"><p class="muted">Henüz sipariş yok.</p></div>

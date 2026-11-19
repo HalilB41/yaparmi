@@ -3,7 +3,7 @@
 //   - Özet: fiyat, arz, kasa, dolaşım, açık pozisyonlar, piyasa aç/kapat
 //   - Fiyatı yönet: grafiğe çizgi çiz → fiyat o rotayı izler; ya da anında fiyat ver
 //   - Ayarlar: derinlik, oynaklık, maksimum kaldıraç
-//   - Arz: kullanıcıya BKC/BTL gönder ya da geri al, toplam arzı bas/yak
+//   - Arz: kullanıcıya BERKAY/TL gönder ya da geri al, toplam arzı bas/yak
 //   - Cüzdanlar, kaldıraç pozisyonları (kapat / likide et), siparişler, market, para hareketleri
 // Para değiştiren her şey /api/borsa üzerinden (sunucuda) yapılır.
 // ============================================================
@@ -44,6 +44,7 @@
       gizli = s.exists ? s.data() : null;
       const r = gizli && gizli.rota;
       grafik.rota(r ? r.noktalar : null);
+      mmCiz();
       $("bxaRotaBilgi").textContent = r ? `🟡 Aktif rota: ${sayi(r.noktalar[0].p)} → ${sayi(r.noktalar[r.noktalar.length - 1].p)} · bitiş ${tarih(r.noktalar[r.noktalar.length - 1].t)}` : "Aktif rota yok, fiyat serbest.";
     }, () => {});
 
@@ -72,16 +73,16 @@
     const poz = Object.values(d.poz);
     const kz = acikKZ();
     const kutular = [
-      ["Fiyat", sayi(d.fiyat) + " BTL"],
-      ["Toplam arz", para(d.toplamArz, 0) + " BKC"],
-      ["Kasada (admin)", para(d.kasaBKC, 2) + " BKC"],
-      ["Kullanıcılarda", para(kullanicilarda, 2) + " BKC"],
+      ["Fiyat", sayi(d.fiyat) + " TL"],
+      ["Toplam arz", para(d.toplamArz, 0) + " BERKAY"],
+      ["Kasada (admin)", para(d.kasaBKC, 2) + " BERKAY"],
+      ["Kullanıcılarda", para(kullanicilarda, 2) + " BERKAY"],
       ["Arz kontrolü", Math.abs(kullanicilarda + d.kasaBKC - d.toplamArz) < 0.01 ? "✅ Tutuyor" : "⚠️ " + para(kullanicilarda + d.kasaBKC - d.toplamArz)],
-      ["Kullanıcılardaki BTL", para(btlToplam) + " BTL"],
+      ["Kullanıcılardaki TL", para(btlToplam) + " TL"],
       ["Cüzdan sayısı", String(cuzdanlar.length)],
-      ["Açık pozisyon", poz.length + " · " + para(poz.reduce((t, p) => t + p.notional, 0), 0) + " BTL"],
-      ["Kaldıraçtakilerin K/Z", isaretli(kz) + " BTL"],
-      ["Piyasa değeri", para(d.fiyat * (d.toplamArz - d.kasaBKC), 0) + " BTL"],
+      ["Açık pozisyon", poz.length + " · " + para(poz.reduce((t, p) => t + p.notional, 0), 0) + " TL"],
+      ["Kaldıraçtakilerin K/Z", isaretli(kz) + " TL"],
+      ["Piyasa değeri", para(d.fiyat * (d.toplamArz - d.kasaBKC), 0) + " TL"],
       ["Piyasa", d.acik ? "🟢 Açık" : "🔴 Kapalı"],
       ["Rota", d.rotaVar ? "🟡 Çizgi izleniyor" : "Serbest"],
     ];
@@ -130,6 +131,35 @@
     islem($("bxaFiyatBtn"), $("bxaFiyatDurum"), "adminFiyat", { fiyat: f });
   });
 
+  // ---------------- Piyasa yapıcı (MM) ----------------
+  let mmDolu = false;
+  function mmCiz() {
+    const mm = (gizli && gizli.mm) || null;
+    if (!mmDolu && mm) {
+      mmDolu = true;
+      $("bxaMMAcik").checked = !!mm.acik; $("bxaMMMod").value = mm.mod || "denge";
+      $("bxaMMDakika").value = mm.dakikalik ?? ""; $("bxaMMHedef").value = mm.hedef ?? ""; $("bxaMMBant").value = mm.bant ?? 2;
+      mmModGoster();
+    }
+    const st = $("bxaMMDurum");
+    if (!mm) { st.textContent = "Piyasa yapıcı hiç açılmadı."; return; }
+    const al = mm.alinan || 0, sat = mm.satilan || 0;
+    const son = mm.sonIslem ? ` · son işlem ${tarih(mm.sonIslem.t)}: ${mm.sonIslem.N > 0 ? "🟢 aldı" : "🔴 sattı"} ${para(Math.abs(mm.sonIslem.N))} TL → ${sayi(mm.sonIslem.f)}` : "";
+    st.textContent = `${mm.acik ? "🟢 Çalışıyor" : "⚪ Kapalı"} · toplam alım ${para(al)} TL · toplam satış ${para(sat)} TL · net ${isaretli(al - sat)} TL${son}`;
+  }
+  function mmModGoster() { const denge = $("bxaMMMod").value === "denge"; $("bxaMMHedefKutu").hidden = !denge; $("bxaMMBantKutu").hidden = !denge; }
+  $("bxaMMMod").addEventListener("change", mmModGoster);
+  $("bxaMMHedefSimdi").addEventListener("click", () => { if (d) $("bxaMMHedef").value = Number(d.fiyat.toPrecision(4)); });
+  async function mmKaydet(sifirla) {
+    const r = await islem($("bxaMMKaydet"), $("bxaMMSonuc"), "adminMM", {
+      acik: $("bxaMMAcik").checked, mod: $("bxaMMMod").value, dakikalik: Number($("bxaMMDakika").value) || 0,
+      hedef: Number($("bxaMMHedef").value) || 0, bant: Number($("bxaMMBant").value) || 0, sifirla: !!sifirla,
+    });
+    return r;
+  }
+  $("bxaMMKaydet").addEventListener("click", () => mmKaydet(false));
+  $("bxaMMSifirla").addEventListener("click", () => { if (confirm("MM istatistikleri (toplam alım/satım) sıfırlansın mı?")) mmKaydet(true); });
+
   // ---------------- Ayarlar ----------------
   let ayarDolu = false;
   function ayarDoldur() {
@@ -156,7 +186,7 @@
     sel.textContent = ""; sel.append(new Option("Seç…", ""));
     [...harita.entries()].sort((a, b) => a[1].localeCompare(b[1], "tr")).forEach(([uid, ad]) => {
       const c = cuzdanlar.find((x) => x.uid === uid);
-      sel.append(new Option(c ? `${ad} (${para(c.bkc, 0)} BKC · ${para(c.btl, 0)} BTL)` : `${ad} (cüzdan yok)`, uid));
+      sel.append(new Option(c ? `${ad} (${para(c.bkc, 0)} BERKAY · ${para(c.btl, 0)} TL)` : `${ad} (cüzdan yok)`, uid));
     });
     sel.value = secili;
   }
@@ -169,7 +199,7 @@
   $("bxaArzBtn").addEventListener("click", () => {
     const deg = Number($("bxaArz").value);
     if (!deg) { $("bxaParaDurum").textContent = "Değişim yaz."; return; }
-    if (!confirm(deg > 0 ? `${deg} BKC basılıp kasaya eklenecek.` : `${-deg} BKC kasadan yakılacak.`)) return;
+    if (!confirm(deg > 0 ? `${deg} BERKAY basılıp kasaya eklenecek.` : `${-deg} BERKAY kasadan yakılacak.`)) return;
     islem($("bxaArzBtn"), $("bxaParaDurum"), "adminArz", { degisim: deg }).then((r) => { if (r) $("bxaArz").value = ""; });
   });
 
@@ -188,10 +218,10 @@
     satirlar.forEach(({ c, poz, teminat, kz, toplam }) => {
       const tr = el("tr");
       tr.append(el("td", null, c.ad), el("td", null, para(c.bkc, 4)), el("td", null, ((c.bkc / d.toplamArz) * 100).toFixed(3) + "%"), el("td", null, para(c.btl)),
-        el("td", null, poz.length ? `${poz.length} poz · ${para(teminat)} BTL` : "—"),
+        el("td", null, poz.length ? `${poz.length} poz · ${para(teminat)} TL` : "—"),
         el("td", kz >= 0 ? "yukari" : "asagi", poz.length ? isaretli(kz) : "—"),
         el("td", (c.gerceklesen || 0) >= 0 ? "yukari" : "asagi", isaretli(c.gerceklesen || 0)),
-        el("td", null, para(toplam) + " BTL"));
+        el("td", null, para(toplam) + " TL"));
       tb.append(tr);
     });
   }
@@ -210,9 +240,9 @@
       tr.append(el("td", null, tarih(p.acilis)));
       const td = el("td", "bx-butonlar");
       const kapat = el("button", "admin-btn", "Kapat"); kapat.type = "button"; kapat.title = "Normal kapat, kâr/zarar sahibine";
-      kapat.addEventListener("click", () => { if (confirm(`${p.ad} kişisinin pozisyonu kapatılsın mı? (${isaretli(pnl)} BTL sahibine)`)) islem(kapat, $("bxaGenelDurum"), "adminPozKapat", { id: p.id, mod: "kapat" }); });
+      kapat.addEventListener("click", () => { if (confirm(`${p.ad} kişisinin pozisyonu kapatılsın mı? (${isaretli(pnl)} TL sahibine)`)) islem(kapat, $("bxaGenelDurum"), "adminPozKapat", { id: p.id, mod: "kapat" }); });
       const lik = el("button", "admin-btn reject", "💀 Likide et"); lik.type = "button";
-      lik.addEventListener("click", () => { if (confirm(`${p.ad} kişisinin ${p.teminat} BTL teminatı yanacak. Likide edilsin mi?`)) islem(lik, $("bxaGenelDurum"), "adminPozKapat", { id: p.id, mod: "likide" }); });
+      lik.addEventListener("click", () => { if (confirm(`${p.ad} kişisinin ${p.teminat} TL teminatı yanacak. Likide edilsin mi?`)) islem(lik, $("bxaGenelDurum"), "adminPozKapat", { id: p.id, mod: "likide" }); });
       td.append(kapat, lik); tr.append(td);
       tb.append(tr);
     });
@@ -227,13 +257,13 @@
     if (!liste.length) { tb.innerHTML = '<tr><td colspan="6" class="muted">Sipariş yok.</td></tr>'; return; }
     liste.forEach((s) => {
       const tr = el("tr");
-      tr.append(el("td", null, tarih(s.ms)), el("td", null, s.ad), el("td", null, (s.emoji || "🎁") + " " + s.urunAd), el("td", null, para(s.fiyat, 0) + " BKC"), el("td", null, SIP[s.durum] || s.durum));
+      tr.append(el("td", null, tarih(s.ms)), el("td", null, s.ad), el("td", null, (s.emoji || "🎁") + " " + s.urunAd), el("td", null, para(s.fiyat, 0) + " BERKAY"), el("td", null, SIP[s.durum] || s.durum));
       const td = el("td", "bx-butonlar");
       if (s.durum === "bekliyor") {
         const t = el("button", "admin-btn publish", "✅ Teslim edildi"); t.type = "button";
         t.addEventListener("click", () => islem(t, $("bxaGenelDurum"), "adminSiparis", { id: s.id, durum: "teslim" }));
         const i = el("button", "admin-btn reject", "↩️ İptal + iade"); i.type = "button";
-        i.addEventListener("click", () => { if (confirm(`${s.fiyat} BKC ${s.ad} kişisine iade edilsin mi?`)) islem(i, $("bxaGenelDurum"), "adminSiparis", { id: s.id, durum: "iptal" }); });
+        i.addEventListener("click", () => { if (confirm(`${s.fiyat} BERKAY ${s.ad} kişisine iade edilsin mi?`)) islem(i, $("bxaGenelDurum"), "adminSiparis", { id: s.id, durum: "iptal" }); });
         td.append(t, i);
       } else if (s.durum === "teslim") {
         const g = el("button", "admin-btn", "Geri al"); g.type = "button";
@@ -250,7 +280,7 @@
     if (!liste.length) { k.append(el("p", "muted", "Ürün yok.")); return; }
     liste.forEach((u) => {
       const row = el("div", "bx-satir");
-      row.append(el("b", null, (u.emoji || "🎁") + " " + u.ad), el("span", "muted", para(u.fiyat, 0) + " BKC · stok " + (u.stok < 0 ? "∞" : u.stok) + (u.aktif === false ? " · satışta değil" : "")));
+      row.append(el("b", null, (u.emoji || "🎁") + " " + u.ad), el("span", "muted", para(u.fiyat, 0) + " BERKAY · stok " + (u.stok < 0 ? "∞" : u.stok) + (u.aktif === false ? " · satışta değil" : "")));
       const sag = el("span", "bx-sag bx-butonlar");
       const duz = el("button", "admin-btn", "Düzenle"); duz.type = "button";
       duz.addEventListener("click", () => {

@@ -1,5 +1,5 @@
 // ============================================================
-// borsa.js — sadece borsa.html: BERKAYCOIN borsası (kullanıcı tarafı).
+// borsa.js — sadece borsa.html: BERKAY borsası (kullanıcı tarafı).
 // Her para işlemi /api/borsa üzerinden SUNUCUDA yapılır; burası sadece
 // gösterir ve tahmin hesaplar. Veri yapısı için bkz. api/borsa.js başı.
 // ============================================================
@@ -45,7 +45,7 @@
     profile = p;
     if (!p) {
       $("bxIcerik").hidden = true; $("bxKapi").hidden = false;
-      $("bxKapiYazi").innerHTML = "Borsaya girmek için <b>kayıt olman</b> gerekiyor. Kayıt olunca hesabına <b>200 BERKAYCOIN</b> hediye ediliyor.";
+      $("bxKapiYazi").innerHTML = "Borsaya girmek için <b>kayıt olman</b> gerekiyor. Kayıt olunca hesabına <b>200 BERKAY</b> hediye ediliyor.";
       $("bxGirisBtn").hidden = false;
       return;
     }
@@ -59,7 +59,7 @@
     $("bxGirisBtn").hidden = true;
     try {
       const r = await api("baslat");
-      if (r.yeni) toast(`🎉 Hoş geldin! Hesabına ${r.bonus} BERKAYCOIN yüklendi.`, 6000);
+      if (r.yeni) toast(`🎉 Hoş geldin! Hesabına ${r.bonus} BERKAY yüklendi.`, 6000);
     } catch (err) {
       basladi = false;
       $("bxKapiYazi").textContent = "⚠️ " + err.message;
@@ -126,8 +126,9 @@
     grafik.canliFiyat = d.fiyat;
     grafik.veri(tumMumlar());
     const cizgiler = [];
-    Object.values(d.poz).filter((p) => p.uid === profile.uid).forEach((p) => {
-      cizgiler.push({ p: p.giris, renk: getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#5a3fd4", yazi: `${p.kaldirac}x ${p.yon.toUpperCase()} giriş` });
+    const benimPoz = Object.values(d.poz).filter((p) => p.uid === profile.uid);
+    benimPoz.forEach((p) => {
+      cizgiler.push({ p: p.giris, renk: getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#5a3fd4", yazi: `${p.kaldirac}x ${p.yon.toUpperCase()} ort. giriş` });
       cizgiler.push({ p: E.lik(p, d.derinlik), renk: "#e8590c", yazi: "Likidasyon" });
     });
     grafik.cizgiler(cizgiler);
@@ -156,10 +157,10 @@
     $("bxFiyat").className = deg >= 0 ? "yukari" : "asagi";
     $("bxYuksek").textContent = sayi(Math.max(d.fiyat, ...gun.map((m) => m.h)));
     $("bxDusuk").textContent = sayi(Math.min(d.fiyat, ...gun.map((m) => m.l)));
-    $("bxHacim").textContent = para(gun.reduce((t, m) => t + (m.v || 0), 0), 0) + " BTL";
+    $("bxHacim").textContent = para(gun.reduce((t, m) => t + (m.v || 0), 0), 0) + " TL";
     $("bxDolasim").textContent = para(d.toplamArz - d.kasaBKC, 0) + " / " + para(d.toplamArz, 0);
     $("bxPiyasa").innerHTML = d.acik ? '<span class="bx-nokta ok"></span>Açık' : '<span class="bx-nokta"></span>Kapalı';
-    document.title = `${sayi(d.fiyat)} BKC · Berkay Borsası`;
+    document.title = `${sayi(d.fiyat)} BERKAY · Berkay Borsası`;
   }
 
   // ---------------- Cüzdan ----------------
@@ -170,10 +171,10 @@
     $("bxBtl").textContent = para(cuzdan.btl, 2);
     if (d) {
       const acikDeger = Object.values(d.poz).filter((p) => p.uid === profile.uid).reduce((t, p) => t + Math.max(0, p.teminat + E.pnl(p, d.fiyat, d.derinlik)), 0);
-      $("bxToplam").textContent = para(cuzdan.bkc * d.fiyat + cuzdan.btl + acikDeger, 2) + " BTL";
+      $("bxToplam").textContent = para(cuzdan.bkc * d.fiyat + cuzdan.btl + acikDeger, 2) + " TL";
     }
     const g = $("bxGercek");
-    g.textContent = isaretli(cuzdan.gerceklesen || 0) + " BTL";
+    g.textContent = isaretli(cuzdan.gerceklesen || 0) + " TL";
     g.className = (cuzdan.gerceklesen || 0) >= 0 ? "yukari" : "asagi";
   }
 
@@ -187,9 +188,9 @@
   $("bxSpot").querySelectorAll(".bx-yon button").forEach((b) => b.addEventListener("click", () => {
     spotYon = b.dataset.yon;
     $("bxSpot").querySelectorAll(".bx-yon button").forEach((x) => x.classList.toggle("on", x === b));
-    $("bxSpotEtiket").textContent = spotYon === "al" ? "Harcanacak BTL" : "Satılacak BKC";
-    $("bxSpotBirim").textContent = spotYon === "al" ? "BTL" : "BKC";
-    $("bxSpotBtn").textContent = spotYon === "al" ? "BKC al" : "BKC sat";
+    $("bxSpotEtiket").textContent = spotYon === "al" ? "Harcanacak TL" : "Satılacak BERKAY";
+    $("bxSpotBirim").textContent = spotYon === "al" ? "TL" : "BERKAY";
+    $("bxSpotBtn").textContent = spotYon === "al" ? "BERKAY al" : "BERKAY sat";
     $("bxSpotBtn").className = "bx-gonder " + (spotYon === "al" ? "al" : "sat");
     $("bxSpotMiktar").value = "";
     tahminleriCiz();
@@ -224,33 +225,34 @@
     const st = $("bxSpotTahmin"); st.textContent = "";
     const m = Number($("bxSpotMiktar").value);
     if (spotYon === "al") {
-      satir(st, "Kullanılabilir", para(cuzdan ? cuzdan.btl : 0) + " BTL");
+      satir(st, "Kullanılabilir", para(cuzdan ? cuzdan.btl : 0) + " TL");
       if (m > 0) {
         const r = E.al(p, m, D);
-        satir(st, "Alacağın", "≈ " + para(r.q, 4) + " BKC");
+        satir(st, "Alacağın", "≈ " + para(r.q, 4) + " BERKAY");
         satir(st, "Ortalama fiyat", sayi(m / r.q));
         satir(st, "Fiyat etkisi", "+" + ((r.p1 / p - 1) * 100).toFixed(2) + "%", "yukari");
       }
     } else {
-      satir(st, "Kullanılabilir", para(cuzdan ? cuzdan.bkc : 0, 4) + " BKC");
+      satir(st, "Kullanılabilir", para(cuzdan ? cuzdan.bkc : 0, 4) + " BERKAY");
       if (m > 0) {
         const r = E.sat(p, m, D);
-        satir(st, "Alacağın", "≈ " + para(r.N) + " BTL");
+        satir(st, "Alacağın", "≈ " + para(r.N) + " TL");
         satir(st, "Ortalama fiyat", sayi(r.N / m));
         satir(st, "Fiyat etkisi", ((r.p1 / p - 1) * 100).toFixed(2) + "%", "asagi");
       }
     }
     const kt = $("bxKTahmin"); kt.textContent = "";
     const M = Number($("bxTeminat").value), x = Number($("bxX").value);
-    satir(kt, "Kullanılabilir", para(cuzdan ? cuzdan.btl : 0) + " BTL");
+    satir(kt, "Kullanılabilir", para(cuzdan ? cuzdan.btl : 0) + " TL");
     if (M > 0) {
       const N = M * x;
       const r = kYon === "long" ? E.al(p, N, D) : E.shortAc(p, N, D);
       const poz = { yon: kYon, teminat: M, notional: N, boyut: r.q };
-      satir(kt, "Pozisyon büyüklüğü", para(N) + " BTL");
-      satir(kt, "Tahmini giriş", sayi(N / r.q));
+      const etki = (r.p1 / p - 1) * 100;
+      satir(kt, "Pozisyon büyüklüğü", para(N) + " TL");
+      satir(kt, "Ortalama giriş", sayi(N / r.q));
+      satir(kt, "Fiyatı iter", (etki >= 0 ? "+" : "") + etki.toFixed(2) + "% → " + sayi(r.p1), etki >= 0 ? "yukari" : "asagi");
       satir(kt, "Likidasyon fiyatı", sayi(E.lik(poz, D)), "asagi");
-      satir(kt, "Fiyat etkisi", ((r.p1 / p - 1) * 100 >= 0 ? "+" : "") + ((r.p1 / p - 1) * 100).toFixed(2) + "%");
     }
   }
 
@@ -269,7 +271,7 @@
   });
   $("bxKBtn").addEventListener("click", () => {
     const M = Number($("bxTeminat").value), x = Number($("bxX").value);
-    if (!(M >= 1)) { durumYaz("Teminat en az 1 BTL.", true); return; }
+    if (!(M >= 1)) { durumYaz("Teminat en az 1 TL.", true); return; }
     if (x >= 15 && !confirm(`${x}x kaldıraç çok riskli: fiyat yaklaşık %${(90 / x).toFixed(1)} ters giderse teminatın gider. Devam?`)) return;
     calistir($("bxKBtn"), () => api("pozAc", { yon: kYon, kaldirac: x, teminat: M })).then((r) => { if (r) $("bxTeminat").value = ""; });
   });
@@ -284,13 +286,13 @@
       const pnl = E.pnl(p, d.fiyat, d.derinlik), yuzde = (pnl / p.teminat) * 100;
       const tr = el("tr");
       const yon = el("td"); yon.append(el("span", "bx-rozet " + (p.yon === "long" ? "al" : "sat"), `${p.kaldirac}x ${p.yon === "long" ? "LONG" : "SHORT"}`));
-      tr.append(yon, el("td", null, para(p.teminat) + " BTL"), el("td", null, para(p.notional) + " BTL"), el("td", null, sayi(p.giris)), el("td", null, sayi(d.fiyat)), el("td", "asagi", sayi(E.lik(p, d.derinlik))));
-      const kz = el("td", pnl >= 0 ? "yukari" : "asagi"); kz.innerHTML = `<b>${isaretli(pnl)} BTL</b><br><small>${isaretli(yuzde)}%</small>`; tr.append(kz);
+      tr.append(yon, el("td", null, para(p.teminat) + " TL"), el("td", null, para(p.notional) + " TL"), el("td", null, sayi(p.giris)), el("td", null, sayi(d.fiyat)), el("td", "asagi", sayi(E.lik(p, d.derinlik))));
+      const kz = el("td", pnl >= 0 ? "yukari" : "asagi"); kz.innerHTML = `<b>${isaretli(pnl)} TL</b><br><small>${isaretli(yuzde)}%</small>`; tr.append(kz);
       const td = el("td", "bx-butonlar");
       const kapat = el("button", "admin-btn reject", "Kapat");
       kapat.type = "button";
       kapat.addEventListener("click", () => calistir(kapat, () => api("pozKapat", { id: p.id })).then((r) => {
-        if (r && r.sonuc) { toast(`${r.sonuc.pnl >= 0 ? "🤑" : "😬"} ${isaretli(r.sonuc.pnl)} BTL (${isaretli(r.sonuc.yuzde)}%)`, 4000); if (r.sonuc.pnl > 0) paylasAc(r.sonuc, false); }
+        if (r && r.sonuc) { toast(`${r.sonuc.pnl >= 0 ? "🤑" : "😬"} ${isaretli(r.sonuc.pnl)} TL (${isaretli(r.sonuc.yuzde)}%)`, 4000); if (r.sonuc.pnl > 0) paylasAc(r.sonuc, false); }
       }));
       const pay = el("button", "admin-btn", "📤");
       pay.type = "button"; pay.title = "Paylaş";
@@ -307,7 +309,7 @@
     hepsi.forEach((p) => {
       const yuzde = (p.pnl / p.teminat) * 100;
       const row = el("div", "bx-satir");
-      row.append(el("b", null, p.ad), el("span", "bx-rozet " + (p.yon === "long" ? "al" : "sat"), `${p.kaldirac}x ${p.yon === "long" ? "LONG" : "SHORT"}`), el("span", "muted", para(p.notional, 0) + " BTL"));
+      row.append(el("b", null, p.ad), el("span", "bx-rozet " + (p.yon === "long" ? "al" : "sat"), `${p.kaldirac}x ${p.yon === "long" ? "LONG" : "SHORT"}`), el("span", "muted", para(p.notional, 0) + " TL"));
       const kz = el("span", "bx-sag " + (yuzde >= 0 ? "yukari" : "asagi"), isaretli(yuzde) + "%");
       row.append(kz);
       a.append(row);
@@ -322,7 +324,7 @@
       const row = el("div", "bx-satir" + (k.tur === "lik" ? " bx-lik" : ""));
       let ne = AKIS[k.tur] || k.tur;
       if (k.x && (k.tur === "long" || k.tur === "short" || k.tur === "kapat" || k.tur === "lik")) ne = `${k.x}x ` + ne;
-      row.append(el("b", null, k.ad), el("span", null, ne), el("span", "muted", para(k.m, 0) + " BTL"), el("span", "bx-sag muted", kacOnce(k.t)));
+      row.append(el("b", null, k.ad), el("span", null, ne), el("span", "muted", para(k.m, 0) + " TL"), el("span", "bx-sag muted", kacOnce(k.t)));
       a.append(row);
     });
   }
@@ -333,9 +335,9 @@
     gecmisListe.forEach((g) => {
       const tr = el("tr");
       const yon = el("td"); yon.append(el("span", "bx-rozet " + (g.yon === "long" ? "al" : "sat"), `${g.kaldirac}x ${g.yon === "long" ? "LONG" : "SHORT"}`));
-      tr.append(el("td", null, new Date(g.kapanis).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })), yon, el("td", null, para(g.teminat) + " BTL"), el("td", null, sayi(g.giris) + " → " + sayi(g.cikis)));
-      const kz = el("td", g.pnl >= 0 ? "yukari" : "asagi"); kz.innerHTML = `<b>${isaretli(g.pnl)} BTL</b><br><small>${isaretli(g.yuzde)}%</small>`; tr.append(kz);
-      tr.append(el("td", null, g.sebep === "likide" ? "💀 Likide" : "✅ Kapandı"));
+      tr.append(el("td", null, new Date(g.kapanis).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })), yon, el("td", null, para(g.teminat) + " TL"), el("td", null, sayi(g.giris) + " → " + sayi(g.cikis)));
+      const kz = el("td", g.pnl >= 0 ? "yukari" : "asagi"); kz.innerHTML = `<b>${isaretli(g.pnl)} TL</b><br><small>${isaretli(g.yuzde)}%</small>`; tr.append(kz);
+      tr.append(el("td", null, g.sebep === "likide" ? "💀 Likide" : g.sebep === "yenileme" ? "🔄 Sistem güncellemesi (iade)" : "✅ Kapandı"));
       const td = el("td"); const b = el("button", "admin-btn", "📤 Paylaş"); b.type = "button";
       b.addEventListener("click", () => paylasAc(g, false)); td.append(b); tr.append(td);
       tb.append(tr);
@@ -355,7 +357,7 @@
       b.append(el("b", null, u.ad));
       if (u.aciklama) b.append(el("p", "muted", u.aciklama));
       const alt = el("div", "bx-urun-alt");
-      alt.append(el("span", "bx-urun-fiyat", para(u.fiyat, 0) + " BKC"));
+      alt.append(el("span", "bx-urun-fiyat", para(u.fiyat, 0) + " BERKAY"));
       if (typeof u.stok === "number" && u.stok >= 0) alt.append(el("small", "muted", u.stok ? `Stok: ${u.stok}` : "Tükendi"));
       b.append(alt);
       const btn = el("button", "btn", "Satın al");
@@ -366,7 +368,7 @@
       const bar = el("i"); bar.style.width = (oran * 100).toFixed(1) + "%"; ilerleme.append(bar);
       ilerleme.title = oran >= 1 ? "Alabilirsin!" : `%${(oran * 100).toFixed(0)} biriktirdin`;
       btn.addEventListener("click", () => {
-        if (!confirm(`${u.emoji || "🎁"} ${u.ad} için ${u.fiyat} BKC harcanacak. Emin misin?`)) return;
+        if (!confirm(`${u.emoji || "🎁"} ${u.ad} için ${u.fiyat} BERKAY harcanacak. Emin misin?`)) return;
         calistir(btn, () => api("marketAl", { urunId: u.id })).then((r) => { if (r) toast(r.mesaj, 5000); });
       });
       b.append(ilerleme);
@@ -380,7 +382,7 @@
     if (!liste.length) { s.append(el("p", "muted", "Henüz sipariş yok.")); return; }
     liste.forEach((x) => {
       const row = el("div", "bx-satir");
-      row.append(el("b", null, (x.emoji || "🎁") + " " + x.urunAd), el("span", "muted", para(x.fiyat, 0) + " BKC"), el("span", "bx-sag", SIP[x.durum] || x.durum));
+      row.append(el("b", null, (x.emoji || "🎁") + " " + x.urunAd), el("span", "muted", para(x.fiyat, 0) + " BERKAY"), el("span", "bx-sag", SIP[x.durum] || x.durum));
       s.append(row);
     });
   }
@@ -409,7 +411,7 @@
     // logo
     ctx.fillStyle = "#f5b82e"; ctx.beginPath(); ctx.arc(130, 140, 54, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#3a2800"; ctx.font = `800 64px ${DISP}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("B", 130, 144);
-    ctx.textAlign = "left"; ctx.fillStyle = "#fff"; ctx.font = `800 52px ${DISP}`; ctx.fillText("BERKAYCOIN", 210, 124);
+    ctx.textAlign = "left"; ctx.fillStyle = "#fff"; ctx.font = `800 52px ${DISP}`; ctx.fillText("BERKAY", 210, 124);
     ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.font = `700 30px ${BODY}`; ctx.fillText("Berkay Borsası · yaparmi.com", 212, 172);
     // yön rozeti
     const rozet = `${g.kaldirac}x ${g.yon === "long" ? "LONG" : "SHORT"}`;
@@ -425,9 +427,9 @@
     let boy = 200; while (ctx.measureText(roi).width > W - 160 && boy > 80) { boy -= 10; ctx.font = `800 ${boy}px ${DISP}`; }
     ctx.fillText(roi, 76, 640);
     ctx.fillStyle = "#fff"; ctx.font = `800 64px ${DISP}`;
-    ctx.fillText((g.pnl >= 0 ? "+" : "") + para(g.pnl) + " BTL", 80, 740);
+    ctx.fillText((g.pnl >= 0 ? "+" : "") + para(g.pnl) + " TL", 80, 740);
     // detaylar
-    const satirlar = [["Giriş fiyatı", sayi(g.giris)], [acik ? "Anlık fiyat" : "Çıkış fiyatı", sayi(g.cikis)], ["Teminat", para(g.teminat) + " BTL"]];
+    const satirlar = [["Giriş fiyatı", sayi(g.giris)], [acik ? "Anlık fiyat" : "Çıkış fiyatı", sayi(g.cikis)], ["Teminat", para(g.teminat) + " TL"]];
     satirlar.forEach(([a, b], i) => {
       const yy = 880 + i * 92;
       ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.font = `700 34px ${BODY}`; ctx.fillText(a, 80, yy);
@@ -444,8 +446,8 @@
   }
   function paylasMetni(g, acik) {
     const kar = g.pnl >= 0;
-    return `${kar ? "🤑" : "💀"} BERKAYCOIN ${g.kaldirac}x ${g.yon === "long" ? "LONG" : "SHORT"} ${acik ? "(açık)" : ""}\n` +
-      `${(g.yuzde >= 0 ? "+" : "") + g.yuzde.toFixed(2)}%  ·  ${(g.pnl >= 0 ? "+" : "") + para(g.pnl)} BTL\n` +
+    return `${kar ? "🤑" : "💀"} BERKAY ${g.kaldirac}x ${g.yon === "long" ? "LONG" : "SHORT"} ${acik ? "(açık)" : ""}\n` +
+      `${(g.yuzde >= 0 ? "+" : "") + g.yuzde.toFixed(2)}%  ·  ${(g.pnl >= 0 ? "+" : "") + para(g.pnl)} TL\n` +
       `Giriş ${sayi(g.giris)} → ${acik ? "şimdi" : "çıkış"} ${sayi(g.cikis)}\n` +
       `Sen de dene: ${location.origin}/borsa`;
   }
@@ -490,7 +492,7 @@
     if (!d || !profile) return;
     const simdi = new Set(Object.values(d.poz).filter((p) => p.uid === profile.uid).map((p) => p.id));
     if (oncekiPozIdleri) oncekiPozIdleri.forEach((id) => {
-      if (!simdi.has(id)) { const g = gecmisListe.find((x) => x.id === id); if (g && g.sebep === "likide") toast(`💀 ${g.kaldirac}x ${g.yon.toUpperCase()} pozisyonun likide oldu (−${para(g.teminat)} BTL)`, 7000); }
+      if (!simdi.has(id)) { const g = gecmisListe.find((x) => x.id === id); if (g && g.sebep === "likide") toast(`💀 ${g.kaldirac}x ${g.yon.toUpperCase()} pozisyonun likide oldu (−${para(g.teminat)} TL)`, 7000); }
     });
     oncekiPozIdleri = simdi;
   }, 2000);

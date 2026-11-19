@@ -21,7 +21,7 @@ yaparmi-site/
 ├─ oyun.html       <- oyun sayfası (2048, Yılan, Hafıza, XOX, Taş Kağıt Makas)
 ├─ ders.html        <- şakadan optik form: telefonu karekoda tut, 85-99 arası rastgele puan
 ├─ ehliyet.html     <- Berkay'ın ehliyet serüveni: yazılı sınav, araç seç, sürüş sınavı, L Park
-├─ borsa.html       <- Berkay Borsası: BERKAYCOIN grafiği, spot, 20x kaldıraç, Berkay Market
+├─ borsa.html       <- Berkay Borsası: BERKAY grafiği, spot, 20x kaldıraç, Berkay Market
 ├─ sosyal.html      <- "hikaye seç" oyunu (İzmir'e gitsin / evde kalsın ...)
 ├─ galeri.html      <- yatay kaydırmalı fotoğraf galerisi + fotoğraf öner
 ├─ admin.html       <- sadece "admin" kullanıcı adına giriş yapınca görünür
@@ -41,7 +41,7 @@ yaparmi-site/
 ├─ js/spor-admin.js <- admin.html: motor oyunu kaza resmi
 ├─ js/sosyal-editor.js  <- admin.html'deki "Sosyal Hayat Düzenle" (algoritma şeması + editör)
 ├─ api/ask.js              <- Vercel serverless function, Nous Research'e soru gönderir
-├─ api/borsa.js            <- BERKAYCOIN borsasının sunucusu (bakiyeler burada değişir)
+├─ api/borsa.js            <- BERKAY borsasının sunucusu (bakiyeler burada değişir)
 ├─ js/borsa-grafik.js      <- borsa grafiği + ortak hesaplar (borsa.html ve admin.html)
 ├─ js/borsa.js             <- sadece borsa.html
 ├─ js/borsa-admin.js       <- admin.html: Borsa sekmesi
@@ -457,7 +457,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ===== BERKAY BORSASI (BERKAYCOIN) =====
+    // ===== BERKAY BORSASI (BERKAY) =====
     // Bakiyeleri SADECE sunucu (api/borsa.js, firebase-admin) yazar; firebase-admin
     // bu kurallara takılmaz. Tarayıcıdan hiçbir borsa belgesi yazılamaz.
     match /borsa/{docId} {
@@ -612,23 +612,26 @@ Cevaplar 1-3 cümle. Sadece hafif laf sokmalara (mal, aptal, salak...)
 izin var. Aile, cinsel ve ağır küfürler yasak. Soru kutusunda artık sabit
 "Berkay" öneki yok, soru yazıldığı gibi gidiyor.
 
-## Berkay Borsası (BERKAYCOIN)
+## Berkay Borsası (BERKAY)
 
-`/borsa` sayfası. Kayıt olan herkese bir kere **200 BKC** verilir. Toplam arz
-**1.000.000 BKC**; dağıtılmayan kısım "kasa"da (admin) durur.
+`/borsa` sayfası. Kayıt olan herkese bir kere **200 BERKAY** verilir. Toplam arz
+**1.000.000 BERKAY**; dağıtılmayan kısım "kasa"da (admin) durur.
 
-- **BKC** = BERKAYCOIN, **BTL** = Berkay TL. Fiyat BTL cinsinden.
-- **Spot:** BTL ile BKC al, BKC satıp BTL al. Her alım fiyatı yükseltir, her satış düşürür.
-- **Kaldıraç:** 1x–20x long/short, teminat BTL. Teminatın %90'ı erirse pozisyon
-  likide olur. Pozisyon açmak/kapatmak da fiyatı iter, likidasyonlar zincirleme düşüş yapabilir.
+- **BERKAY** = coin, **TL** = nakit. BERKAY'ın fiyatı TL cinsinden.
+- **Spot:** TL ile BERKAY al, BERKAY satıp TL al. Her alım fiyatı yükseltir, her satış düşürür.
+- **Kaldıraç:** 1x–20x long/short, teminat TL. Kaldıraçla açılan pozisyon da fiyatı iter
+  (long yükseltir, short düşürür), kapatınca geri iter. K/Z = "şimdi kapatsan eline geçecek".
+  Teminatın %90'ı erirse pozisyon likide olur; likidasyonlar zincirleme düşüş yapabilir.
+- **Piyasa yapıcı (MM):** admin açarsa dakikada bir kasa adına alım/satım yapar. Denge modunda
+  fiyatı hedef ±bant içinde tutmaya çalışır, ya da her dakika sabit miktar alır/satar.
 - **Grafik** Firestore'da (`borsa/durum` + `borsa_grafik/{gün}`) kalıcı. F5 atınca sıfırlanmaz.
   Sayfa açıkken her 10 saniyede bir küçük oynaklıkla çizmeye devam eder.
-- **Berkay Market:** BKC ile ürün alınır (başlangıçta Alihan'ın kahvesi 1 aylık ve Coca-Cola).
+- **Berkay Market:** BERKAY ile ürün alınır (başlangıçta Alihan'ın kahvesi 1 aylık ve Coca-Cola).
   Sipariş admin panelinde görünür, admin "Teslim edildi" ya da "İptal + iade" der.
 - **Paylaş:** Kapanan ya da açık pozisyonun kâr kartı resim olarak WhatsApp'a paylaşılır.
 
 **Admin paneli → 📈 Borsa:** özet (arz, kasa, dolaşım), cüzdanlar (kimde ne kadar),
-canlı kaldıraç pozisyonları ve K/Z'ler (kapat / likide et), kullanıcıya BKC/BTL gönder ya da
+canlı kaldıraç pozisyonları ve K/Z'ler (kapat / likide et), piyasa yapıcı (MM) botu, kullanıcıya BERKAY/TL gönder ya da
 geri al, toplam arzı bas/yak, derinlik/oynaklık/maksimum kaldıraç, piyasayı aç/kapat,
 market ürünleri, siparişler ve tüm para hareketleri. **Fiyatı yönet:** çizim modunu aç,
 grafiğin sağındaki gelecek alanına çizgi çiz, "Rotayı uygula" de. Fiyat o çizgiyi izler.

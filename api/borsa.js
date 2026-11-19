@@ -1,6 +1,6 @@
 // ============================================================
 // Vercel Serverless Function — /api/borsa
-// BERKAYCOIN (BKC) borsası: fiyat, spot al/sat, kaldıraçlı pozisyon,
+// BERKAY (BERKAY) borsası: fiyat, spot al/sat, kaldıraçlı pozisyon,
 // Berkay Market ve admin işlemleri.
 //
 // Bakiyeler SADECE burada (sunucuda) değişir. Tarayıcı Firestore'a yazamaz
@@ -12,16 +12,26 @@
 //   hesapları > "Yeni özel anahtar oluştur" ile inen JSON dosyasının TAMAMI.
 //
 // ---------------- Para birimleri ----------------
-//   BKC  → BERKAYCOIN. Toplam arz 1.000.000. Dağıtılmayan kısım "kasa"da durur.
-//   BTL  → Berkay TL. BKC'nin fiyatı BTL cinsinden. Spot'ta BKC satınca BTL
-//          gelir, BTL ile BKC alınır. Kaldıraçta teminat BTL'dir.
+//   BERKAY → coin. Toplam arz 1.000.000. Dağıtılmayan kısım "kasa"da durur.
+//   TL     → nakit. BERKAY'ın fiyatı TL cinsinden. Spot'ta BERKAY satınca TL
+//          gelir, TL ile BERKAY alınır. Kaldıraçta teminat TL'dir.
 //
 // ---------------- Fiyat nasıl oluşur? ----------------
-//   Her alım fiyatı yükseltir, her satış düşürür:  fiyat × e^(±BTL / derinlik)
+//   Her alım fiyatı yükseltir, her satış düşürür:  fiyat × e^(±TL / derinlik)
 //   Kaldıraçlı pozisyon açmak/kapatmak da aynı eğriden geçer (long = alım,
-//   short = satış). Bu eğri yola bağlı olmadığı için "pompala-sat" ile bedava
-//   para basılamaz. Ayrıca her 10 saniyede küçük bir rastgele oynaklık var
-//   (admin 0 yapabilir). Admin grafiğe çizgi çizerse fiyat o çizgiyi izler.
+//   short = satış), yani kaldıraçla girenler de fiyatı oynatır. Pozisyonun
+//   K/Z'si "şimdi kapatsan ne alırsın"dır (kapatmak da fiyatı geri iter).
+//   Eğri yola bağlı olmadığı için "pompala-sat" ile bedava para basılamaz.
+//   Her 10 saniyede küçük bir rastgele oynaklık var (admin 0 yapabilir).
+//   Admin grafiğe çizgi çizerse fiyat o çizgiyi izler.
+//
+// ---------------- Piyasa yapıcı (MM) ----------------
+//   Admin açarsa dakikada bir kasa adına alım/satım yapar (aynı eğriden):
+//     denge → fiyat [hedef×(1−bant), hedef×(1+bant)] dışına çıkarsa hedefe doğru,
+//             dakikada en fazla "dakikalık" TL kadar alır/satar
+//     al / sat → her dakika "dakikalık" TL kadar alır / satar
+//   MM'nin parası kasadır: kullanıcı bakiyelerine ve toplam arza dokunmaz.
+//   Ne kadar alıp sattığı borsa/gizli.mm içinde tutulur (sadece admin görür).
 //
 // ---------------- Firestore ----------------
 //   borsa/durum         herkese açık: fiyat, son mumlar, açık pozisyonlar, akış, ayarlar
@@ -40,8 +50,8 @@ import { getAuth } from "firebase-admin/auth";
 import { randomUUID } from "node:crypto";
 
 const BASLANGIC_ARZ = 1_000_000;
-const KAYIT_BONUSU = 200; // BKC
-const BASLANGIC_FIYAT = 1; // 1 BKC = 1 BTL
+const KAYIT_BONUSU = 200; // BERKAY
+const BASLANGIC_FIYAT = 1; // 1 BERKAY = 1 TL
 const ADIM_MS = 10_000; // fiyat her 10 saniyede bir adım atar
 const MUM_MS = 60_000; // 1 dakikalık mumlar
 const SON_MUM = 240; // durum belgesinde tutulan son mum sayısı (4 saat)
@@ -85,17 +95,18 @@ function normal() {
 }
 
 // ---------------- Fiyat eğrisi ----------------
-// N BTL harcayıp BKC almak: gelen BKC ve yeni fiyat
+// N TL harcayıp BERKAY almak: gelen BERKAY ve yeni fiyat
 function egriAl(p, N, D) { return { q: (D / p) * (1 - Math.exp(-N / D)), p1: p * Math.exp(N / D) }; }
-// q BKC satmak: gelen BTL ve yeni fiyat
+// q BERKAY satmak: gelen TL ve yeni fiyat
 function egriSat(p, q, D) { const x = (q * p) / D; return { N: D * Math.log1p(x), p1: p / (1 + x) }; }
-// N BTL'lik short açmak: satılan (ödünç) BKC ve yeni fiyat
+// N TL'lik short açmak: satılan (ödünç) BERKAY ve yeni fiyat
 function egriShortAc(p, N, D) { return { q: (D / p) * Math.expm1(N / D), p1: p * Math.exp(-N / D) }; }
-// q BKC'yi geri almak (short kapatma): ödenen BTL ve yeni fiyat
+// q BERKAY'ı geri almak (short kapatma): ödenen TL ve yeni fiyat
 function egriGeriAl(p, q, D) { const x = Math.min((q * p) / D, 0.98); return { N: -D * Math.log1p(-x), p1: p / (1 - x) }; }
 
-// Pozisyon şu an kapatılsa kâr/zarar (BTL) — fiyat kaymasını da hesaba katar
+// Pozisyon şu an kapatılsa kâr/zarar (TL) — kapanışın fiyatı itmesini de hesaba katar
 function pozPnl(poz, p, D) {
+  if (poz.v === 2) return poz.yon === "long" ? poz.boyut * (p - poz.giris) : poz.boyut * (poz.giris - p);
   if (poz.yon === "long") return egriSat(p, poz.boyut, D).N - poz.notional;
   return poz.notional - egriGeriAl(p, poz.boyut, D).N;
 }
@@ -170,19 +181,20 @@ function likidasyonlar(d, t, kapananlar) {
   for (let tur = 0; tur < 60; tur++) {
     let bulundu = null;
     for (const poz of Object.values(d.poz)) {
-      if (pozPnl(poz, d.fiyat, d.derinlik) <= -LIK_ORAN * poz.teminat) { bulundu = poz; break; }
+      if (pozPnl(poz, d.fiyat, d.derinlik) <= -LIK_ORAN * poz.teminat + 1e-9) { bulundu = poz; break; }
     }
     if (!bulundu) return;
     pozKapatIc(d, bulundu, t, "likide", kapananlar);
   }
 }
 
-// Pozisyonu eğri üzerinden kapat; kullanıcıya dönecek BTL'yi döndürür
+// Pozisyonu eğri üzerinden kapat (fiyatı iter); kullanıcıya dönecek TL'yi döndürür
 function pozKapatIc(d, poz, t, sebep, kapananlar) {
   const D = d.derinlik;
   const p0 = d.fiyat;
   let pnl, p1, cikis;
-  if (poz.yon === "long") { const r = egriSat(p0, poz.boyut, D); pnl = r.N - poz.notional; p1 = r.p1; cikis = r.N / poz.boyut; }
+  if (poz.v === 2) { pnl = pozPnl(poz, p0, D); p1 = p0; cikis = p0; } // ara sürümden kalan pozisyon: fiyatı itmeden kapanır
+  else if (poz.yon === "long") { const r = egriSat(p0, poz.boyut, D); pnl = r.N - poz.notional; p1 = r.p1; cikis = r.N / poz.boyut; }
   else { const r = egriGeriAl(p0, poz.boyut, D); pnl = poz.notional - r.N; p1 = r.p1; cikis = r.N / poz.boyut; }
   const iade = sebep === "likide" ? 0 : Math.max(0, poz.teminat + pnl);
   const gercekPnl = iade - poz.teminat;
@@ -200,6 +212,26 @@ function pozKapatIc(d, poz, t, sebep, kapananlar) {
   return kayit;
 }
 
+// Piyasa yapıcı: dakikada bir işlem. Döndürdüğü TL: + alım, − satım
+function mmAdim(d, mm) {
+  if (!mm || !mm.acik) return 0;
+  const D = d.derinlik, p = d.fiyat, max = Math.max(0, sayi(mm.dakikalik) || 0);
+  if (!max) return 0;
+  let N = 0;
+  if (mm.mod === "al") N = max;
+  else if (mm.mod === "sat") N = -max;
+  else {
+    const h = sayi(mm.hedef), bant = Math.max(0, sayi(mm.bant) || 0) / 100;
+    if (!(h > 0)) return 0;
+    if (p < h * (1 - bant)) N = Math.min(max, D * Math.log(h / p)); // hedefe çıkmak için gereken alım
+    else if (p > h * (1 + bant)) N = -Math.min(max, D * Math.log(p / h));
+  }
+  if (Math.abs(N) < 1e-6) return 0;
+  if (N > 0) d.fiyat = egriAl(p, N, D).p1;
+  else { const q = (D / p) * Math.expm1(-N / D); d.fiyat = Math.max(1e-6, egriSat(p, q, D).p1); }
+  return N;
+}
+
 // Zamanı "şimdi"ye kadar ilerlet: oynaklık + rota + likidasyonlar
 function ilerlet(d, gizli, now, kapananlar) {
   if (!d.acik) { d.sonTick = now; return; }
@@ -215,7 +247,18 @@ function ilerlet(d, gizli, now, kapananlar) {
       p = p * Math.exp(d.oynaklik * normal());
     }
     d.fiyat = Math.min(1e9, Math.max(1e-6, p));
-    mumYaz(d, t, d.fiyat, 0, kapananlar.tasanlar);
+    let hacim = 0;
+    if (gizli && gizli.mm && gizli.mm.acik && Math.floor(t / MUM_MS) !== Math.floor((t - ADIM_MS) / MUM_MS)) {
+      const N = mmAdim(d, gizli.mm);
+      if (N) {
+        hacim = Math.abs(N);
+        const st = gizli.mm;
+        if (N > 0) st.alinan = r2((st.alinan || 0) + N); else st.satilan = r2((st.satilan || 0) - N);
+        st.sonIslem = { t, N: r2(N), f: r6(d.fiyat) };
+        kapananlar.gizliDegisti = true;
+      }
+    }
+    mumYaz(d, t, d.fiyat, hacim, kapananlar.tasanlar);
     likidasyonlar(d, t, kapananlar);
   }
   d.sonTick += adim * ADIM_MS;
@@ -240,7 +283,7 @@ async function islem(db, now, ekOkumalar, hesapla) {
     d.poz = d.poz || {};
     d.akis = d.akis || [];
     d.son = d.son || [];
-    const gizli = gSnap.exists ? gSnap.data() : { rota: null };
+    const gizli = gSnap.exists ? gSnap.data() : { rota: null, mm: null };
     const k = { tasanlar: [], liste: [], gizliDegisti: false, loglar: [] };
     ilerlet(d, gizli, now, k);
     const sonuc = await hesapla({ tx, d, gizli, ek, k });
@@ -249,7 +292,7 @@ async function islem(db, now, ekOkumalar, hesapla) {
 
     // yazmalar
     tx.set(durumRef, d);
-    if (k.gizliDegisti || !gSnap.exists) tx.set(gizliRef, { rota: gizli.rota || null });
+    if (k.gizliDegisti || !gSnap.exists) tx.set(gizliRef, { rota: gizli.rota || null, mm: gizli.mm || null });
     if (yeni) for (const u of BASLANGIC_URUNLER) tx.set(db.collection("borsa_market").doc(u.id), { ...u, olusturma: now });
     const gunler = {};
     for (const m of k.tasanlar) (gunler[gunAnahtari(m.t)] ||= []).push(m);
@@ -259,7 +302,7 @@ async function islem(db, now, ekOkumalar, hesapla) {
     for (const kayit of k.liste) {
       tx.set(db.collection("borsa_gecmis").doc(kayit.id), kayit);
       if (kayit.sebep === "likide") {
-        k.loglar.push({ uid: kayit.uid, ad: kayit.ad, tur: "likidasyon", detay: `${kayit.kaldirac}x ${kayit.yon.toUpperCase()} likide oldu (−${kayit.teminat} BTL teminat)`, btl: 0, bkc: 0 });
+        k.loglar.push({ uid: kayit.uid, ad: kayit.ad, tur: "likidasyon", detay: `${kayit.kaldirac}x ${kayit.yon.toUpperCase()} likide oldu (−${kayit.teminat} TL teminat)`, btl: 0, bkc: 0 });
       }
     }
     for (const l of k.loglar) tx.set(db.collection("borsa_log").doc(), { ...l, ms: now, tarih: FieldValue.serverTimestamp() });
@@ -291,7 +334,7 @@ async function kullaniciIslem(db, kim, govde, now) {
       d.kasaBKC = r6(d.kasaBKC - bonus);
       const c = { uid: kim.uid, ad: kim.ad, bkc: bonus, btl: 0, bonus, gerceklesen: 0, olusturma: now, sonIslem: 0 };
       tx.set(cuzRef, c);
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "bonus", detay: `Kayıt bonusu: ${bonus} BKC`, bkc: bonus, btl: 0 });
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "bonus", detay: `Kayıt bonusu: ${bonus} BERKAY`, bkc: bonus, btl: 0 });
       return { ok: true, cuzdan: cuzdanCevap(c), yeni: true, bonus };
     });
   }
@@ -310,30 +353,30 @@ async function kullaniciIslem(db, kim, govde, now) {
 
     if (tur === "spotAl") {
       const N = r6(sayi(govde.btl));
-      if (!(N > 0)) throw new Hata("Geçerli bir BTL miktarı yaz.");
-      if (N > c.btl + 1e-9) throw new Hata("Yeterli BTL'n yok.");
+      if (!(N > 0)) throw new Hata("Geçerli bir TL miktarı yaz.");
+      if (N > c.btl + 1e-9) throw new Hata("Yeterli TL'n yok.");
       const r = egriAl(d.fiyat, N, D);
-      if (r.q > d.kasaBKC) throw new Hata("Kasada bu kadar BKC kalmadı.");
+      if (r.q > d.kasaBKC) throw new Hata("Kasada bu kadar BERKAY kalmadı.");
       c.btl = r6(c.btl - N); c.bkc = r6(c.bkc + r.q);
       d.kasaBKC = r6(d.kasaBKC - r.q);
       d.fiyat = r.p1;
       mumYaz(d, now, d.fiyat, N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: "al", m: r2(N), q: r6(r.q), f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-al", detay: `${r6(r.q)} BKC aldı (${r2(N)} BTL)`, bkc: r6(r.q), btl: -N });
-      mesaj = `${r.q.toFixed(4)} BKC aldın.`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-al", detay: `${r6(r.q)} BERKAY aldı (${r2(N)} TL)`, bkc: r6(r.q), btl: -N });
+      mesaj = `${r.q.toFixed(4)} BERKAY aldın.`;
       ekCevap = { q: r6(r.q), ort: r6(N / r.q) };
     } else if (tur === "spotSat") {
       const q = r6(sayi(govde.bkc));
-      if (!(q > 0)) throw new Hata("Geçerli bir BKC miktarı yaz.");
-      if (q > c.bkc + 1e-9) throw new Hata("Yeterli BKC'n yok.");
+      if (!(q > 0)) throw new Hata("Geçerli bir BERKAY miktarı yaz.");
+      if (q > c.bkc + 1e-9) throw new Hata("Yeterli BERKAY'ın yok.");
       const r = egriSat(d.fiyat, q, D);
       c.bkc = r6(c.bkc - q); c.btl = r6(c.btl + r.N);
       d.kasaBKC = r6(d.kasaBKC + q);
       d.fiyat = Math.max(1e-6, r.p1);
       mumYaz(d, now, d.fiyat, r.N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: "sat", m: r2(r.N), q, f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-sat", detay: `${q} BKC sattı (${r2(r.N)} BTL)`, bkc: -q, btl: r6(r.N) });
-      mesaj = `${q} BKC sattın, ${r.N.toFixed(2)} BTL geldi.`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-sat", detay: `${q} BERKAY sattı (${r2(r.N)} TL)`, bkc: -q, btl: r6(r.N) });
+      mesaj = `${q} BERKAY sattın, ${r.N.toFixed(2)} TL geldi.`;
       ekCevap = { N: r6(r.N), ort: r6(r.N / q) };
     } else if (tur === "pozAc") {
       const yon = govde.yon === "short" ? "short" : "long";
@@ -341,8 +384,8 @@ async function kullaniciIslem(db, kim, govde, now) {
       const M = r6(sayi(govde.teminat));
       const maxX = Math.min(MAX_KALDIRAC, d.maxKaldirac || MAX_KALDIRAC);
       if (!(x >= 1 && x <= maxX)) throw new Hata(`Kaldıraç 1x ile ${maxX}x arası olmalı.`);
-      if (!(M >= 1)) throw new Hata("Teminat en az 1 BTL olmalı.");
-      if (M > c.btl + 1e-9) throw new Hata("Yeterli BTL'n yok. Spot'tan BKC satıp BTL alabilirsin.");
+      if (!(M >= 1)) throw new Hata("Teminat en az 1 TL olmalı.");
+      if (M > c.btl + 1e-9) throw new Hata("Yeterli TL'n yok. Spot'tan BERKAY satıp TL alabilirsin.");
       const acik = Object.values(d.poz).filter((p) => p.uid === kim.uid).length;
       if (acik >= MAX_ACIK_POZ) throw new Hata(`Aynı anda en fazla ${MAX_ACIK_POZ} pozisyon açabilirsin.`);
       const N = M * x;
@@ -356,8 +399,8 @@ async function kullaniciIslem(db, kim, govde, now) {
       d.fiyat = Math.max(1e-6, r.p1);
       mumYaz(d, now, d.fiyat, N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: yon, x, m: r2(N), f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-ac", detay: `${x}x ${yon.toUpperCase()} açtı · teminat ${M} BTL · büyüklük ${r2(N)} BTL`, bkc: 0, btl: -M });
-      mesaj = `${x}x ${yon.toUpperCase()} açıldı. Giriş ${poz.giris.toFixed(4)}`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-ac", detay: `${x}x ${yon.toUpperCase()} açtı · teminat ${M} TL · büyüklük ${r2(N)} TL`, bkc: 0, btl: -M });
+      mesaj = `${x}x ${yon.toUpperCase()} açıldı. Ortalama giriş ${poz.giris.toFixed(4)}`;
       ekCevap = { poz: pozOzet(poz) };
     } else if (tur === "pozKapat") {
       const poz = d.poz[String(govde.id || "")];
@@ -365,8 +408,8 @@ async function kullaniciIslem(db, kim, govde, now) {
       const kayit = pozKapatIc(d, poz, now, "kapat", k);
       c.btl = r6(c.btl + kayit.iade);
       c.gerceklesen = r2((c.gerceklesen || 0) + kayit.pnl);
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-kapat", detay: `${poz.kaldirac}x ${poz.yon.toUpperCase()} kapattı · K/Z ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl} BTL (%${kayit.yuzde})`, bkc: 0, btl: kayit.iade });
-      mesaj = `Pozisyon kapandı: ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl.toFixed(2)} BTL`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-kapat", detay: `${poz.kaldirac}x ${poz.yon.toUpperCase()} kapattı · K/Z ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl} TL (%${kayit.yuzde})`, bkc: 0, btl: kayit.iade });
+      mesaj = `Pozisyon kapandı: ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl.toFixed(2)} TL`;
       ekCevap = { sonuc: kayit };
     } else if (tur === "marketAl") {
       if (!ek.u.exists) throw new Hata("Ürün bulunamadı.");
@@ -374,13 +417,13 @@ async function kullaniciIslem(db, kim, govde, now) {
       if (!u.aktif) throw new Hata("Bu ürün şu an satışta değil.");
       if (u.stok === 0) throw new Hata("Stokta kalmadı.");
       const f = r6(sayi(u.fiyat));
-      if (c.bkc + 1e-9 < f) throw new Hata(`Yeterli BKC'n yok (${f} BKC gerekiyor).`);
+      if (c.bkc + 1e-9 < f) throw new Hata(`Yeterli BERKAY'ın yok (${f} BERKAY gerekiyor).`);
       c.bkc = r6(c.bkc - f);
       d.kasaBKC = r6(d.kasaBKC + f);
       if (typeof u.stok === "number" && u.stok > 0) tx.update(ek.u.ref, { stok: u.stok - 1 });
       const sipRef = db.collection("borsa_siparis").doc();
       tx.set(sipRef, { uid: kim.uid, ad: kim.ad, urunId: ek.u.id, urunAd: u.ad, emoji: u.emoji || "🎁", fiyat: f, ms: now, tarih: FieldValue.serverTimestamp(), durum: "bekliyor" });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "market", detay: `${u.emoji || "🎁"} ${u.ad} aldı (${f} BKC)`, bkc: -f, btl: 0 });
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "market", detay: `${u.emoji || "🎁"} ${u.ad} aldı (${f} BERKAY)`, bkc: -f, btl: 0 });
       mesaj = `${u.emoji || "🎁"} ${u.ad} senin! Admin teslim edecek.`;
     } else {
       throw new Hata("Bilinmeyen işlem.");
@@ -409,14 +452,14 @@ async function adminIslem(db, kim, govde, now) {
         if (!ek.kul.exists) throw new Hata("Böyle bir kullanıcı yok.");
         c = { uid: hedef, ad: ek.kul.data().kullaniciAdi || "?", bkc: 0, btl: 0, bonus: 0, gerceklesen: 0, olusturma: now, sonIslem: 0 };
       }
-      if (bkc > 0 && bkc > d.kasaBKC) throw new Hata("Kasada o kadar BKC yok. Önce arzı artır.");
-      if (bkc < 0 && -bkc > c.bkc + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar BKC yok.`);
-      if (btl < 0 && -btl > c.btl + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar BTL yok.`);
+      if (bkc > 0 && bkc > d.kasaBKC) throw new Hata("Kasada o kadar BERKAY yok. Önce arzı artır.");
+      if (bkc < 0 && -bkc > c.bkc + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar BERKAY yok.`);
+      if (btl < 0 && -btl > c.btl + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar TL yok.`);
       c.bkc = r6(c.bkc + bkc); c.btl = r6(c.btl + btl);
       d.kasaBKC = r6(d.kasaBKC - bkc);
       tx.set(cRef, c);
-      k.loglar.push({ uid: hedef, ad: c.ad, tur: "admin-transfer", detay: `Admin ${bkc ? (bkc > 0 ? "+" : "") + bkc + " BKC " : ""}${btl ? (btl > 0 ? "+" : "") + btl + " BTL" : ""}`.trim(), bkc, btl });
-      return { ok: true, mesaj: `${c.ad}: ${c.bkc} BKC / ${c.btl} BTL` };
+      k.loglar.push({ uid: hedef, ad: c.ad, tur: "admin-transfer", detay: `Admin ${bkc ? (bkc > 0 ? "+" : "") + bkc + " BERKAY " : ""}${btl ? (btl > 0 ? "+" : "") + btl + " TL" : ""}`.trim(), bkc, btl });
+      return { ok: true, mesaj: `${c.ad}: ${c.bkc} BERKAY / ${c.btl} TL` };
     });
   }
 
@@ -424,11 +467,11 @@ async function adminIslem(db, kim, govde, now) {
     if (tur === "adminArz") {
       const deg = r6(sayi(govde.degisim));
       if (!deg) throw new Hata("Değişim miktarı yaz.");
-      if (d.kasaBKC + deg < 0) throw new Hata("Kasada yakılacak kadar BKC yok.");
+      if (d.kasaBKC + deg < 0) throw new Hata("Kasada yakılacak kadar BERKAY yok.");
       d.toplamArz = r6(d.toplamArz + deg);
       d.kasaBKC = r6(d.kasaBKC + deg);
-      log(k, `Arz ${deg > 0 ? "artırıldı" : "yakıldı"}: ${deg > 0 ? "+" : ""}${deg} BKC → toplam ${d.toplamArz}`);
-      return { ok: true, mesaj: `Toplam arz: ${d.toplamArz} BKC` };
+      log(k, `Arz ${deg > 0 ? "artırıldı" : "yakıldı"}: ${deg > 0 ? "+" : ""}${deg} BERKAY → toplam ${d.toplamArz}`);
+      return { ok: true, mesaj: `Toplam arz: ${d.toplamArz} BERKAY` };
     }
     if (tur === "adminAyar") {
       if (govde.derinlik != null) {
@@ -447,7 +490,7 @@ async function adminIslem(db, kim, govde, now) {
         d.maxKaldirac = v;
       }
       if (govde.acik != null) d.acik = !!govde.acik;
-      for (const p of Object.values(d.poz)) p.lik = r6(likFiyati(p, d.derinlik));
+      for (const p of Object.values(d.poz)) if (p.v !== 2) p.lik = r6(likFiyati(p, d.derinlik));
       log(k, `Ayarlar: derinlik ${d.derinlik}, oynaklık ${d.oynaklik}, max ${d.maxKaldirac}x, piyasa ${d.acik ? "açık" : "kapalı"}`);
       return { ok: true, mesaj: "Ayarlar kaydedildi." };
     }
@@ -479,6 +522,23 @@ async function adminIslem(db, kim, govde, now) {
       log(k, `Fiyat rotası çizdi: ${n[0].p} → ${n[n.length - 1].p} (${Math.round((n[n.length - 1].t - now) / 60000)} dk)`);
       return { ok: true, mesaj: "Rota kaydedildi, fiyat çizgiyi izleyecek." };
     }
+    if (tur === "adminMM") {
+      const eski = gizli.mm || {};
+      const mod = ["denge", "al", "sat"].includes(govde.mod) ? govde.mod : "denge";
+      const dakikalik = sayi(govde.dakikalik), hedef = sayi(govde.hedef), bant = sayi(govde.bant);
+      if (!(dakikalik >= 0 && dakikalik <= 1e7)) throw new Hata("Dakikalık miktar 0 ile 10.000.000 TL arası olmalı.");
+      if (mod === "denge" && !(hedef > 0)) throw new Hata("Denge modu için hedef fiyat yaz.");
+      if (mod === "denge" && !(bant >= 0 && bant <= 90)) throw new Hata("Bant %0 ile %90 arası olmalı.");
+      gizli.mm = {
+        acik: !!govde.acik, mod, dakikalik, hedef: hedef > 0 ? hedef : null, bant: bant >= 0 ? bant : 2,
+        alinan: govde.sifirla ? 0 : eski.alinan || 0, satilan: govde.sifirla ? 0 : eski.satilan || 0,
+        sonIslem: govde.sifirla ? null : eski.sonIslem || null, guncelleme: now,
+      };
+      k.gizliDegisti = true;
+      const ozet = !govde.acik ? "kapalı" : mod === "denge" ? `denge: hedef ${hedef} ±%${bant}, dakikada en fazla ${dakikalik} TL` : `her dakika ${dakikalik} TL ${mod === "al" ? "alım" : "satış"}`;
+      log(k, `Piyasa yapıcı: ${ozet}`);
+      return { ok: true, mesaj: `Piyasa yapıcı ${ozet}.` };
+    }
     if (tur === "adminPozKapat") {
       const poz = d.poz[String(govde.id || "")];
       if (!poz) throw new Hata("Pozisyon bulunamadı.");
@@ -493,7 +553,7 @@ async function adminIslem(db, kim, govde, now) {
         c.gerceklesen = r2((c.gerceklesen || 0) + kayit.pnl);
         tx.set(cRef, c);
       }
-      log(k, `${poz.ad} kişisinin ${poz.kaldirac}x ${poz.yon.toUpperCase()} pozisyonunu ${mod === "likide" ? "likide etti" : "kapattı"} (K/Z ${kayit.pnl} BTL)`);
+      log(k, `${poz.ad} kişisinin ${poz.kaldirac}x ${poz.yon.toUpperCase()} pozisyonunu ${mod === "likide" ? "likide etti" : "kapattı"} (K/Z ${kayit.pnl} TL)`);
       return { ok: true, mesaj: mod === "likide" ? "Likide edildi." : "Kapatıldı, para sahibine döndü." };
     }
     if (tur === "adminUrun") {
@@ -513,7 +573,7 @@ async function adminIslem(db, kim, govde, now) {
         sira: Math.round(sayi(govde.sira) || 99),
         olusturma: now,
       }, { merge: true });
-      log(k, `Market: ${ad} (${fiyat} BKC, stok ${stok < 0 ? "∞" : stok}) kaydedildi`);
+      log(k, `Market: ${ad} (${fiyat} BERKAY, stok ${stok < 0 ? "∞" : stok}) kaydedildi`);
       return { ok: true, mesaj: "Ürün kaydedildi." };
     }
     if (tur === "adminUrunSil") {
@@ -541,8 +601,8 @@ async function adminIslem(db, kim, govde, now) {
         }
       }
       tx.update(ref, { durum: yeniDurumu, guncelleme: now });
-      log(k, `Sipariş ${sip.ad} · ${sip.urunAd}: ${yeniDurumu}${yeniDurumu === "iptal" ? ` (${sip.fiyat} BKC iade)` : ""}`);
-      return { ok: true, mesaj: yeniDurumu === "iptal" ? "İptal edildi, BKC iade edildi." : "Güncellendi." };
+      log(k, `Sipariş ${sip.ad} · ${sip.urunAd}: ${yeniDurumu}${yeniDurumu === "iptal" ? ` (${sip.fiyat} BERKAY iade)` : ""}`);
+      return { ok: true, mesaj: yeniDurumu === "iptal" ? "İptal edildi, BERKAY iade edildi." : "Güncellendi." };
     }
     throw new Hata("Bilinmeyen admin işlemi.");
   });
@@ -585,4 +645,4 @@ export default async function handler(req, res) {
 }
 
 // Testler için dışa açık matematik
-export const _ic = { kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
+export const _ic = { mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };

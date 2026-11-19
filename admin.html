@@ -45,7 +45,7 @@
 
       <!-- ================= BORSA ================= -->
       <section class="adm-panel admin-grid" data-panel="borsa" hidden>
-        <div class="adm-intro wide"><b>📈 Borsa</b> BERKAYCOIN'in tamamı burada: arz, kimde ne kadar var, kim kaldıraçta, kâr/zararlar, market siparişleri ve fiyat kontrolü. <a href="/borsa" target="_blank">Borsayı aç</a></div>
+        <div class="adm-intro wide"><b>📈 Borsa</b> BERKAY'ın tamamı burada: arz, kimde ne kadar var, kim kaldıraçta, kâr/zararlar, market siparişleri ve fiyat kontrolü. <a href="/borsa" target="_blank">Borsayı aç</a></div>
 
         <div class="panel card admin-section wide">
           <div class="se-top">
@@ -78,15 +78,33 @@
           <p class="suggest-status" id="bxaFiyatDurum"></p>
         </div>
 
+        <div class="panel card admin-section wide">
+          <h2>🤖 Piyasa yapıcı (MM)</h2>
+          <p class="muted">Kasa adına <b>dakikada bir</b> alım/satım yapan bot. Kullanıcı bakiyelerine ve toplam arza dokunmaz, sadece fiyatı iter (normal alım-satımla aynı eğriden). <b>Denge</b>: fiyat hedefin ±bant dışına çıkınca hedefe doğru alır/satar, dakikada en fazla girdiğin TL kadar; böylece biri büyük alım yapınca fiyat sınırsız uçmaz, büyük satışta dibe çakılmaz. <b>Sürekli al / sat</b>: her dakika sabit miktar. Çalışması için birinin borsa ya da admin sayfası açık olmalı (kimse yokken geçen süre, biri girince geriye dönük hesaplanır).</p>
+          <div class="tpl-form adm-form">
+            <label><input type="checkbox" id="bxaMMAcik" /> Açık</label>
+            <label>Mod <select id="bxaMMMod"><option value="denge">⚖️ Denge</option><option value="al">🟢 Sürekli al</option><option value="sat">🔴 Sürekli sat</option></select></label>
+            <label>Dakikada en fazla (TL) <input type="number" id="bxaMMDakika" min="0" step="any" placeholder="ör. 200" /></label>
+            <label id="bxaMMHedefKutu">Hedef fiyat <input type="number" id="bxaMMHedef" min="0" step="any" placeholder="ör. 1.5" /> <button type="button" class="link-btn" id="bxaMMHedefSimdi">şimdiki fiyat</button></label>
+            <label id="bxaMMBantKutu">Bant (±%) <input type="number" id="bxaMMBant" min="0" max="90" step="0.5" value="2" /></label>
+            <div class="sayac-butonlar">
+              <button type="button" class="admin-btn publish" id="bxaMMKaydet">💾 Kaydet</button>
+              <button type="button" class="admin-btn" id="bxaMMSifirla">İstatistiği sıfırla</button>
+            </div>
+          </div>
+          <p class="muted" id="bxaMMDurum" style="margin-top:10px">Yükleniyor…</p>
+          <p class="suggest-status" id="bxaMMSonuc"></p>
+        </div>
+
         <div class="panel card admin-section">
           <h2>⚙️ Piyasa ayarları</h2>
           <div class="tpl-form adm-form">
-            <label>Likidite derinliği (BTL) <input type="number" id="bxaDerinlik" min="100" step="100" /></label>
+            <label>Likidite derinliği (TL) <input type="number" id="bxaDerinlik" min="100" step="100" /></label>
             <label>Oynaklık (10 sn başına, 0 = kapalı) <input type="number" id="bxaOynaklik" min="0" max="0.05" step="0.0005" /></label>
             <label>Maksimum kaldıraç (1–20) <input type="number" id="bxaMaxX" min="1" max="20" step="1" /></label>
             <button type="button" class="admin-btn publish" id="bxaAyarKaydet">💾 Kaydet</button>
           </div>
-          <p class="muted" style="font-size:.8rem">Derinlik büyüdükçe fiyat alım/satımla daha az oynar. 10.000'de 200 BTL'lik alım fiyatı ~%2 iter, 20x kaldıraçlı 200 BTL'lik long ~%49 iter.</p>
+          <p class="muted" style="font-size:.8rem">Derinlik büyüdükçe fiyat alım/satımla daha az oynar. 10.000'de 200 TL'lik alım fiyatı ~%2 iter, 20x kaldıraçlı 200 TL'lik long ~%49 iter.</p>
           <p class="suggest-status" id="bxaAyarDurum"></p>
         </div>
 
@@ -94,8 +112,8 @@
           <h2>🏦 Arz ve para gönder</h2>
           <div class="tpl-form adm-form">
             <label>Kullanıcı <select id="bxaKisi"><option value="">Seç…</option></select></label>
-            <label>BKC (+ gönder / − geri al) <input type="number" id="bxaBkc" step="any" placeholder="ör. 500 ya da -100" /></label>
-            <label>BTL (+ gönder / − geri al) <input type="number" id="bxaBtl" step="any" placeholder="ör. 100" /></label>
+            <label>BERKAY (+ gönder / − geri al) <input type="number" id="bxaBkc" step="any" placeholder="ör. 500 ya da -100" /></label>
+            <label>TL (+ gönder / − geri al) <input type="number" id="bxaBtl" step="any" placeholder="ör. 100" /></label>
             <button type="button" class="admin-btn publish" id="bxaGonder">💸 Uygula</button>
           </div>
           <div class="tpl-form adm-form" style="margin-top:14px">
@@ -108,7 +126,7 @@
         <div class="panel card admin-section wide">
           <h2>👛 Cüzdanlar · kimde ne var</h2>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
-            <thead><tr><th>Kullanıcı</th><th>BKC</th><th>Arz payı</th><th>BTL</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th></tr></thead>
+            <thead><tr><th>Kullanıcı</th><th>BERKAY</th><th>Arz payı</th><th>TL</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th></tr></thead>
             <tbody id="bxaCuzdanlar"><tr><td colspan="8" class="muted">Yükleniyor…</td></tr></tbody>
           </table></div>
         </div>
@@ -141,7 +159,7 @@
             <label>Emoji <input type="text" id="bxaUrunEmoji" maxlength="8" placeholder="🎁" /></label>
             <label class="tpl-genis">Ad <input type="text" id="bxaUrunAd" maxlength="80" placeholder="ör. Bir haftalık ders notu" /></label>
             <label class="tpl-genis">Açıklama <input type="text" id="bxaUrunAciklama" maxlength="200" /></label>
-            <label>Fiyat (BKC) <input type="number" id="bxaUrunFiyat" min="1" step="any" /></label>
+            <label>Fiyat (BERKAY) <input type="number" id="bxaUrunFiyat" min="1" step="any" /></label>
             <label>Stok (−1 = sınırsız) <input type="number" id="bxaUrunStok" min="-1" step="1" value="-1" /></label>
             <label>Sıra <input type="number" id="bxaUrunSira" step="1" value="10" /></label>
             <label><input type="checkbox" id="bxaUrunAktif" checked /> Satışta</label>
@@ -157,7 +175,7 @@
           <h2>🧾 Para hareketleri</h2>
           <p class="muted">Kim ne aldı, ne sattı, kime ne gitti. Son 300 kayıt.</p>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
-            <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Tür</th><th>Detay</th><th>BKC</th><th>BTL</th></tr></thead>
+            <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Tür</th><th>Detay</th><th>BERKAY</th><th>TL</th></tr></thead>
             <tbody id="bxaLog"><tr><td colspan="6" class="muted">Yükleniyor…</td></tr></tbody>
           </table></div>
         </div>
