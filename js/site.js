@@ -18,7 +18,7 @@
   const NAV = [
     ["/", "Kâhin"], ["/spor", "Spor"], ["/ders", "Ders"],
     ["/ehliyet", "Ehliyet"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
-    ["/cark", "Çark"], ["/topluluk", "Topluluk"], ["/soz", "Sözler"],
+    ["/borsa", "Borsa"], ["/cark", "Çark"], ["/topluluk", "Topluluk"], ["/soz", "Sözler"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
   // Logo: içinde soru işareti olan konuşma balonu + sarı yıldız (renkler CSS'ten, .brand-mark)

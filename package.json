@@ -1,0 +1,8 @@
+{
+  "name": "yaparmi-site",
+  "private": true,
+  "description": "yaparmi.com — statik site + Vercel fonksiyonları (api/). firebase-admin sadece api/borsa.js için.",
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

@@ -22,7 +22,7 @@
     <header class="page-head">
       <span class="eyebrow"><i>⚙️</i> Yönetim</span>
       <h1>Admin <em>paneli</em></h1>
-      <p class="lead">Kâhin, çark, topluluk, içerik, oyunlar ve galeri — her şey kendi sekmesinde.</p>
+      <p class="lead">Kâhin, borsa, çark, topluluk, içerik, oyunlar ve galeri — her şey kendi sekmesinde.</p>
     </header>
 
     <div class="panel card admin-section" id="adminGate">
@@ -35,12 +35,133 @@
     <div id="adminContent" hidden>
       <nav class="adm-tabs" role="tablist" aria-label="Admin bölümleri">
         <button type="button" role="tab" data-tab="kahin">🔮 Kâhin</button>
+        <button type="button" role="tab" data-tab="borsa">📈 Borsa <span class="adm-say" id="admSiparisSay" hidden></span></button>
         <button type="button" role="tab" data-tab="cark">🎡 Çark <span class="adm-say" id="admCarkSay" hidden></span></button>
         <button type="button" role="tab" data-tab="topluluk">📊 Topluluk</button>
         <button type="button" role="tab" data-tab="icerik">📝 İçerik</button>
         <button type="button" role="tab" data-tab="oyunlar">🎮 Oyunlar</button>
         <button type="button" role="tab" data-tab="galeri">🖼️ Galeri <span class="adm-say" id="admOneriSay" hidden></span></button>
       </nav>
+
+      <!-- ================= BORSA ================= -->
+      <section class="adm-panel admin-grid" data-panel="borsa" hidden>
+        <div class="adm-intro wide"><b>📈 Borsa</b> BERKAYCOIN'in tamamı burada: arz, kimde ne kadar var, kim kaldıraçta, kâr/zararlar, market siparişleri ve fiyat kontrolü. <a href="/borsa" target="_blank">Borsayı aç</a></div>
+
+        <div class="panel card admin-section wide">
+          <div class="se-top">
+            <h2>📊 Özet</h2>
+            <div class="sayac-butonlar">
+              <button type="button" class="admin-btn publish" id="bxaAcBtn" hidden>🟢 Piyasayı aç</button>
+              <button type="button" class="admin-btn reject" id="bxaKapatBtn" hidden>🔴 Piyasayı kapat</button>
+            </div>
+          </div>
+          <div class="bx-ozet" id="bxaOzet"><p class="muted">Yükleniyor…</p></div>
+          <p class="suggest-status" id="bxaGenelDurum"></p>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>✏️ Fiyatı yönet</h2>
+          <p class="muted"><b>Çizim modu</b>nu aç, grafiğin sağındaki "gelecek" alanına fareyle (telefonda parmakla) çizgi çiz, <b>Rotayı uygula</b> de. Fiyat her 10 saniyede bir çizdiğin çizgiye doğru çekilir (alım/satımlar yine anlık oynatır ama çizgiye geri döner). Rota sadece sende görünür, kullanıcılar görmez. Fiyat çizgiyi izlerken kaldıraçtakiler likide olabilir.</p>
+          <div class="bx-admin-araclar">
+            <button type="button" class="admin-btn" id="bxaCizimBtn">✏️ Çizim modunu aç</button>
+            <label>Süre <select id="bxaSure"><option value="900000">15 dk</option><option value="1800000" selected>30 dk</option><option value="3600000">1 saat</option><option value="10800000">3 saat</option><option value="21600000">6 saat</option><option value="86400000">24 saat</option></select></label>
+            <label>Aralık <select id="bxaCarpan"><option value="1.5">×1.5</option><option value="2">×2</option><option value="4" selected>×4</option><option value="10">×10</option></select></label>
+            <button type="button" class="admin-btn publish" id="bxaRotaUygula" disabled>✅ Rotayı uygula</button>
+            <button type="button" class="admin-btn reject" id="bxaRotaSil">🗑️ Rotayı sil</button>
+          </div>
+          <div class="bx-admin-grafik"><canvas id="bxaGrafik" style="width:100%;height:100%;display:block"></canvas></div>
+          <div class="bx-admin-araclar">
+            <label>Fiyatı anında yap <input type="number" id="bxaFiyat" step="any" min="0" placeholder="ör. 2.5" /></label>
+            <button type="button" class="admin-btn publish" id="bxaFiyatBtn">⚡ Uygula</button>
+            <span class="muted" id="bxaRotaBilgi"></span>
+          </div>
+          <p class="suggest-status" id="bxaFiyatDurum"></p>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2>⚙️ Piyasa ayarları</h2>
+          <div class="tpl-form adm-form">
+            <label>Likidite derinliği (BTL) <input type="number" id="bxaDerinlik" min="100" step="100" /></label>
+            <label>Oynaklık (10 sn başına, 0 = kapalı) <input type="number" id="bxaOynaklik" min="0" max="0.05" step="0.0005" /></label>
+            <label>Maksimum kaldıraç (1–20) <input type="number" id="bxaMaxX" min="1" max="20" step="1" /></label>
+            <button type="button" class="admin-btn publish" id="bxaAyarKaydet">💾 Kaydet</button>
+          </div>
+          <p class="muted" style="font-size:.8rem">Derinlik büyüdükçe fiyat alım/satımla daha az oynar. 10.000'de 200 BTL'lik alım fiyatı ~%2 iter, 20x kaldıraçlı 200 BTL'lik long ~%49 iter.</p>
+          <p class="suggest-status" id="bxaAyarDurum"></p>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2>🏦 Arz ve para gönder</h2>
+          <div class="tpl-form adm-form">
+            <label>Kullanıcı <select id="bxaKisi"><option value="">Seç…</option></select></label>
+            <label>BKC (+ gönder / − geri al) <input type="number" id="bxaBkc" step="any" placeholder="ör. 500 ya da -100" /></label>
+            <label>BTL (+ gönder / − geri al) <input type="number" id="bxaBtl" step="any" placeholder="ör. 100" /></label>
+            <button type="button" class="admin-btn publish" id="bxaGonder">💸 Uygula</button>
+          </div>
+          <div class="tpl-form adm-form" style="margin-top:14px">
+            <label>Toplam arzı değiştir (+ bas / − yak) <input type="number" id="bxaArz" step="1" placeholder="ör. 100000" /></label>
+            <button type="button" class="admin-btn reject" id="bxaArzBtn">🪙 Arzı güncelle</button>
+          </div>
+          <p class="suggest-status" id="bxaParaDurum"></p>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>👛 Cüzdanlar · kimde ne var</h2>
+          <div class="admin-table-wrap"><table class="admin-table bx-tablo">
+            <thead><tr><th>Kullanıcı</th><th>BKC</th><th>Arz payı</th><th>BTL</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th></tr></thead>
+            <tbody id="bxaCuzdanlar"><tr><td colspan="8" class="muted">Yükleniyor…</td></tr></tbody>
+          </table></div>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>⚡ Kaldıraç pozisyonları (canlı)</h2>
+          <div class="admin-table-wrap"><table class="admin-table bx-tablo">
+            <thead><tr><th>Kullanıcı</th><th>Yön</th><th>Teminat</th><th>Büyüklük</th><th>Giriş</th><th>Likidasyon</th><th>K/Z</th><th>Açılış</th><th>İşlem</th></tr></thead>
+            <tbody id="bxaPozlar"><tr><td colspan="9" class="muted">Açık pozisyon yok.</td></tr></tbody>
+          </table></div>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>📦 Market siparişleri</h2>
+          <div class="admin-table-wrap"><table class="admin-table bx-tablo">
+            <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Ürün</th><th>Fiyat</th><th>Durum</th><th>İşlem</th></tr></thead>
+            <tbody id="bxaSiparisler"><tr><td colspan="6" class="muted">Sipariş yok.</td></tr></tbody>
+          </table></div>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2>🛒 Market ürünleri</h2>
+          <div id="bxaUrunler"><p class="muted">Yükleniyor…</p></div>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2 id="bxaUrunBaslik">➕ Ürün ekle</h2>
+          <div class="tpl-form adm-form">
+            <input type="hidden" id="bxaUrunId" />
+            <label>Emoji <input type="text" id="bxaUrunEmoji" maxlength="8" placeholder="🎁" /></label>
+            <label class="tpl-genis">Ad <input type="text" id="bxaUrunAd" maxlength="80" placeholder="ör. Bir haftalık ders notu" /></label>
+            <label class="tpl-genis">Açıklama <input type="text" id="bxaUrunAciklama" maxlength="200" /></label>
+            <label>Fiyat (BKC) <input type="number" id="bxaUrunFiyat" min="1" step="any" /></label>
+            <label>Stok (−1 = sınırsız) <input type="number" id="bxaUrunStok" min="-1" step="1" value="-1" /></label>
+            <label>Sıra <input type="number" id="bxaUrunSira" step="1" value="10" /></label>
+            <label><input type="checkbox" id="bxaUrunAktif" checked /> Satışta</label>
+            <div class="sayac-butonlar">
+              <button type="button" class="admin-btn publish" id="bxaUrunKaydet">💾 Kaydet</button>
+              <button type="button" class="admin-btn" id="bxaUrunTemizle">Temizle</button>
+            </div>
+          </div>
+          <p class="suggest-status" id="bxaUrunDurum"></p>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>🧾 Para hareketleri</h2>
+          <p class="muted">Kim ne aldı, ne sattı, kime ne gitti. Son 300 kayıt.</p>
+          <div class="admin-table-wrap"><table class="admin-table bx-tablo">
+            <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Tür</th><th>Detay</th><th>BKC</th><th>BTL</th></tr></thead>
+            <tbody id="bxaLog"><tr><td colspan="6" class="muted">Yükleniyor…</td></tr></tbody>
+          </table></div>
+        </div>
+      </section>
 
       <!-- ================= KÂHİN ================= -->
       <section class="adm-panel admin-grid" data-panel="kahin" hidden>
@@ -364,6 +485,8 @@
   <script src="js/sayac.js"></script>
   <script src="js/cark-ciz.js"></script>
   <script src="js/cark-admin.js"></script>
+  <script src="js/borsa-grafik.js"></script>
+  <script src="js/borsa-admin.js"></script>
   <script src="js/admin-sekme.js"></script>
   <script src="js/sosyal-hikaye.js"></script>
   <script src="js/sosyal-editor.js"></script>

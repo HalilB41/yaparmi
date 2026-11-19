@@ -357,7 +357,16 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .brand-word b { color: var(--accent); font-weight: 800; }
 .brand-word small { font-family: var(--font); font-size: .62rem; font-weight: 800; color: var(--muted); letter-spacing: .02em; margin-left: 3px; }
 
-.mainnav { display: flex; align-items: center; gap: 2px; flex: 1; min-width: 0; }
+.mainnav { display: flex; align-items: center; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.mainnav::-webkit-scrollbar { display: none; }
+@media (min-width: 961px) {
+  .topbar-in { max-width: 1280px; }
+  .mainnav a { padding: 8px 10px; }
+}
+@media (min-width: 961px) and (max-width: 1240px) {
+  .mainnav a { padding: 7px 7px; font-size: .86rem; }
+  .brand-word small { display: none; }
+}
 .mainnav a {
   padding: 8px 12px;
   border-radius: 999px;
@@ -1775,3 +1784,125 @@ table.admin-table input.adm-tl { width: 90px; padding: 6px 8px; border-radius: 8
 .soz-kanit-kart { width: min(100%, 560px); }
 .soz-kanit-kart img { display: block; max-width: 100%; max-height: 70vh; margin: 0 auto 10px; border-radius: 12px; }
 .soz-kanit-kart img:not([src]) { display: none; }
+
+/* =========================================================
+   BERKAY BORSASI (borsa.html + admin "Borsa" sekmesi)
+   ========================================================= */
+.bx-page { max-width: 1240px; }
+.yukari { color: var(--ok) !important; }
+.asagi { color: var(--err) !important; }
+.bx-serit { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 18px 24px; margin-bottom: 18px; }
+.bx-coin { display: flex; align-items: center; gap: 12px; }
+.bx-coin b { display: block; font-family: var(--display); font-size: 1.15rem; letter-spacing: -0.02em; }
+.bx-coin span { font-size: .8rem; color: var(--muted); font-weight: 700; }
+.bx-coin-logo { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 1.4rem; color: #3a2800; background: radial-gradient(circle at 35% 30%, #ffe08a, var(--sun) 60%, #d99a12); box-shadow: inset 0 -3px 0 rgba(0,0,0,.15), 0 0 0 3px color-mix(in srgb, var(--sun) 30%, transparent); }
+.bx-fiyat { display: flex; align-items: baseline; gap: 10px; }
+.bx-fiyat > span { font-family: var(--mono); font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; transition: color .3s; }
+.bx-fiyat small { font-weight: 800; font-size: .95rem; }
+.bx-istat { display: flex; gap: 22px; flex-wrap: wrap; margin: 0; margin-left: auto; }
+.bx-istat dt { font-size: .72rem; color: var(--muted); font-weight: 700; }
+.bx-istat dd { margin: 2px 0 0; font-weight: 800; font-family: var(--mono); font-size: .92rem; }
+.bx-nokta { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--err); margin-right: 6px; vertical-align: middle; }
+.bx-nokta.ok { background: var(--ok); box-shadow: 0 0 0 0 var(--ok); animation: bx-nabiz 1.8s infinite; }
+@keyframes bx-nabiz { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }
+
+.bx-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+.bx-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.bx-grafik-kart { padding: 16px; }
+.bx-grafik-ust { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.bx-segment { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface-2); gap: 2px; }
+.bx-segment button { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; font-weight: 800; font-size: .82rem; color: var(--muted); }
+.bx-segment button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm), 0 0 0 1px var(--line); }
+.bx-grafik-kutu { height: 440px; position: relative; }
+.bx-grafik-kutu canvas { width: 100%; height: 100%; display: block; }
+.bx-ipucu { margin: 8px 0 0; font-size: .74rem; color: var(--muted); text-align: right; }
+
+.bx-islem { padding: 18px; position: sticky; top: 84px; }
+.bx-sekme { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); margin: -4px -4px 14px; }
+.bx-sekme button { border: 0; background: none; padding: 10px; font-weight: 800; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.bx-sekme button.on { color: var(--ink); border-bottom-color: var(--accent); }
+.bx-yon { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border-radius: 12px; background: var(--surface-2); margin-bottom: 12px; }
+.bx-yon button { border: 0; padding: 9px; border-radius: 9px; font-weight: 800; background: transparent; color: var(--muted); }
+.bx-yon button.al.on { background: var(--ok); color: #fff; }
+.bx-yon button.sat.on { background: var(--err); color: #fff; }
+.bx-alan { display: block; font-size: .8rem; font-weight: 800; color: var(--ink-2); margin-bottom: 8px; }
+.bx-alan b { float: right; color: var(--accent); font-family: var(--mono); }
+.bx-girdi { display: flex; align-items: center; margin-top: 5px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0 12px; }
+.bx-girdi:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.bx-girdi input { flex: 1; min-width: 0; border: 0; background: none; padding: 11px 0; font-family: var(--mono); font-weight: 800; font-size: 1.05rem; outline: none; }
+.bx-girdi em { font-style: normal; font-weight: 800; color: var(--muted); font-size: .85rem; }
+.bx-alan input[type=range] { width: 100%; margin-top: 10px; accent-color: var(--accent); }
+.bx-x-isaret { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); font-weight: 700; }
+.bx-yuzde { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 12px; }
+.bx-yuzde button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 0; font-size: .75rem; font-weight: 800; color: var(--ink-2); }
+.bx-yuzde button:hover { border-color: var(--accent); color: var(--accent); }
+.bx-tahmin { margin: 0 0 12px; font-size: .82rem; }
+.bx-tahmin div { display: flex; justify-content: space-between; padding: 3px 0; }
+.bx-tahmin dt { color: var(--muted); font-weight: 700; }
+.bx-tahmin dd { margin: 0; font-weight: 800; font-family: var(--mono); }
+.bx-gonder { width: 100%; border: 0; border-radius: 12px; padding: 13px; font-weight: 800; font-size: 1rem; color: #fff; transition: transform .1s, filter .15s; }
+.bx-gonder.al { background: var(--ok); }
+.bx-gonder.sat { background: var(--err); }
+.bx-gonder:hover { filter: brightness(1.08); }
+.bx-gonder:active { transform: scale(.98); }
+.bx-gonder:disabled { opacity: .6; }
+.bx-not { font-size: .74rem; color: var(--muted); margin: 10px 0 0; }
+.bx-cuzdan { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.bx-cuzdan div { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; }
+.bx-cuzdan span { display: block; font-size: .7rem; color: var(--muted); font-weight: 800; }
+.bx-cuzdan b { font-family: var(--mono); font-size: .92rem; }
+.bx-durum { min-height: 1.2em; font-size: .82rem; font-weight: 700; margin: 10px 0 0; }
+.bx-durum.hata { color: var(--err); }
+
+.bx-bolum { margin-top: 18px; padding: 20px; }
+.bx-bolum-ust { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.bx-bolum-ust h2 { margin: 0; }
+.bx-bolum-ust small { color: var(--muted); font-weight: 700; }
+.bx-tablo td, .bx-tablo th { white-space: nowrap; }
+.bx-tablo td { font-family: var(--mono); font-size: .85rem; }
+.bx-butonlar { display: flex; gap: 6px; }
+.bx-tablo td.bx-detay { white-space: normal; font-family: var(--font); min-width: 260px; }
+.bx-rozet { display: inline-block; padding: 3px 8px; border-radius: 6px; font-family: var(--font); font-weight: 800; font-size: .74rem; color: #fff; }
+.bx-rozet.al { background: var(--ok); }
+.bx-rozet.sat { background: var(--err); }
+.bx-liste { display: flex; flex-direction: column; gap: 4px; max-height: 360px; overflow: auto; }
+.bx-satir { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: .86rem; }
+.bx-satir .bx-sag { margin-left: auto; font-weight: 800; font-family: var(--mono); }
+.bx-satir.bx-lik { background: color-mix(in srgb, var(--err) 14%, var(--surface)); }
+.bx-market { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.bx-urun { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 12px 14px; align-items: start; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); }
+.bx-urun-emoji { font-size: 2.2rem; width: 58px; height: 58px; display: grid; place-items: center; border-radius: 14px; background: var(--sun-soft); flex: none; }
+.bx-urun-bilgi { flex: 1; min-width: 0; }
+.bx-urun-bilgi p { margin: 2px 0 6px; font-size: .8rem; }
+.bx-urun-alt { display: flex; align-items: baseline; gap: 8px; }
+.bx-urun-fiyat { font-family: var(--mono); font-weight: 800; color: var(--accent); }
+.bx-ilerleme { height: 5px; border-radius: 9px; background: var(--surface-3); margin-top: 6px; overflow: hidden; }
+.bx-ilerleme i { display: block; height: 100%; background: linear-gradient(90deg, var(--sun), var(--ok)); border-radius: 9px; }
+.bx-urun .btn { grid-column: 1 / -1; width: 100%; }
+.bx-alt-baslik { margin: 20px 0 8px; font-size: 1rem; }
+.bx-paylas-kart { width: min(100%, 460px); }
+.bx-paylas-kart img { width: 100%; border-radius: 14px; margin: 10px 0; aspect-ratio: 1080 / 1350; background: var(--surface-2); object-fit: cover; }
+.bx-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 90; background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 14px; font-weight: 800; box-shadow: var(--shadow-lg); max-width: calc(100vw - 32px); }
+
+/* admin borsa */
+.bx-admin-grafik { height: 420px; }
+.bx-admin-araclar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+.bx-admin-araclar label { font-size: .8rem; font-weight: 700; display: inline-flex; gap: 6px; align-items: center; }
+.bx-admin-araclar input, .bx-admin-araclar select { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); width: 110px; }
+.bx-ozet { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.bx-ozet div { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; }
+.bx-ozet span { display: block; font-size: .72rem; color: var(--muted); font-weight: 800; }
+.bx-ozet b { font-family: var(--mono); font-size: 1.05rem; }
+
+@media (max-width: 960px) {
+  .bx-grid, .bx-grid2 { grid-template-columns: 1fr; }
+  .bx-islem { position: static; }
+  .bx-grafik-kutu { height: 340px; }
+  .bx-istat { margin-left: 0; gap: 14px; }
+}
+@media (max-width: 600px) {
+  .bx-serit { gap: 14px; padding: 14px; }
+  .bx-fiyat > span { font-size: 1.6rem; }
+  .bx-grafik-kutu { height: 300px; }
+  .bx-grafik-kart { padding: 10px; }
+}
