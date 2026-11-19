@@ -138,6 +138,10 @@
     document.querySelectorAll("#bxPeriyot button").forEach((x) => x.classList.toggle("on", x === b));
     grafik && grafik.periyot(Number(b.dataset.per));
   }));
+  document.querySelectorAll("#bxOlcek button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll("#bxOlcek button").forEach((x) => x.classList.toggle("on", x === b));
+    grafik && grafik.logOlcek(b.dataset.olcek);
+  }));
   document.querySelectorAll("#bxTip button").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll("#bxTip button").forEach((x) => x.classList.toggle("on", x === b));
     grafik && grafik.tip(b.dataset.tip);
@@ -249,6 +253,7 @@
       const r = kYon === "long" ? E.al(p, N, D) : E.shortAc(p, N, D);
       const poz = { yon: kYon, teminat: M, notional: N, boyut: r.q };
       const etki = (r.p1 / p - 1) * 100;
+      if (N > D * 0.5) satir(kt, "⚠️ En fazla büyüklük", para(D * 0.5, 0) + " TL", "asagi");
       satir(kt, "Pozisyon büyüklüğü", para(N) + " TL");
       satir(kt, "Ortalama giriş", sayi(N / r.q));
       satir(kt, "Fiyatı iter", (etki >= 0 ? "+" : "") + etki.toFixed(2) + "% → " + sayi(r.p1), etki >= 0 ? "yukari" : "asagi");

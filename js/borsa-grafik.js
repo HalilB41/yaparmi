@@ -21,6 +21,8 @@
   };
   const sayiYaz = (p) => {
     if (!Number.isFinite(p)) return "-";
+    if (p >= 1e9) return (p / 1e9).toLocaleString("tr-TR", { maximumFractionDigits: 2 }) + "Mr";
+    if (p >= 1e6) return (p / 1e6).toLocaleString("tr-TR", { maximumFractionDigits: 2 }) + "M";
     if (p >= 1000) return p.toLocaleString("tr-TR", { maximumFractionDigits: 0 });
     if (p >= 10) return p.toFixed(2);
     if (p >= 1) return p.toFixed(3);
@@ -40,6 +42,8 @@
       this.mumlar = [];
       this.per = 60000;
       this.tur = "mum";
+      this.logSecim = "oto"; // "oto" | "acik" | "kapali"
+      this.kirpik = [];
       this.yatay = [];
       this.adet = 80;
       this.sag = 0; // sondan kaç mum kaydırıldı
@@ -77,6 +81,7 @@
     veri(mumlar) { this.ham = mumlar || []; this.topla(); this.ciz(); }
     periyot(ms) { this.per = ms; this.sag = 0; this.topla(); this.ciz(); }
     tip(t) { this.tur = t; this.ciz(); }
+    logOlcek(v) { this.logSecim = v; this.ciz(); }
     cizgiler(l) { this.yatay = l || []; this.ciz(); }
     rota(n) { this.rotaNoktalar = n && n.length ? n : null; this.ciz(); }
     cizimModu(o) {
@@ -192,9 +197,22 @@
       const gen = this.simdiX / Math.max(this.adet, 10);
       this.mumGen = gen;
 
-      // y aralığı
+      // y aralığı: uç iğneler (ani sıçramalar) aralığı belirlemesin.
+      // Kapanışların %3–%97'lik dilimine göre aralık kur, dışında kalan iğneleri kırp (▲/▼ ile göster).
+      const kapanis = gorunen.map((m) => m.c).filter((x) => x > 0).sort((a, b) => a - b);
       let mn = Infinity, mx = -Infinity;
-      for (const m of gorunen) { mn = Math.min(mn, m.l); mx = Math.max(mx, m.h); }
+      if (kapanis.length) {
+        const al = (q) => kapanis[Math.min(kapanis.length - 1, Math.max(0, Math.round(q * (kapanis.length - 1))))];
+        const alt = al(0.03), ust = al(0.97);
+        for (const m of gorunen) {
+          const govdeAlt = Math.min(m.o, m.c), govdeUst = Math.max(m.o, m.c);
+          if (govdeUst <= ust * 3 && govdeAlt >= alt / 3) { mn = Math.min(mn, govdeAlt); mx = Math.max(mx, govdeUst); }
+        }
+        for (const m of gorunen) {
+          if (m.h <= Math.max(mx, ust) * 1.6) mx = Math.max(mx, m.h);
+          if (m.l >= Math.min(mn, alt) / 1.6) mn = Math.min(mn, m.l);
+        }
+      }
       if (this.canliFiyat && this.sag === 0) { mn = Math.min(mn, this.canliFiyat); mx = Math.max(mx, this.canliFiyat); }
       if (!Number.isFinite(mn)) { mn = 0.9; mx = 1.1; }
       if (cizimAcik) {
@@ -205,10 +223,13 @@
         for (const l of this.yatay) if (l.p > mn * 0.7 && l.p < mx * 1.4) { mn = Math.min(mn, l.p); mx = Math.max(mx, l.p); }
       }
       if (this.rotaNoktalar && cizimAcik) for (const q of this.rotaNoktalar) { mn = Math.min(mn, q.p); mx = Math.max(mx, q.p); }
+      mn = Math.max(1e-6, mn);
+      this.log = cizimAcik || this.logSecim === "acik" || (this.logSecim === "oto" && mx / mn > 4);
+      this.logOto = !cizimAcik && this.logSecim === "oto" && this.log;
       const pay = (mx - mn) * 0.08 || mx * 0.02 || 0.01;
-      this.ymin = Math.max(1e-6, mn - (this.log ? 0 : pay));
-      this.ymax = mx + (this.log ? 0 : pay);
       if (this.log) { this.ymin = mn / 1.08; this.ymax = mx * 1.08; }
+      else { this.ymin = Math.max(1e-6, mn - pay); this.ymax = mx + pay; }
+      const kirp = (y) => Math.max(this.plotUst, Math.min(this.plotAlt, y));
 
       // ızgara + fiyat ekseni
       ctx.font = "600 11px Manrope, system-ui, sans-serif";
@@ -239,7 +260,7 @@
       // mumlar / çizgi
       if (this.tur === "cizgi") {
         ctx.beginPath();
-        for (let i = ilk; i < son; i++) { const x = xOf(i), y = this.fiyatY(this.mumlar[i].c); if (i === ilk) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+        for (let i = ilk; i < son; i++) { const x = xOf(i), y = kirp(this.fiyatY(this.mumlar[i].c)); if (i === ilk) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
         ctx.strokeStyle = vurgu; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.stroke();
         if (son > ilk) {
           ctx.lineTo(xOf(son - 1), this.plotAlt); ctx.lineTo(xOf(ilk), this.plotAlt); ctx.closePath();
@@ -252,12 +273,27 @@
           const m = this.mumlar[i], x = xOf(i);
           const renk = m.c >= m.o ? yukari : asagi;
           ctx.strokeStyle = renk; ctx.fillStyle = renk; ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(Math.round(x) + 0.5, this.fiyatY(m.h)); ctx.lineTo(Math.round(x) + 0.5, this.fiyatY(m.l)); ctx.stroke();
-          const y1 = this.fiyatY(Math.max(m.o, m.c)), y2 = this.fiyatY(Math.min(m.o, m.c));
+          const yh = this.fiyatY(m.h), yl = this.fiyatY(m.l);
+          ctx.beginPath(); ctx.moveTo(Math.round(x) + 0.5, kirp(yh)); ctx.lineTo(Math.round(x) + 0.5, kirp(yl)); ctx.stroke();
+          const y1 = kirp(this.fiyatY(Math.max(m.o, m.c))), y2 = kirp(this.fiyatY(Math.min(m.o, m.c)));
           ctx.fillRect(x - gen * 0.36, y1, Math.max(1, gen * 0.72), Math.max(1, y2 - y1));
+          // grafiğe sığmayan ani sıçrama: ucuna ok + değer
+          if (yh < this.plotUst - 1 || yl > this.plotAlt + 1) {
+            const ust = yh < this.plotUst - 1, yy = ust ? this.plotUst + 2 : this.plotAlt - 2;
+            ctx.beginPath();
+            if (ust) { ctx.moveTo(x, yy); ctx.lineTo(x - 5, yy + 8); ctx.lineTo(x + 5, yy + 8); }
+            else { ctx.moveTo(x, yy); ctx.lineTo(x - 5, yy - 8); ctx.lineTo(x + 5, yy - 8); }
+            ctx.closePath(); ctx.fill();
+            ctx.font = "800 10px Manrope, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = ust ? "top" : "bottom";
+            ctx.fillText(sayiYaz(ust ? m.h : m.l), x, ust ? yy + 10 : yy - 10);
+          }
         }
       }
 
+      if (this.log && !cizimAcik) {
+        ctx.font = "800 10px Manrope, system-ui, sans-serif"; ctx.fillStyle = yazi; ctx.textAlign = "right"; ctx.textBaseline = "top";
+        ctx.fillText(this.logOto ? "LOG (otomatik)" : "LOG", this.plotSag - 6, this.plotUst + 2);
+      }
       // zaman ekseni
       ctx.fillStyle = yazi; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
       const adim = Math.max(1, Math.round(90 / gen));

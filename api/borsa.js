@@ -59,6 +59,7 @@ const MAX_GERI_MS = 6 * 3600_000; // kimse yokken en fazla 6 saati geriye dönü
 const LIK_ORAN = 0.9; // teminatın %90'ı erirse likidasyon
 const MAX_ACIK_POZ = 5; // kişi başı aynı anda açık pozisyon
 const MAX_KALDIRAC = 20;
+const MAX_POZ_ORAN = 0.5; // tek pozisyon en fazla derinliğin yarısı kadar büyüklükte (fiyatı en fazla ~%65 iter)
 const AKIS_SAY = 25;
 
 class Hata extends Error {
@@ -196,6 +197,15 @@ function pozKapatIc(d, poz, t, sebep, kapananlar) {
   if (poz.v === 2) { pnl = pozPnl(poz, p0, D); p1 = p0; cikis = p0; } // ara sürümden kalan pozisyon: fiyatı itmeden kapanır
   else if (poz.yon === "long") { const r = egriSat(p0, poz.boyut, D); pnl = r.N - poz.notional; p1 = r.p1; cikis = r.N / poz.boyut; }
   else { const r = egriGeriAl(p0, poz.boyut, D); pnl = poz.notional - r.N; p1 = r.p1; cikis = r.N / poz.boyut; }
+  if (sebep === "likide") {
+    // Fiyat bir anda likidasyon noktasını çok aştıysa (büyük alım, admin fiyatı, rota),
+    // zorla kapanış fiyatı en fazla "tam likidasyon noktasında kapansaydı" kadar iter.
+    // Yoksa derin zarardaki short'un geri alımı fiyatı tek seferde onlarca kat fırlatabiliyordu.
+    const sinir = poz.yon === "long" ? Math.exp(-(poz.notional - LIK_ORAN * poz.teminat) / D) : Math.exp((poz.notional + LIK_ORAN * poz.teminat) / D);
+    const etki = p1 / p0;
+    if (poz.yon === "short" && etki > sinir) p1 = p0 * sinir;
+    if (poz.yon === "long" && etki < sinir) p1 = p0 * sinir;
+  }
   const iade = sebep === "likide" ? 0 : Math.max(0, poz.teminat + pnl);
   const gercekPnl = iade - poz.teminat;
   d.fiyat = Math.max(1e-6, p1);
@@ -389,7 +399,7 @@ async function kullaniciIslem(db, kim, govde, now) {
       const acik = Object.values(d.poz).filter((p) => p.uid === kim.uid).length;
       if (acik >= MAX_ACIK_POZ) throw new Hata(`Aynı anda en fazla ${MAX_ACIK_POZ} pozisyon açabilirsin.`);
       const N = M * x;
-      if (N > D * 3) throw new Hata("Bu pozisyon piyasa için çok büyük. Teminatı ya da kaldıracı düşür.");
+      if (N > D * MAX_POZ_ORAN) throw new Hata(`Pozisyon büyüklüğü (teminat × kaldıraç) en fazla ${Math.floor(D * MAX_POZ_ORAN)} TL olabilir. Teminatı ya da kaldıracı düşür.`);
       const r = yon === "long" ? egriAl(d.fiyat, N, D) : egriShortAc(d.fiyat, N, D);
       const id = randomUUID().replace(/-/g, "").slice(0, 16);
       const poz = { id, uid: kim.uid, ad: kim.ad, yon, kaldirac: x, teminat: M, notional: r6(N), boyut: r6(r.q), giris: r6(N / r.q), acilis: now };
