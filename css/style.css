@@ -1,17 +1,18 @@
 /* =========================================================
    YAPARMI.COM — STİL (yeniden tasarım)
-   Kâğıt beyazı zemin, mürekkep yazı, tek vurgu rengi: kâhin moru.
+   Gece göğü zemini: renkli ışık lekeleri + yıldız/nokta deseni (body::before/after).
+   Vurgu rengi ayarlardan seçilir, arka plandaki ışıklar da ona uyar.
    Koyu tema: sistem ayarına göre otomatik, üst bardaki düğmeyle değişir.
    ========================================================= */
 :root {
-  --bg: #f5f1e8;
-  --surface: #fffdf8;
-  --surface-2: #efe9dc;
-  --surface-3: #e6dfcf;
+  --bg: #eceefa;
+  --surface: #ffffff;
+  --surface-2: #f2f3fb;
+  --surface-3: #e5e7f6;
   --ink: #1b1726;
   --ink-2: #4b4559;
   --muted: #878192;
-  --line: #e2dbcb;
+  --line: #dcdff0;
   --accent: #5a3fd4;
   --accent-hover: #4830b4;
   --accent-ink: #ffffff;
@@ -47,14 +48,14 @@
   --bg-2: var(--surface);
 }
 :root[data-theme="dark"] {
-  --bg: #13111a;
-  --surface: #1c1926;
-  --surface-2: #252131;
-  --surface-3: #2f2a3e;
+  --bg: #0a0c1b;
+  --surface: #141729;
+  --surface-2: #1c2036;
+  --surface-3: #262b45;
   --ink: #f3f0f8;
   --ink-2: #c6c0d4;
   --muted: #8d879f;
-  --line: #322d42;
+  --line: #2a2f4a;
   --accent: #9d89ff;
   --accent-hover: #b4a5ff;
   --accent-ink: #15102a;
@@ -75,14 +76,14 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #13111a;
-    --surface: #1c1926;
-    --surface-2: #252131;
-    --surface-3: #2f2a3e;
+    --bg: #0a0c1b;
+    --surface: #141729;
+    --surface-2: #1c2036;
+    --surface-3: #262b45;
     --ink: #f3f0f8;
     --ink-2: #c6c0d4;
     --muted: #8d879f;
-    --line: #322d42;
+    --line: #2a2f4a;
     --accent: #9d89ff;
     --accent-hover: #b4a5ff;
     --accent-ink: #15102a;
@@ -127,9 +128,79 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink);
-  background: var(--bg);
+  background: transparent;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+html { background: var(--bg); }
+
+/* ---------------- Arka plan (tüm sayfalar) ----------------
+   1) body::before → vurgu rengi + güneş sarısıyla yavaşça kayan ışık lekeleri
+   2) body::after  → açık temada nokta ızgarası, koyu temada yıldızlar
+   İkisi de sabit (position: fixed), içeriğin arkasında kalır. */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+body::before {
+  inset: -12vmax;
+  background:
+    radial-gradient(38vmax 32vmax at 12% 8%,  color-mix(in srgb, var(--accent) 46%, transparent), transparent 70%),
+    radial-gradient(34vmax 30vmax at 92% 18%, color-mix(in srgb, var(--sun) 40%, transparent), transparent 70%),
+    radial-gradient(42vmax 36vmax at 78% 96%, color-mix(in srgb, var(--accent) 34%, #ff5fa2 30%), transparent 72%),
+    radial-gradient(30vmax 28vmax at 6% 88%,  color-mix(in srgb, #3fc3d6 34%, transparent), transparent 70%);
+  filter: blur(8px);
+  animation: arka-kay 38s ease-in-out infinite alternate;
+}
+body::after {
+  background-image: radial-gradient(color-mix(in srgb, var(--ink) 16%, transparent) 1px, transparent 1.3px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.35) 60%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.35) 60%, transparent 100%);
+}
+:root[data-theme="dark"] body::before { opacity: .9; }
+:root[data-theme="dark"] body::after {
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 34% 72%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 58% 32%, #fff, transparent),
+    radial-gradient(1px 1px at 76% 64%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 88% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 22% 46%, rgba(255,255,255,.7), transparent),
+    radial-gradient(1px 1px at 66% 88%, rgba(255,255,255,.7), transparent);
+  background-size: 340px 340px;
+  opacity: .55;
+  -webkit-mask-image: none; mask-image: none;
+  animation: yildiz 6s ease-in-out infinite alternate;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body::before { opacity: .9; }
+  :root:not([data-theme="light"]) body::after {
+    background-image:
+      radial-gradient(1.2px 1.2px at 12% 18%, #fff, transparent),
+      radial-gradient(1px 1px at 34% 72%, #fff, transparent),
+      radial-gradient(1.4px 1.4px at 58% 32%, #fff, transparent),
+      radial-gradient(1px 1px at 76% 64%, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 88% 12%, #fff, transparent),
+      radial-gradient(1px 1px at 22% 46%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1px 1px at 66% 88%, rgba(255,255,255,.7), transparent);
+    background-size: 340px 340px;
+    opacity: .55;
+    -webkit-mask-image: none; mask-image: none;
+    animation: yildiz 6s ease-in-out infinite alternate;
+  }
+}
+@keyframes arka-kay {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  50%  { transform: translate3d(3vmax, -2vmax, 0) rotate(6deg) scale(1.05); }
+  100% { transform: translate3d(-3vmax, 2vmax, 0) rotate(-4deg) scale(1.02); }
+}
+@keyframes yildiz { from { opacity: .35; } to { opacity: .7; } }
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none !important; }
 }
 h1, h2, h3, h4 { font-family: var(--display); color: var(--ink); letter-spacing: -0.02em; line-height: 1.15; }
 h2 { font-size: 1.35rem; }
@@ -268,15 +339,23 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   flex: none;
 }
 .brand-mark {
-  width: 38px; height: 38px;
-  border-radius: 12px;
+  width: 40px; height: 40px;
+  border-radius: 13px;
   display: grid; place-items: center;
-  background: var(--accent);
-  box-shadow: inset 0 -3px 0 rgba(0,0,0,.18);
+  position: relative;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--accent) 70%, #fff 30%), var(--accent) 55%, var(--accent-hover));
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,.18), 0 6px 16px -6px color-mix(in srgb, var(--accent) 70%, transparent);
+  transition: transform .25s cubic-bezier(.3,1.6,.5,1);
 }
-.brand-mark svg { width: 24px; height: 24px; display: block; }
-.brand-word { font-family: var(--display); font-weight: 800; font-size: 1.28rem; letter-spacing: -0.03em; }
+.brand:hover .brand-mark { transform: rotate(-8deg) scale(1.06); }
+.brand-mark svg { width: 26px; height: 26px; display: block; overflow: visible; }
+.brand-mark .bm-bubble { fill: #fff; }
+.brand-mark .bm-q { stroke: var(--accent); }
+.brand-mark .bm-dot { fill: var(--accent); }
+.brand-mark .bm-spark { fill: var(--sun); }
+.brand-word { font-family: var(--display); font-weight: 800; font-size: 1.32rem; letter-spacing: -0.035em; line-height: 1; display: inline-flex; align-items: baseline; }
 .brand-word b { color: var(--accent); font-weight: 800; }
+.brand-word small { font-family: var(--font); font-size: .62rem; font-weight: 800; color: var(--muted); letter-spacing: .02em; margin-left: 3px; }
 
 .mainnav { display: flex; align-items: center; gap: 2px; flex: 1; min-width: 0; }
 .mainnav a {
@@ -1414,11 +1493,12 @@ body.se-open { overflow: hidden; }
   .topbar-in { padding: 8px 12px 0; gap: 6px; }
   .mainnav { margin: 4px -12px 0; padding: 2px 12px 10px; }
   .auth-toggle { max-width: 26vw; }
-  .brand-word b { display: none; }
+  .brand-word small { display: none; }
   .icon-btn { width: 36px !important; height: 36px; }
   .bs-sayi { display: none; }
   .brand { gap: 8px; }
   .brand-mark { width: 32px; height: 32px; border-radius: 10px; }
+  .brand-mark svg { width: 21px; height: 21px; }
   .brand-mark svg { width: 21px; height: 21px; }
   .yas-kurdele { width: 62px; height: 62px; }
   .yas-kurdele span { top: 13px; left: -36px; width: 120px; height: 12px; }

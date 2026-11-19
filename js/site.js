@@ -21,11 +21,13 @@
     ["/cark", "Çark"], ["/topluluk", "Topluluk"], ["/soz", "Sözler"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
+  // Logo: içinde soru işareti olan konuşma balonu + sarı yıldız (renkler CSS'ten, .brand-mark)
   const ORB =
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="10" r="7" fill="#fff"/>' +
-    '<path d="M8.6 8.2a4 4 0 0 1 3.2-2.6" stroke="#c9bdf5" stroke-width="1.8" stroke-linecap="round" fill="none"/>' +
-    '<path d="M15.2 9.6l.45 1.05 1.05.45-1.05.45-.45 1.05-.45-1.05-1.05-.45 1.05-.45z" fill="#f5b82e"/>' +
-    '<path d="M7.5 17.4h9l1.6 3.6H5.9z" fill="#f5b82e"/></svg>';
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-6 12 12)">' +
+    '<path class="bm-bubble" d="M8 3h8a5 5 0 0 1 5 5v4a5 5 0 0 1-5 5h-6.3l-3.7 3.3c-.5.45-1.3.1-1.3-.57v-3.1A5 5 0 0 1 3 12V8a5 5 0 0 1 5-5z"/>' +
+    '<path class="bm-q" d="M9.7 8.2a2.4 2.4 0 1 1 3.5 2.15c-.75.38-1.2.95-1.2 1.75v.25" fill="none" stroke-width="2.3" stroke-linecap="round"/>' +
+    '<circle class="bm-dot" cx="12" cy="14.9" r="1.3"/></g>' +
+    '<path class="bm-spark" d="M20.6 .6l.75 1.7 1.7.75-1.7.75-.75 1.7-.75-1.7-1.7-.75 1.7-.75z"/></svg>';
   const MOON = '<svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
   const SUN = '<svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 
@@ -37,7 +39,7 @@
   topbar.className = "topbar";
   topbar.innerHTML =
     '<div class="topbar-in">' +
-    '<a class="brand" href="/" aria-label="yaparmi.com ana sayfa"><span class="brand-mark">' + ORB + '</span><span class="brand-word">yaparmi<b>.com</b></span></a>' +
+    '<a class="brand" href="/" aria-label="yaparmi.com ana sayfa"><span class="brand-mark">' + ORB + '</span><span class="brand-word">yaparmı<b>?</b><small>.com</small></span></a>' +
     '<nav class="mainnav" aria-label="Bölümler">' +
     NAV.map(([href, label]) => '<a href="' + href + '"' + (href === here ? ' class="on" aria-current="page"' : "") + ">" + label + "</a>").join("") +
     "</nav>" +
