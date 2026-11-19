@@ -294,7 +294,7 @@ async function islem(db, now, ekOkumalar, hesapla) {
     d.akis = d.akis || [];
     d.son = d.son || [];
     const gizli = gSnap.exists ? gSnap.data() : { rota: null, mm: null };
-    const k = { tasanlar: [], liste: [], gizliDegisti: false, loglar: [] };
+    const k = { tasanlar: [], liste: [], gizliDegisti: false, loglar: [], grafikSil: false };
     ilerlet(d, gizli, now, k);
     const sonuc = await hesapla({ tx, d, gizli, ek, k });
     likidasyonlar(d, now, k);
@@ -316,8 +316,20 @@ async function islem(db, now, ekOkumalar, hesapla) {
       }
     }
     for (const l of k.loglar) tx.set(db.collection("borsa_log").doc(), { ...l, ms: now, tarih: FieldValue.serverTimestamp() });
+    if (k.grafikSil && sonuc) sonuc.__grafikSil = true;
     return sonuc;
   });
+}
+
+// Grafik gün belgelerini (borsa_grafik/*) sil — sıfırlamadan sonra, transaction dışında
+async function grafikGunleriniSil(db) {
+  const belgeler = await db.collection("borsa_grafik").listDocuments();
+  for (let i = 0; i < belgeler.length; i += 400) {
+    const b = db.batch();
+    belgeler.slice(i, i + 400).forEach((r) => b.delete(r));
+    await b.commit();
+  }
+  return belgeler.length;
 }
 
 function cuzdanCevap(c) {
@@ -474,6 +486,31 @@ async function adminIslem(db, kim, govde, now) {
   }
 
   return islem(db, now, {}, async ({ tx, d, gizli, k }) => {
+    if (tur === "adminGrafikSifirla") {
+      // Grafik geçmişini siler, fiyatı başlangıca (varsayılan 1 TL) çeker.
+      // Bakiyeler (BERKAY/TL adetleri) aynen kalır. Açık pozisyonlar da kalır ama giriş ve
+      // büyüklükleri aynı oranda ölçeklenir: herkesin K/Z'si sıfırlamadan önce neyse sonra da odur
+      // (long'lar bedava kâra geçmez, short'lar boşuna likide olmaz).
+      const yeni = sayi(govde.fiyat ?? BASLANGIC_FIYAT);
+      if (!(yeni > 0 && yeni < 1e6)) throw new Hata("Başlangıç fiyatı 0 ile 1.000.000 arası olmalı.");
+      const kat = yeni / d.fiyat;
+      for (const poz of Object.values(d.poz)) {
+        poz.giris = r6(poz.giris * kat);
+        poz.boyut = r6(poz.boyut / kat);
+        poz.lik = r6(poz.v === 2 ? (poz.yon === "long" ? Math.max(0, poz.giris - (LIK_ORAN * poz.teminat) / poz.boyut) : poz.giris + (LIK_ORAN * poz.teminat) / poz.boyut) : likFiyati(poz, d.derinlik));
+      }
+      if (gizli.mm && gizli.mm.hedef > 0) gizli.mm.hedef = r6(gizli.mm.hedef * kat);
+      gizli.rota = null;
+      k.gizliDegisti = true;
+      d.fiyat = yeni;
+      d.son = [{ t: Math.floor(now / MUM_MS) * MUM_MS, o: yeni, h: yeni, l: yeni, c: yeni, v: 0 }];
+      d.akis = [];
+      d.sifirlama = now;
+      k.tasanlar.length = 0; // eski mumları gün belgelerine yazma
+      k.grafikSil = true;
+      log(k, `Grafiği sıfırladı: fiyat ${yeni} TL (açık ${Object.keys(d.poz).length} pozisyon ×${r6(kat)} ölçeklendi)`);
+      return { ok: true, mesaj: `Grafik sıfırlandı, fiyat ${yeni} TL. Bakiyeler ve pozisyonlar korundu.` };
+    }
     if (tur === "adminArz") {
       const deg = r6(sayi(govde.degisim));
       if (!deg) throw new Hata("Değişim miktarı yaz.");
@@ -643,6 +680,7 @@ export default async function handler(req, res) {
     if (tur.startsWith("admin")) {
       if (!kim.admin) throw new Hata("Bu işlem sadece admin içindir.", 403);
       sonuc = await adminIslem(db, kim, govde, now);
+      if (sonuc && sonuc.__grafikSil) { delete sonuc.__grafikSil; await grafikGunleriniSil(db); }
     } else {
       sonuc = await kullaniciIslem(db, kim, govde, now);
     }

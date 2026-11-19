@@ -78,8 +78,10 @@
   function dinle() {
     db.collection("borsa").doc("durum").onSnapshot((s) => {
       if (!s.exists) return;
+      const oncekiSifir = d && d.sifirlama;
       d = s.data();
       d.poz = d.poz || {}; d.akis = d.akis || []; d.son = d.son || [];
+      if (oncekiSifir !== undefined && d.sifirlama && d.sifirlama !== oncekiSifir) { gecmisMumlar.clear(); toast("📉 Grafik admin tarafından sıfırlandı.", 5000); }
       grafikGuncelle();
       seritCiz(); pozlarimCiz(); arenaCiz(); akisCiz(); tahminleriCiz(); cuzdanCiz();
       $("bxX").max = String(d.maxKaldirac || 20);
@@ -118,7 +120,8 @@
   function tumMumlar() {
     const m = new Map(gecmisMumlar);
     if (d) d.son.forEach((x) => m.set(x.t, x));
-    return [...m.values()].sort((a, b) => a.t - b.t);
+    const sinir = d && d.sifirlama ? Math.floor(d.sifirlama / 60000) * 60000 : 0; // admin grafiği sıfırladıysa öncesini gösterme
+    return [...m.values()].filter((x) => x.t >= sinir).sort((a, b) => a.t - b.t);
   }
 
   function grafikGuncelle() {

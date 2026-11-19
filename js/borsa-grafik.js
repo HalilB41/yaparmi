@@ -23,11 +23,13 @@
   };
   const sayiYaz = (p) => {
     if (!Number.isFinite(p)) return "-";
+    if (p >= 1e12) return p.toExponential(2).replace(".", ",");
     if (p >= 1e9) return (p / 1e9).toLocaleString("tr-TR", { maximumFractionDigits: 2 }) + "Mr";
     if (p >= 1e6) return (p / 1e6).toLocaleString("tr-TR", { maximumFractionDigits: 2 }) + "M";
     if (p >= 1000) return p.toLocaleString("tr-TR", { maximumFractionDigits: 0 });
     if (p >= 10) return p.toFixed(2);
     if (p >= 1) return p.toFixed(3);
+    if (p > 0 && p < 1e-4) return p.toExponential(2).replace(".", ",");
     return p.toPrecision(4);
   };
   const saatYaz = (t, uzun) => {

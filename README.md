@@ -633,7 +633,9 @@ izin var. Aile, cinsel ve ağır küfürler yasak. Soru kutusunda artık sabit
 **Admin paneli → 📈 Borsa:** özet (arz, kasa, dolaşım), cüzdanlar (kimde ne kadar),
 canlı kaldıraç pozisyonları ve K/Z'ler (kapat / likide et), piyasa yapıcı (MM) botu, kullanıcıya BERKAY/TL gönder ya da
 geri al, toplam arzı bas/yak, derinlik/oynaklık/maksimum kaldıraç, piyasayı aç/kapat,
-market ürünleri, siparişler ve tüm para hareketleri. **Fiyatı yönet:** çizim modunu aç,
+market ürünleri, siparişler ve tüm para hareketleri. **Grafiği sıfırla:** tüm mum geçmişini ve
+son işlemler akışını siler, fiyatı 1 TL'ye (ya da girilen değere) çeker; bakiyeler ve açık pozisyonlar
+kalır (pozisyonların girişleri aynı oranda ölçeklenir, K/Z'leri değişmez). **Fiyatı yönet:** çizim modunu aç,
 grafiğin sağındaki gelecek alanına çizgi çiz, "Rotayı uygula" de. Fiyat o çizgiyi izler.
 Rota sadece adminde görünür.
 

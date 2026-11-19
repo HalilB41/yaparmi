@@ -97,8 +97,9 @@
   function grafikCiz() {
     if (!grafik || !d) return;
     const m = new Map(eskiMumlar); d.son.forEach((x) => m.set(x.t, x));
+    const sinir = d.sifirlama ? Math.floor(d.sifirlama / 60000) * 60000 : 0;
     grafik.canliFiyat = d.fiyat;
-    grafik.veri([...m.values()].sort((a, b) => a.t - b.t));
+    grafik.veri([...m.values()].filter((x) => x.t >= sinir).sort((a, b) => a.t - b.t));
     const cizgiler = [];
     Object.values(d.poz).forEach((p) => cizgiler.push({ p: E.lik(p, d.derinlik), renk: "#e8590c", yazi: `${p.ad} ${p.kaldirac}x lik.` }));
     grafik.cizgiler(cizgiler);
@@ -122,6 +123,12 @@
     const noktalar = cizilen.map((q) => ({ t: Math.round(q.t + kay), p: q.p }));
     const r = await islem($("bxaRotaUygula"), $("bxaFiyatDurum"), "adminRota", { noktalar });
     if (r) { cizilen = null; $("bxaRotaUygula").disabled = true; grafik.cizimModu({ noktalar: [] }); }
+  });
+  $("bxaSifirlaBtn").addEventListener("click", async () => {
+    const f = Number($("bxaSifirlaFiyat").value) || 1;
+    if (!confirm(`Grafiğin TÜM geçmişi silinecek ve fiyat ${f} TL olacak.\n\n• BERKAY/TL bakiyeleri aynen kalır.\n• Açık kaldıraç pozisyonları kalır; girişleri aynı oranda ölçeklenir, herkesin K/Z'si değişmez.\n• Çizili rota silinir.\n\nGeri alınamaz. Emin misin?`)) return;
+    const r = await islem($("bxaSifirlaBtn"), $("bxaFiyatDurum"), "adminGrafikSifirla", { fiyat: f });
+    if (r) { eskiMumlar.clear(); grafikCiz(); mmDolu = false; }
   });
   $("bxaRotaSil").addEventListener("click", () => islem($("bxaRotaSil"), $("bxaFiyatDurum"), "adminRota", { noktalar: null }));
   $("bxaFiyatBtn").addEventListener("click", () => {
