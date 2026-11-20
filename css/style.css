@@ -1974,3 +1974,77 @@ button, .btn, a, input[type="range"], summary { touch-action: manipulation; } /*
 @media (max-width: 760px) and (prefers-reduced-motion: reduce) {
   .alt-sayfa:not([hidden]), .alt-sayfa-kart { animation: none; }
 }
+
+/* ===== Borsa: DexScreener tarzı coin listesi ===== */
+.bx-coin-logo.diger { color: #fff; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--coin) 55%, #fff), var(--coin) 62%, color-mix(in srgb, var(--coin) 70%, #000)); box-shadow: inset 0 -3px 0 rgba(0,0,0,.18), 0 0 0 3px color-mix(in srgb, var(--coin) 28%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.bx-dex { --dx-bg: #0d0f17; --dx-satir: #131622; --dx-cizgi: #1f2433; --dx-yazi: #e6e8f0; --dx-soluk: #7d8499; --dx-yesil: #3ddc84; --dx-kirmizi: #ff5d6c;
+  background: var(--dx-bg); color: var(--dx-yazi); border-radius: 20px; padding: 16px 0 6px; margin-bottom: 18px; box-shadow: 0 18px 40px -24px rgba(10,12,27,.55); border: 1px solid #1a1e2b; overflow: hidden; }
+.bx-dex-ust { display: flex; align-items: center; gap: 14px; justify-content: space-between; padding: 0 18px 12px; flex-wrap: wrap; }
+.bx-dex-baslik { display: flex; align-items: baseline; gap: 10px; }
+.bx-dex-baslik b { font-family: var(--display); font-size: 1.15rem; letter-spacing: -.02em; }
+.bx-dex-baslik span { font-size: .78rem; color: var(--dx-soluk); font-weight: 700; }
+.bx-ara { display: flex; align-items: center; gap: 8px; background: #161a27; border: 1px solid var(--dx-cizgi); border-radius: 12px; padding: 0 10px; min-width: min(360px, 100%); flex: 0 1 360px; transition: border-color .15s, box-shadow .15s; }
+.bx-ara:focus-within { border-color: #4b5bdc; box-shadow: 0 0 0 3px rgba(75,91,220,.25); }
+.bx-ara input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--dx-yazi); font: 600 .92rem var(--body, Manrope, sans-serif); padding: 10px 0; min-width: 0; }
+.bx-ara input::placeholder { color: var(--dx-soluk); }
+.bx-ara kbd { font: 700 .72rem var(--mono); color: var(--dx-soluk); border: 1px solid var(--dx-cizgi); border-radius: 6px; padding: 1px 6px; }
+.bx-dex-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.bx-dex-tablo { width: 100%; border-collapse: collapse; font-size: .86rem; white-space: nowrap; }
+.bx-dex-tablo th { text-align: right; font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--dx-soluk); font-weight: 800; padding: 8px 12px; border-bottom: 1px solid var(--dx-cizgi); user-select: none; }
+.bx-dex-tablo th:nth-child(-n+2) { text-align: left; }
+.bx-dex-tablo th[data-sira] { cursor: pointer; }
+.bx-dex-tablo th[data-sira]:hover, .bx-dex-tablo th.on { color: var(--dx-yazi); }
+.bx-dex-tablo th.on::after { content: " ▾"; }
+.bx-dex-tablo td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--dx-cizgi); font-family: var(--mono); font-weight: 700; font-size: .82rem; }
+.bx-dex-tablo td:nth-child(-n+2) { text-align: left; }
+.bx-dex-tablo tbody tr { cursor: pointer; transition: background .12s; }
+.bx-dex-tablo tbody tr:hover, .bx-dex-tablo tbody tr:focus-visible { background: var(--dx-satir); outline: 0; }
+.bx-dex-tablo tbody tr.secili { background: linear-gradient(90deg, rgba(75,91,220,.22), rgba(75,91,220,.04)); box-shadow: inset 3px 0 0 #6d7cff; }
+.bx-dex-tablo td.muted, .bx-dex .muted { color: var(--dx-soluk); }
+.bx-dex-tablo .yukari { color: var(--dx-yesil); }
+.bx-dex-tablo .asagi { color: var(--dx-kirmizi); }
+.bx-dex-coin { display: flex; align-items: center; gap: 10px; font-family: var(--body, Manrope, sans-serif) !important; }
+.bx-dex-coin > span:not(.bx-coin-logo):not(.bx-dex-etiket) { display: flex; flex-direction: column; line-height: 1.15; }
+.bx-dex-coin b { font-weight: 800; font-size: .92rem; }
+.bx-dex-coin small { color: var(--dx-soluk); font-weight: 600; font-size: .72rem; }
+.bx-dex-coin .bx-coin-logo { flex: none; }
+.bx-dex-etiket { font: 800 .6rem var(--body, Manrope, sans-serif); letter-spacing: .06em; background: #f5b82e; color: #3a2800; border-radius: 6px; padding: 2px 6px; }
+.bx-dex-fiyat { color: var(--dx-yazi); }
+.bx-dex-spark { width: 130px; }
+.bx-spark { width: 120px; height: 32px; display: block; margin-left: auto; }
+.bx-spark path { fill: none; stroke-width: 1.8; vector-effect: non-scaling-stroke; }
+.bx-spark path.yukari { stroke: var(--dx-yesil); }
+.bx-spark path.asagi { stroke: var(--dx-kirmizi); }
+.bx-varliklar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.bx-varlik { display: flex; align-items: center; gap: 8px; background: var(--surface-2); border: 1px solid transparent; border-radius: 10px; padding: 5px 9px 5px 6px; cursor: pointer; color: inherit; text-align: left; font: inherit; }
+.bx-varlik.on { border-color: var(--accent); }
+.bx-varlik span { display: flex; flex-direction: column; line-height: 1.15; }
+.bx-varlik b { font-family: var(--mono); font-size: .78rem; }
+.bx-varlik small { font-size: .68rem; }
+.bx-tablo .bx-dex-coin { font-family: inherit; }
+.bx-tablo .bx-dex-coin .link-btn { font-weight: 800; }
+@media (max-width: 760px) {
+  .bx-dex { border-radius: 16px; margin-left: -4px; margin-right: -4px; }
+  .bx-dex-ust { padding: 0 12px 10px; }
+  .bx-ara { flex: 1 1 100%; min-width: 0; }
+  .bx-ara kbd { display: none; }
+  .bx-ara input { font-size: 16px; }
+  /* telefonda: coin, fiyat, 24s, grafik */
+  .bx-dex-tablo th:nth-child(1), .bx-dex-tablo td:nth-child(1),
+  .bx-dex-tablo th:nth-child(4), .bx-dex-tablo td:nth-child(4),
+  .bx-dex-tablo th:nth-child(5), .bx-dex-tablo td:nth-child(5),
+  .bx-dex-tablo th:nth-child(7), .bx-dex-tablo td:nth-child(7),
+  .bx-dex-tablo th:nth-child(8), .bx-dex-tablo td:nth-child(8),
+  .bx-dex-tablo th:nth-child(9), .bx-dex-tablo td:nth-child(9),
+  .bx-dex-tablo th:nth-child(10), .bx-dex-tablo td:nth-child(10) { display: none; }
+  .bx-dex-tablo td, .bx-dex-tablo th { padding: 9px 8px; }
+  .bx-dex-spark { width: 70px; }
+  .bx-spark { width: 64px; height: 26px; }
+  .bx-dex-coin small { display: none; }
+}
+/* Admin: coin seçici */
+.bxa-coinler { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; }
+.bxa-coin { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--line); background: var(--surface); color: inherit; border-radius: 999px; padding: 5px 14px 5px 5px; cursor: pointer; font: inherit; font-weight: 800; }
+.bxa-coin:hover { border-color: var(--accent); }
+.bxa-coin.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.bxa-coin-ekle summary { cursor: pointer; font-weight: 800; margin: 4px 0 8px; }

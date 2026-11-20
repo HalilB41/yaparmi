@@ -1,5 +1,6 @@
 // ============================================================
-// borsa.js — sadece borsa.html: BERKAY borsası (kullanıcı tarafı).
+// borsa.js — sadece borsa.html: çok coinli borsa (kullanıcı tarafı).
+// Üstte DexScreener gibi coin listesi + arama; seçili coinin grafiği ve işlem paneli altta.
 // Her para işlemi /api/borsa üzerinden SUNUCUDA yapılır; burası sadece
 // gösterir ve tahmin hesaplar. Veri yapısı için bkz. api/borsa.js başı.
 // ============================================================
@@ -9,6 +10,7 @@
   const E = window.BorsaEgri;
   const api = window.BorsaApi;
   const sayi = window.BorsaSayi;
+  const BC = window.BorsaCoin;
   const para = (x, k = 2) => (Number.isFinite(x) ? x.toLocaleString("tr-TR", { minimumFractionDigits: k, maximumFractionDigits: k }) : "—");
   const isaretli = (x, k = 2) => (x >= 0 ? "+" : "") + para(x, k);
   const kacOnce = (t) => {
@@ -21,8 +23,14 @@
   function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
   let profile = null;
-  let d = null; // borsa/durum
+  let d = null; // seçili coinin durum belgesi
   let cuzdan = null;
+  let coinler = BC.liste(null); // coin listesi (borsa/coinler + varsayılanlar)
+  const durumlar = {}; // sym → durum belgesi
+  const dinleyiciler = {}; // sym → unsubscribe
+  const mumDepo = {}; // sym → Map(t → mum) eski günler
+  const yuklenenGun = {}; // sym → true (eski mumlar çekildi)
+  let secili = (decodeURIComponent(location.hash.slice(1)) || "BERKAY").toUpperCase();
   let gecmisMumlar = new Map();
   let grafik = null;
   let mod = "spot", spotYon = "al", kYon = "long";
@@ -70,24 +78,52 @@
     grafik = new window.BorsaGrafik($("bxGrafik"));
     dinle();
     haftaDinle();
-    eskiMumlar();
-    setInterval(() => { if (document.visibilityState === "visible") api("tick").catch(() => {}); }, 10000);
-    setInterval(() => { if (d && !document.hidden) { arenaCiz(); akisCiz(); } }, 15000);
+    coinSec(secili, false);
+    api("tickHepsi").catch(() => {});
+    setInterval(() => { if (document.visibilityState === "visible") api("tickHepsi").catch(() => {}); }, 10000);
+    setInterval(() => { if (!document.hidden) dexCiz(); }, 5000);
+    setInterval(() => { if (d && !document.hidden) { arenaCiz(); akisCiz(); pozlarimCiz(); } }, 15000);
   }
 
   // ---------------- Firestore dinleyicileri ----------------
+  // Her coinin durum belgesini dinle (liste canlı kalsın)
+  function coinDinle() {
+    const istenen = new Set(coinler.map((c) => c.sym));
+    Object.keys(dinleyiciler).forEach((sym) => { if (!istenen.has(sym)) { dinleyiciler[sym](); delete dinleyiciler[sym]; delete durumlar[sym]; } });
+    coinler.forEach((c) => {
+      if (dinleyiciler[c.sym]) return;
+      dinleyiciler[c.sym] = db.collection("borsa").doc(BC.durumId(c.sym)).onSnapshot((s) => {
+        if (!s.exists) return;
+        const eski = durumlar[c.sym];
+        const yeni = s.data();
+        yeni.poz = yeni.poz || {}; yeni.akis = yeni.akis || []; yeni.son = yeni.son || []; yeni.saat = yeni.saat || [];
+        durumlar[c.sym] = yeni;
+        if (eski && yeni.sifirlama && yeni.sifirlama !== eski.sifirlama) {
+          if (mumDepo[c.sym]) mumDepo[c.sym].clear();
+          if (c.sym === secili) toast(`📉 ${c.sym} grafiği admin tarafından sıfırlandı.`, 5000);
+        }
+        dexCizGecikmeli();
+        pozlarimCiz(); cuzdanCiz();
+        if (c.sym === secili) seciliGuncelle();
+        else if (tumCuzdanlar.length) zenginCiz();
+      }, (err) => console.warn(c.sym + ":", err.message));
+    });
+  }
+  function seciliGuncelle() {
+    d = durumlar[secili] || null;
+    if (!d) { $("bxFiyat").textContent = "…"; return; }
+    gecmisMumlar = mumDepo[secili] || (mumDepo[secili] = new Map());
+    grafikGuncelle();
+    seritCiz(); arenaCiz(); akisCiz(); tahminleriCiz(); cuzdanCiz();
+    if (tumCuzdanlar.length) zenginCiz();
+    $("bxX").max = String(d.maxKaldirac || 20);
+  }
   function dinle() {
-    db.collection("borsa").doc("durum").onSnapshot((s) => {
-      if (!s.exists) return;
-      const oncekiSifir = d && d.sifirlama;
-      d = s.data();
-      d.poz = d.poz || {}; d.akis = d.akis || []; d.son = d.son || [];
-      if (oncekiSifir !== undefined && d.sifirlama && d.sifirlama !== oncekiSifir) { gecmisMumlar.clear(); toast("📉 Grafik admin tarafından sıfırlandı.", 5000); }
-      grafikGuncelle();
-      seritCiz(); pozlarimCiz(); arenaCiz(); akisCiz(); tahminleriCiz(); cuzdanCiz();
-      if (tumCuzdanlar.length) zenginCiz();
-      $("bxX").max = String(d.maxKaldirac || 20);
-    }, (err) => console.warn("durum:", err.message));
+    db.collection("borsa").doc("coinler").onSnapshot((s) => {
+      coinler = BC.liste(s.exists ? s.data() : null);
+      if (!coinler.some((c) => c.sym === secili)) coinSec("BERKAY", false);
+      coinDinle(); dexCiz(); seritCiz();
+    }, () => { coinDinle(); dexCiz(); });
 
     db.collection("borsa_cuzdan").doc(profile.uid).onSnapshot((s) => {
       cuzdan = s.exists ? s.data() : null; cuzdanCiz(); tahminleriCiz();
@@ -107,17 +143,137 @@
     }, (err) => console.warn("sipariş:", err.message));
   }
 
-  async function eskiMumlar() {
+  async function eskiMumlar(sym) {
+    if (yuklenenGun[sym]) return;
+    yuklenenGun[sym] = true;
+    const depo = mumDepo[sym] || (mumDepo[sym] = new Map());
     const gunler = [];
     for (let i = 0; i < 4; i++) gunler.push(window.BorsaGun(Date.now() - i * 86400000));
     await Promise.all(gunler.map(async (g) => {
       try {
-        const s = await db.collection("borsa_grafik").doc(g).get();
-        if (s.exists) (s.data().m || []).forEach((m) => gecmisMumlar.set(m.t, m));
+        const s = await db.collection("borsa_grafik").doc(BC.grafikId(sym, g)).get();
+        if (s.exists) (s.data().m || []).forEach((m) => depo.set(m.t, m));
       } catch { /* yok */ }
     }));
-    grafikGuncelle();
+    if (sym === secili) grafikGuncelle();
   }
+
+  // ---------------- Coin seçimi ----------------
+  function coinBilgi(sym) { return coinler.find((c) => c.sym === sym) || { sym, ad: sym, emoji: sym.slice(0, 1), renk: "#5a3fd4" }; }
+  function coinSec(sym, kaydir) {
+    sym = String(sym || "BERKAY").toUpperCase();
+    if (!coinler.some((c) => c.sym === sym)) sym = "BERKAY";
+    const degisti = sym !== secili;
+    secili = sym;
+    if (location.hash.slice(1) !== sym) history.replaceState(null, "", sym === "BERKAY" ? location.pathname : "#" + sym);
+    const c = coinBilgi(sym);
+    const logo = BC.logo(c); logo.id = "bxCoinLogo"; $("bxCoinLogo").replaceWith(logo);
+    $("bxCoinAd").textContent = c.sym;
+    $("bxCoinCift").textContent = `${c.ad} · ${c.sym} / TL`;
+    $("bxBkcEtiket").textContent = c.sym;
+    $("bxArenaAlt").textContent = `${c.sym} · herkesin açık pozisyonu, canlı`;
+    $("bxAkisAlt").textContent = c.sym;
+    spotEtiketleri();
+    if (degisti) { $("bxSpotMiktar").value = ""; $("bxTeminat").value = ""; durumYaz(""); }
+    eskiMumlar(sym);
+    seciliGuncelle();
+    dexCiz();
+    if (kaydir) $("bxSerit").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  window.addEventListener("hashchange", () => { const h = decodeURIComponent(location.hash.slice(1)).toUpperCase(); if (h && h !== secili) coinSec(h, true); });
+
+  // ---------------- DexScreener tarzı liste ----------------
+  let dexSira = { alan: null, ters: true }, dexZaman = null;
+  function dexCizGecikmeli() { if (!dexZaman) dexZaman = setTimeout(() => { dexZaman = null; dexCiz(); }, 300); }
+  function degisim(dd, ms) {
+    if (!dd) return null;
+    const sinir = Date.now() - ms;
+    const kaynak = ms > 4 * 3600000 ? dd.saat : dd.son;
+    const ilk = (kaynak || []).find((m) => m.t + (ms > 4 * 3600000 ? 3600000 : 60000) > sinir);
+    if (!ilk) return null;
+    return ((dd.fiyat - ilk.o) / ilk.o) * 100;
+  }
+  function hacim24(dd) {
+    if (!dd) return 0;
+    const sinir = Date.now() - 86400000;
+    return (dd.saat || []).filter((m) => m.t >= sinir - 3600000).reduce((t, m) => t + (m.v || 0), 0);
+  }
+  function satirVeri(c) {
+    const dd = durumlar[c.sym];
+    return {
+      c, dd,
+      fiyat: dd ? dd.fiyat : null,
+      d5: degisim(dd, 5 * 60000), d60: degisim(dd, 3600000), d24: degisim(dd, 86400000),
+      hacim: hacim24(dd),
+      mcap: dd ? dd.fiyat * (dd.toplamArz - 0) : 0,
+      lik: dd ? dd.derinlik : 0,
+      poz: dd ? Object.keys(dd.poz).length : 0,
+    };
+  }
+  function yuzdeHucre(v) {
+    const td = el("td", "bx-dex-yuzde " + (v == null ? "muted" : v >= 0 ? "yukari" : "asagi"));
+    td.textContent = v == null ? "—" : (v >= 0 ? "+" : "") + (Math.abs(v) >= 1000 ? para(v, 0) : v.toFixed(2)) + "%";
+    return td;
+  }
+  const kisa = (x) => (x >= 1e9 ? para(x / 1e9, 2) + " Mr" : x >= 1e6 ? para(x / 1e6, 2) + " Mn" : x >= 1e4 ? para(x / 1e3, 1) + " bin" : para(x, 0));
+  function spark(dd) {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 120 32"); svg.setAttribute("class", "bx-spark"); svg.setAttribute("preserveAspectRatio", "none");
+    const k = (dd && dd.son || []).map((m) => m.c).filter((x) => x > 0);
+    if (k.length < 2) return svg;
+    const adim = Math.max(1, Math.floor(k.length / 60));
+    const n = k.filter((_, i) => i % adim === 0 || i === k.length - 1);
+    const lg = n.map((x) => Math.log(x)), mn = Math.min(...lg), mx = Math.max(...lg), ar = mx - mn || 1;
+    const yol = n.map((x, i) => `${i ? "L" : "M"}${(i / (n.length - 1) * 120).toFixed(1)},${(30 - ((Math.log(x) - mn) / ar) * 28).toFixed(1)}`).join(" ");
+    const p = document.createElementNS(NS, "path");
+    p.setAttribute("d", yol); p.setAttribute("class", n[n.length - 1] >= n[0] ? "yukari" : "asagi");
+    svg.append(p);
+    return svg;
+  }
+  function dexCiz() {
+    const tb = $("bxCoinler"); if (!tb) return;
+    const q = $("bxAra").value;
+    let satirlar = coinler.filter((c) => BC.eslesir(c, q)).map(satirVeri);
+    if (dexSira.alan) satirlar.sort((a, b) => ((b[dexSira.alan] ?? -Infinity) - (a[dexSira.alan] ?? -Infinity)) * (dexSira.ters ? 1 : -1));
+    tb.textContent = "";
+    if (!satirlar.length) {
+      const tr = el("tr"); const td = el("td", "muted", `"${q}" diye bir coin yok.`); td.colSpan = 11; tr.append(td); tb.append(tr);
+    }
+    satirlar.forEach((v, i) => {
+      const tr = el("tr", v.c.sym === secili ? "secili" : "");
+      tr.tabIndex = 0;
+      tr.append(el("td", "muted", "#" + (i + 1)));
+      const ad = el("td"), kap = el("div", "bx-dex-coin");
+      const yazi = el("span"); yazi.append(el("b", null, v.c.sym), el("small", null, v.c.ad));
+      kap.append(BC.logo(v.c, 30), yazi);
+      if (v.c.sym === "BERKAY") kap.append(el("span", "bx-dex-etiket", "ANA"));
+      ad.append(kap); tr.append(ad);
+      tr.append(el("td", "bx-dex-fiyat", v.fiyat == null ? "…" : sayi(v.fiyat) + " ₺"));
+      tr.append(yuzdeHucre(v.d5), yuzdeHucre(v.d60), yuzdeHucre(v.d24));
+      tr.append(el("td", null, kisa(v.hacim) + " ₺"), el("td", null, kisa(v.mcap) + " ₺"), el("td", null, kisa(v.lik) + " ₺"), el("td", v.poz ? "" : "muted", v.poz ? `⚡ ${v.poz}` : "—"));
+      const sp = el("td", "bx-dex-spark"); sp.append(spark(v.dd)); tr.append(sp);
+      tr.addEventListener("click", () => coinSec(v.c.sym, true));
+      tr.addEventListener("keydown", (e) => { if (e.key === "Enter") coinSec(v.c.sym, true); });
+      tb.append(tr);
+    });
+    const toplamHacim = coinler.reduce((t, c) => t + hacim24(durumlar[c.sym]), 0);
+    $("bxDexOzet").textContent = `${coinler.length} coin · 24s hacim ${kisa(toplamHacim)} ₺`;
+    document.querySelectorAll(".bx-dex-tablo th[data-sira]").forEach((th) => th.classList.toggle("on", th.dataset.sira === dexSira.alan));
+  }
+  $("bxAra").addEventListener("input", dexCiz);
+  $("bxAra").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { const ilk = coinler.find((c) => BC.eslesir(c, $("bxAra").value)); if (ilk) { coinSec(ilk.sym, true); $("bxAra").blur(); } }
+    if (e.key === "Escape") { $("bxAra").value = ""; dexCiz(); }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || "")) { e.preventDefault(); $("bxAra").focus(); }
+  });
+  document.querySelectorAll(".bx-dex-tablo th[data-sira]").forEach((th) => th.addEventListener("click", () => {
+    const alan = th.dataset.sira;
+    if (dexSira.alan === alan) { if (dexSira.ters) dexSira.ters = false; else dexSira.alan = null; } else dexSira = { alan, ters: true };
+    dexCiz();
+  }));
 
   function tumMumlar() {
     const m = new Map(gecmisMumlar);
@@ -154,6 +310,7 @@
 
   // ---------------- Şerit ----------------
   function seritCiz() {
+    if (!d) return;
     const mumlar = tumMumlar();
     const sinir = Date.now() - 86400000;
     const gun = mumlar.filter((m) => m.t >= sinir);
@@ -169,19 +326,28 @@
     $("bxHacim").textContent = para(gun.reduce((t, m) => t + (m.v || 0), 0), 0) + " TL";
     $("bxDolasim").textContent = para(d.toplamArz - d.kasaBKC, 0) + " / " + para(d.toplamArz, 0);
     $("bxPiyasa").innerHTML = d.acik ? '<span class="bx-nokta ok"></span>Açık' : '<span class="bx-nokta"></span>Kapalı';
-    document.title = `${sayi(d.fiyat)} BERKAY · Berkay Borsası`;
+    document.title = `${sayi(d.fiyat)} ${secili} · Berkay Borsası`;
   }
 
   // ---------------- Cüzdan ----------------
   function cuzdanCiz() {
     if (!cuzdan) return;
     if (sonUrunler) marketCiz(sonUrunler);
-    $("bxBkc").textContent = para(cuzdan.bkc, 4);
+    $("bxBkc").textContent = para(BC.bakiye(cuzdan, secili), 4);
     $("bxBtl").textContent = para(cuzdan.btl, 2);
-    if (d) {
-      const acikDeger = Object.values(d.poz).filter((p) => p.uid === profile.uid).reduce((t, p) => t + Math.max(0, p.teminat + E.pnl(p, d.fiyat, d.derinlik)), 0);
-      $("bxToplam").textContent = para(cuzdan.bkc * d.fiyat + cuzdan.btl + acikDeger, 2) + " TL";
-    }
+    $("bxToplam").textContent = para(degerHesap(cuzdan), 2) + " TL";
+    // Elindeki bütün coinler
+    const v = $("bxVarliklar"); v.textContent = "";
+    coinler.forEach((c) => {
+      const m = BC.bakiye(cuzdan, c.sym);
+      if (m <= 1e-9) return;
+      const dd = durumlar[c.sym];
+      const b = el("button", "bx-varlik" + (c.sym === secili ? " on" : "")); b.type = "button";
+      const y = el("span"); y.append(el("b", null, `${para(m, m < 10 ? 4 : 2)} ${c.sym}`), el("small", "muted", dd ? "≈ " + para(m * dd.fiyat, 2) + " TL" : "…"));
+      b.append(BC.logo(c, 22), y);
+      b.addEventListener("click", () => coinSec(c.sym, true));
+      v.append(b);
+    });
     const g = $("bxGercek");
     g.textContent = isaretli(cuzdan.gerceklesen || 0) + " TL";
     g.className = (cuzdan.gerceklesen || 0) >= 0 ? "yukari" : "asagi";
@@ -197,13 +363,16 @@
   $("bxSpot").querySelectorAll(".bx-yon button").forEach((b) => b.addEventListener("click", () => {
     spotYon = b.dataset.yon;
     $("bxSpot").querySelectorAll(".bx-yon button").forEach((x) => x.classList.toggle("on", x === b));
-    $("bxSpotEtiket").textContent = spotYon === "al" ? "Harcanacak TL" : "Satılacak BERKAY";
-    $("bxSpotBirim").textContent = spotYon === "al" ? "TL" : "BERKAY";
-    $("bxSpotBtn").textContent = spotYon === "al" ? "BERKAY al" : "BERKAY sat";
-    $("bxSpotBtn").className = "bx-gonder " + (spotYon === "al" ? "al" : "sat");
+    spotEtiketleri();
     $("bxSpotMiktar").value = "";
     tahminleriCiz();
   }));
+  function spotEtiketleri() {
+    $("bxSpotEtiket").textContent = spotYon === "al" ? "Harcanacak TL" : `Satılacak ${secili}`;
+    $("bxSpotBirim").textContent = spotYon === "al" ? "TL" : secili;
+    $("bxSpotBtn").textContent = spotYon === "al" ? `${secili} al` : `${secili} sat`;
+    $("bxSpotBtn").className = "bx-gonder " + (spotYon === "al" ? "al" : "sat");
+  }
   $("bxKaldirac").querySelectorAll(".bx-yon button").forEach((b) => b.addEventListener("click", () => {
     kYon = b.dataset.yon;
     $("bxKaldirac").querySelectorAll(".bx-yon button").forEach((x) => x.classList.toggle("on", x === b));
@@ -215,7 +384,7 @@
     if (!cuzdan) return;
     const y = Number(b.dataset.y) / 100;
     if (grup.dataset.hedef === "spot") {
-      const max = spotYon === "al" ? cuzdan.btl : cuzdan.bkc;
+      const max = spotYon === "al" ? cuzdan.btl : BC.bakiye(cuzdan, secili);
       $("bxSpotMiktar").value = String(Math.floor(max * y * 10000) / 10000);
     } else {
       $("bxTeminat").value = String(Math.floor(cuzdan.btl * y * 100) / 100);
@@ -237,12 +406,12 @@
       satir(st, "Kullanılabilir", para(cuzdan ? cuzdan.btl : 0) + " TL");
       if (m > 0) {
         const r = E.al(p, m, D);
-        satir(st, "Alacağın", "≈ " + para(r.q, 4) + " BERKAY");
+        satir(st, "Alacağın", "≈ " + para(r.q, 4) + " " + secili);
         satir(st, "Ortalama fiyat", sayi(m / r.q));
         satir(st, "Fiyat etkisi", "+" + ((r.p1 / p - 1) * 100).toFixed(2) + "%", "yukari");
       }
     } else {
-      satir(st, "Kullanılabilir", para(cuzdan ? cuzdan.bkc : 0, 4) + " BERKAY");
+      satir(st, "Kullanılabilir", para(BC.bakiye(cuzdan, secili), 4) + " " + secili);
       if (m > 0) {
         const r = E.sat(p, m, D);
         satir(st, "Alacağın", "≈ " + para(r.N) + " TL");
@@ -277,45 +446,55 @@
   $("bxSpotBtn").addEventListener("click", () => {
     const m = Number($("bxSpotMiktar").value);
     if (!(m > 0)) { durumYaz("Miktar yaz.", true); return; }
-    calistir($("bxSpotBtn"), () => api(spotYon === "al" ? "spotAl" : "spotSat", spotYon === "al" ? { btl: m } : { bkc: m })).then((r) => { if (r) $("bxSpotMiktar").value = ""; });
+    calistir($("bxSpotBtn"), () => api(spotYon === "al" ? "spotAl" : "spotSat", spotYon === "al" ? { coin: secili, btl: m } : { coin: secili, miktar: m })).then((r) => { if (r) $("bxSpotMiktar").value = ""; });
   });
   $("bxKBtn").addEventListener("click", () => {
     const M = Number($("bxTeminat").value), x = Number($("bxX").value);
     if (!(M >= 1)) { durumYaz("Teminat en az 1 TL.", true); return; }
-    if (x >= 15 && !confirm(`${x}x kaldıraç çok riskli: fiyat yaklaşık %${(90 / x).toFixed(1)} ters giderse teminatın gider. Devam?`)) return;
-    calistir($("bxKBtn"), () => api("pozAc", { yon: kYon, kaldirac: x, teminat: M })).then((r) => { if (r) $("bxTeminat").value = ""; });
+    if (x >= 15 && !confirm(`${secili} ${x}x kaldıraç çok riskli: fiyat yaklaşık %${(90 / x).toFixed(1)} ters giderse teminatın gider. Devam?`)) return;
+    calistir($("bxKBtn"), () => api("pozAc", { coin: secili, yon: kYon, kaldirac: x, teminat: M })).then((r) => { if (r) $("bxTeminat").value = ""; });
   });
 
   // ---------------- Pozisyonlar ----------------
+  // Bütün coinlerdeki açık pozisyonlarım: [{ p, dd, sym }]
+  function benimPozlar(uid) {
+    const l = [];
+    Object.entries(durumlar).forEach(([sym, dd]) => Object.values(dd.poz).forEach((p) => { if (p.uid === uid) l.push({ p, dd, sym }); }));
+    return l;
+  }
   function pozlarimCiz() {
     const tb = $("bxPozlarim");
-    const benim = Object.values(d.poz).filter((p) => p.uid === profile.uid).sort((a, b) => b.acilis - a.acilis);
+    if (!profile) return;
+    const benim = benimPozlar(profile.uid).sort((a, b) => b.p.acilis - a.p.acilis);
     tb.textContent = "";
-    if (!benim.length) { const tr = el("tr"); const td = el("td", "muted", "Açık pozisyonun yok."); td.colSpan = 8; tr.append(td); tb.append(tr); return; }
-    benim.forEach((p) => {
+    if (!benim.length) { const tr = el("tr"); const td = el("td", "muted", "Açık pozisyonun yok."); td.colSpan = 9; tr.append(td); tb.append(tr); return; }
+    benim.forEach(({ p, dd: d, sym }) => {
       const pnl = E.pnl(p, d.fiyat, d.derinlik), yuzde = (pnl / p.teminat) * 100;
       const tr = el("tr");
+      const ct = el("td"), ck = el("div", "bx-dex-coin"); const cb = el("button", "link-btn", sym); cb.type = "button"; cb.addEventListener("click", () => coinSec(sym, true));
+      ck.append(BC.logo(coinBilgi(sym), 22), cb); ct.append(ck); tr.append(ct);
       const yon = el("td"); yon.append(el("span", "bx-rozet " + (p.yon === "long" ? "al" : "sat"), `${p.kaldirac}x ${p.yon === "long" ? "LONG" : "SHORT"}`));
       tr.append(yon, el("td", null, para(p.teminat) + " TL"), el("td", null, para(p.notional) + " TL"), el("td", null, sayi(p.giris)), el("td", null, sayi(d.fiyat)), el("td", "asagi", sayi(E.lik(p, d.derinlik))));
       const kz = el("td", pnl >= 0 ? "yukari" : "asagi"); kz.innerHTML = `<b>${isaretli(pnl)} TL</b><br><small>${isaretli(yuzde)}%</small>`; tr.append(kz);
       const td = el("td", "bx-butonlar");
       const kapat = el("button", "admin-btn reject", "Kapat");
       kapat.type = "button";
-      kapat.addEventListener("click", () => calistir(kapat, () => api("pozKapat", { id: p.id })).then((r) => {
+      kapat.addEventListener("click", () => calistir(kapat, () => api("pozKapat", { coin: sym, id: p.id })).then((r) => {
         if (r && r.sonuc) { toast(`${r.sonuc.pnl >= 0 ? "🤑" : "😬"} ${isaretli(r.sonuc.pnl)} TL (${isaretli(r.sonuc.yuzde)}%)`, 4000); if (r.sonuc.pnl > 0) paylasAc(r.sonuc, false); }
       }));
       const pay = el("button", "admin-btn", "📤");
       pay.type = "button"; pay.title = "Paylaş";
-      pay.addEventListener("click", () => paylasAc(Object.assign({}, p, { pnl, yuzde, cikis: d.fiyat }), true));
+      pay.addEventListener("click", () => paylasAc(Object.assign({}, p, { coin: sym, pnl, yuzde, cikis: d.fiyat }), true));
       td.append(kapat, pay); tr.append(td);
       tb.append(tr);
     });
   }
 
   function arenaCiz() {
+    if (!d) return;
     const a = $("bxArena"); a.textContent = "";
     const hepsi = Object.values(d.poz).map((p) => Object.assign({}, p, { pnl: E.pnl(p, d.fiyat, d.derinlik) })).sort((x, y) => y.pnl / y.teminat - x.pnl / x.teminat);
-    if (!hepsi.length) { a.append(el("p", "muted", "Kimse kaldıraçta değil. İlk sen ol.")); return; }
+    if (!hepsi.length) { a.append(el("p", "muted", `${secili}'da kimse kaldıraçta değil. İlk sen ol.`)); return; }
     hepsi.forEach((p) => {
       const yuzde = (p.pnl / p.teminat) * 100;
       const row = el("div", "bx-satir");
@@ -328,6 +507,7 @@
 
   const AKIS = { al: "🟢 aldı", sat: "🔴 sattı", long: "📈 LONG açtı", short: "📉 SHORT açtı", kapat: "✅ pozisyon kapattı", lik: "💀 LİKİDE OLDU" };
   function akisCiz() {
+    if (!d) return;
     const a = $("bxAkis"); a.textContent = "";
     if (!d.akis.length) { a.append(el("p", "muted", "Henüz işlem yok.")); return; }
     d.akis.slice(0, 15).forEach((k) => {
@@ -341,11 +521,11 @@
 
   function gecmisCiz() {
     const tb = $("bxGecmis"); tb.textContent = "";
-    if (!gecmisListe.length) { const tr = el("tr"); const td = el("td", "muted", "Henüz kapanmış pozisyon yok."); td.colSpan = 7; tr.append(td); tb.append(tr); return; }
+    if (!gecmisListe.length) { const tr = el("tr"); const td = el("td", "muted", "Henüz kapanmış pozisyon yok."); td.colSpan = 8; tr.append(td); tb.append(tr); return; }
     gecmisListe.forEach((g) => {
       const tr = el("tr");
       const yon = el("td"); yon.append(el("span", "bx-rozet " + (g.yon === "long" ? "al" : "sat"), `${g.kaldirac}x ${g.yon === "long" ? "LONG" : "SHORT"}`));
-      tr.append(el("td", null, new Date(g.kapanis).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })), yon, el("td", null, para(g.teminat) + " TL"), el("td", null, sayi(g.giris) + " → " + sayi(g.cikis)));
+      tr.append(el("td", null, new Date(g.kapanis).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })), el("td", null, g.coin || "BERKAY"), yon, el("td", null, para(g.teminat) + " TL"), el("td", null, sayi(g.giris) + " → " + sayi(g.cikis)));
       const kz = el("td", g.pnl >= 0 ? "yukari" : "asagi"); kz.innerHTML = `<b>${isaretli(g.pnl)} TL</b><br><small>${isaretli(g.yuzde)}%</small>`; tr.append(kz);
       tr.append(el("td", null, g.sebep === "likide" ? "💀 Likide" : g.sebep === "yenileme" ? "🔄 Sistem güncellemesi (iade)" : "✅ Kapandı"));
       const td = el("td"); const b = el("button", "admin-btn", "📤 Paylaş"); b.type = "button";
@@ -427,9 +607,10 @@
     for (let x = 0; x <= W; x += 40) { y += (kar ? -1 : 1) * (8 + Math.random() * 14) * (Math.random() < 0.3 ? -1.4 : 1); if (x) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
     ctx.stroke(); ctx.globalAlpha = 1;
     // logo
-    ctx.fillStyle = "#f5b82e"; ctx.beginPath(); ctx.arc(130, 140, 54, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#3a2800"; ctx.font = `800 64px ${DISP}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("B", 130, 144);
-    ctx.textAlign = "left"; ctx.fillStyle = "#fff"; ctx.font = `800 52px ${DISP}`; ctx.fillText("BERKAY", 210, 124);
+    const kc = coinBilgi(g.coin || "BERKAY");
+    ctx.fillStyle = kc.sym === "BERKAY" ? "#f5b82e" : kc.renk || "#5a3fd4"; ctx.beginPath(); ctx.arc(130, 140, 54, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = kc.sym === "BERKAY" ? "#3a2800" : "#fff"; ctx.font = `800 64px ${DISP}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(kc.emoji || kc.sym[0], 130, 144);
+    ctx.textAlign = "left"; ctx.fillStyle = "#fff"; ctx.font = `800 52px ${DISP}`; ctx.fillText(kc.sym, 210, 124);
     ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.font = `700 30px ${BODY}`; ctx.fillText("Berkay Borsası · yaparmi.com", 212, 172);
     // yön rozeti
     const rozet = `${g.kaldirac}x ${g.yon === "long" ? "LONG" : "SHORT"}`;
@@ -464,10 +645,10 @@
   }
   function paylasMetni(g, acik) {
     const kar = g.pnl >= 0;
-    return `${kar ? "🤑" : "💀"} BERKAY ${g.kaldirac}x ${g.yon === "long" ? "LONG" : "SHORT"} ${acik ? "(açık)" : ""}\n` +
+    return `${kar ? "🤑" : "💀"} ${g.coin || "BERKAY"} ${g.kaldirac}x ${g.yon === "long" ? "LONG" : "SHORT"} ${acik ? "(açık)" : ""}\n` +
       `${(g.yuzde >= 0 ? "+" : "") + g.yuzde.toFixed(2)}%  ·  ${(g.pnl >= 0 ? "+" : "") + para(g.pnl)} TL\n` +
       `Giriş ${sayi(g.giris)} → ${acik ? "şimdi" : "çıkış"} ${sayi(g.cikis)}\n` +
-      `Sen de dene: ${location.origin}/borsa`;
+      `Sen de dene: ${location.origin}/borsa${g.coin && g.coin !== "BERKAY" ? "#" + g.coin : ""}`;
   }
   async function paylasAc(g, acik) {
     paylasVeri = { g, acik };
@@ -500,8 +681,10 @@
   // ---------------- Zenginler + bu hafta ----------------
   let tumCuzdanlar = [], haftaGecmis = [];
   function degerHesap(c) {
-    const acik = d ? Object.values(d.poz).filter((p) => p.uid === c.uid).reduce((t, p) => t + Math.max(0, p.teminat + E.pnl(p, d.fiyat, d.derinlik)), 0) : 0;
-    return (c.bkc || 0) * (d ? d.fiyat : 1) + (c.btl || 0) + acik;
+    let t = c.btl || 0;
+    coinler.forEach((k) => { const dd = durumlar[k.sym]; const m = BC.bakiye(c, k.sym); if (m) t += m * (dd ? dd.fiyat : k.sym === "BERKAY" ? 1 : 0); });
+    benimPozlar(c.uid).forEach(({ p, dd }) => { t += Math.max(0, p.teminat + E.pnl(p, dd.fiyat, dd.derinlik)); });
+    return t;
   }
   function zenginCiz() {
     const z = $("bxZengin"); z.textContent = "";
@@ -522,7 +705,7 @@
     const satirlar = [];
     const yap = (ikon, baslik, g, deger, cls) => {
       const r = el("div", "bx-satir");
-      r.append(el("span", null, ikon + " " + baslik), Ekonomi.isim(g.ad, undefined, { unvan: false }), el("span", "muted", `${g.kaldirac}x ${g.yon.toUpperCase()}`), el("span", "bx-sag " + cls, deger));
+      r.append(el("span", null, ikon + " " + baslik), Ekonomi.isim(g.ad, undefined, { unvan: false }), el("span", "muted", `${g.coin || "BERKAY"} ${g.kaldirac}x ${g.yon.toUpperCase()}`), el("span", "bx-sag " + cls, deger));
       satirlar.push(r);
     };
     if (kar) yap("🤑", "En kârlı işlem", kar, "+" + para(kar.pnl, 0) + " TL", "yukari");
@@ -547,10 +730,10 @@
   // Likide olunca kullanıcıya haber ver
   let oncekiPozIdleri = null;
   setInterval(() => {
-    if (!d || !profile) return;
-    const simdi = new Set(Object.values(d.poz).filter((p) => p.uid === profile.uid).map((p) => p.id));
+    if (!profile || !Object.keys(durumlar).length) return;
+    const simdi = new Set(benimPozlar(profile.uid).map((x) => x.p.id));
     if (oncekiPozIdleri) oncekiPozIdleri.forEach((id) => {
-      if (!simdi.has(id)) { const g = gecmisListe.find((x) => x.id === id); if (g && g.sebep === "likide") toast(`💀 ${g.kaldirac}x ${g.yon.toUpperCase()} pozisyonun likide oldu (−${para(g.teminat)} TL)`, 7000); }
+      if (!simdi.has(id)) { const g = gecmisListe.find((x) => x.id === id); if (g && g.sebep === "likide") toast(`💀 ${g.coin || "BERKAY"} ${g.kaldirac}x ${g.yon.toUpperCase()} pozisyonun likide oldu (−${para(g.teminat)} TL)`, 7000); }
     });
     oncekiPozIdleri = simdi;
   }, 2000);

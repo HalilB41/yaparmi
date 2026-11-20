@@ -46,7 +46,32 @@
 
       <!-- ================= BORSA ================= -->
       <section class="adm-panel admin-grid" data-panel="borsa" hidden>
-        <div class="adm-intro wide"><b>📈 Borsa</b> BERKAY'ın tamamı burada: arz, kimde ne kadar var, kim kaldıraçta, kâr/zararlar, market siparişleri ve fiyat kontrolü. <a href="/borsa" target="_blank">Borsayı aç</a></div>
+        <div class="adm-intro wide"><b>📈 Borsa</b> Bütün coinler burada: arz, kimde ne kadar var, kim kaldıraçta, kâr/zararlar, market siparişleri ve fiyat kontrolü. Aşağıdaki özet, grafik, MM, ayarlar, arz ve pozisyonlar <b>seçili coin</b> içindir. <a href="/borsa" target="_blank">Borsayı aç</a></div>
+
+        <div class="panel card admin-section wide bxa-coin-kart">
+          <div class="se-top">
+            <h2>🪙 Coin seç</h2>
+            <span class="muted" id="bxaCoinBilgi"></span>
+          </div>
+          <div class="bxa-coinler" id="bxaCoinler"></div>
+          <details class="bxa-coin-ekle">
+            <summary>➕ Coin ekle / düzenle / kaldır</summary>
+            <div class="tpl-form adm-form">
+              <label>Sembol <input type="text" id="bxaYeniSym" maxlength="10" placeholder="ör. PEPE" style="text-transform:uppercase" /></label>
+              <label>Ad <input type="text" id="bxaYeniAd" maxlength="24" placeholder="ör. Pepe" /></label>
+              <label>Logo (emoji ya da harf) <input type="text" id="bxaYeniEmoji" maxlength="4" placeholder="🐸" /></label>
+              <label>Renk <input type="color" id="bxaYeniRenk" value="#5a3fd4" /></label>
+              <label>Başlangıç fiyatı (TL) <input type="number" id="bxaYeniFiyat" step="any" min="0" placeholder="ör. 1" /></label>
+              <label>Likidite derinliği (TL) <input type="number" id="bxaYeniDerinlik" step="any" min="100" placeholder="10000" /></label>
+              <div class="sayac-butonlar">
+                <button type="button" class="admin-btn publish" id="bxaYeniKaydet">💾 Kaydet</button>
+                <button type="button" class="admin-btn reject" id="bxaYeniSil">🗑️ Listeden kaldır</button>
+              </div>
+            </div>
+            <p class="muted" style="font-size:.8rem">Var olan bir sembolü yazarsan adı/logosu/rengi güncellenir (fiyat ve derinlik sadece yeni coinde kullanılır; sonradan Piyasa ayarlarından değişir). Kaldırılan coin borsada görünmez ama cüzdanlardaki bakiyeler silinmez, aynı sembolle geri eklenirse geri gelir. BERKAY kaldırılamaz.</p>
+            <p class="suggest-status" id="bxaYeniDurum"></p>
+          </details>
+        </div>
 
         <div class="panel card admin-section wide">
           <div class="se-top">
@@ -120,7 +145,7 @@
           <h2>🏦 Arz ve para gönder</h2>
           <div class="tpl-form adm-form">
             <label>Kullanıcı <select id="bxaKisi"><option value="">Seç…</option></select></label>
-            <label>BERKAY (+ gönder / − geri al) <input type="number" id="bxaBkc" step="any" placeholder="ör. 500 ya da -100" /></label>
+            <label><span class="bxa-sym">BERKAY</span> (+ gönder / − geri al) <input type="number" id="bxaBkc" step="any" placeholder="ör. 500 ya da -100" /></label>
             <label>TL (+ gönder / − geri al) <input type="number" id="bxaBtl" step="any" placeholder="ör. 100" /></label>
             <button type="button" class="admin-btn publish" id="bxaGonder">💸 Uygula</button>
           </div>
@@ -134,7 +159,7 @@
         <div class="panel card admin-section wide">
           <h2>👛 Cüzdanlar · kimde ne var</h2>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
-            <thead><tr><th>Kullanıcı</th><th>BERKAY</th><th>Arz payı</th><th>TL</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th><th>Süsler</th></tr></thead>
+            <thead><tr><th>Kullanıcı</th><th class="bxa-sym">BERKAY</th><th>Arz payı</th><th>TL</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th><th>Süsler</th></tr></thead>
             <tbody id="bxaCuzdanlar"><tr><td colspan="8" class="muted">Yükleniyor…</td></tr></tbody>
           </table></div>
         </div>

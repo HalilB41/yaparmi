@@ -458,9 +458,10 @@ service cloud.firestore {
     // Bakiyeleri SADECE sunucu (api/borsa.js, firebase-admin) yazar; firebase-admin
     // bu kurallara takılmaz. Tarayıcıdan hiçbir borsa belgesi yazılamaz.
     match /borsa/{docId} {
-      // "durum" (fiyat, mumlar, açık pozisyonlar) ve "ekonomi" (ödül ayarları, çark dilimleri)
-      // giriş yapan herkese açık; "gizli" (adminin çizdiği rota + MM ayarları) sadece admine.
-      allow read: if ((docId == 'durum' || docId == 'ekonomi') && request.auth != null) || isAdmin();
+      // "durum" / "durum_KURBAN" vb. (her coinin fiyatı, mumları, açık pozisyonları), "coinler" (coin listesi)
+      // ve "ekonomi" (ödül ayarları, çark dilimleri) giriş yapan herkese açık;
+      // "gizli" / "gizli_KURBAN" vb. (adminin çizdiği rota + MM ayarları) sadece admine.
+      allow read: if ((docId in ['durum', 'ekonomi', 'coinler'] || docId.matches('durum_[A-Z0-9]+')) && request.auth != null) || isAdmin();
       allow write: if false;
     }
     match /borsa_grafik/{gun} {

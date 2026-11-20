@@ -26,11 +26,13 @@
     if (p >= 1e12) return p.toExponential(2).replace(".", ",");
     if (p >= 1e9) return (p / 1e9).toLocaleString("tr-TR", { maximumFractionDigits: 2 }) + "Mr";
     if (p >= 1e6) return (p / 1e6).toLocaleString("tr-TR", { maximumFractionDigits: 2 }) + "M";
-    if (p >= 1000) return p.toLocaleString("tr-TR", { maximumFractionDigits: 0 });
-    if (p >= 10) return p.toFixed(2);
-    if (p >= 1) return p.toFixed(3);
+    // Türkçe biçim: binlik ayıracı nokta, ondalık virgül (1.183 = bin yüz seksen üç, 989,72)
+    const tr = (x, k) => x.toLocaleString("tr-TR", { minimumFractionDigits: k, maximumFractionDigits: k });
+    if (p >= 1000) return tr(p, 0);
+    if (p >= 10) return tr(p, 2);
+    if (p >= 1) return tr(p, 3);
     if (p > 0 && p < 1e-4) return p.toExponential(2).replace(".", ",");
-    return p.toPrecision(4);
+    return Number(p.toPrecision(4)).toLocaleString("tr-TR", { maximumSignificantDigits: 4 });
   };
   const saatYaz = (t, uzun) => {
     const d = new Date(t);
@@ -455,4 +457,41 @@
   };
   window.BorsaEgri = E;
   window.BorsaGun = (t) => new Date(t + 3 * 3600000).toISOString().slice(0, 10);
+
+  // ---------------- Coin listesi (sunucudaki VARSAYILAN_COINLER ile aynı) ----------------
+  const VARSAYILAN = [
+    { sym: "BERKAY", ad: "BerkayCoin", emoji: "B", renk: "#f5b82e", sira: 0 },
+    { sym: "KURBAN", ad: "Kurban", emoji: "🐑", renk: "#d9480f", sira: 1 },
+    { sym: "BURGER", ad: "Burger", emoji: "🍔", renk: "#f59f00", sira: 2 },
+    { sym: "ALIHAN", ad: "Alihan", emoji: "☕", renk: "#8d5524", sira: 3 },
+    { sym: "HALIL", ad: "Halil", emoji: "👑", renk: "#7048e8", sira: 4 },
+    { sym: "BTC", ad: "Bitcoin", emoji: "₿", renk: "#f7931a", sira: 5 },
+    { sym: "ETH", ad: "Ethereum", emoji: "Ξ", renk: "#627eea", sira: 6 },
+    { sym: "SOL", ad: "Solana", emoji: "◎", renk: "#14b88a", sira: 7 },
+  ];
+  const sade = (x) => String(x || "").toLocaleLowerCase("tr").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ö/g, "o").replace(/ç/g, "c").replace(/i̇/g, "i");
+  window.BorsaCoin = {
+    ANA: "BERKAY",
+    varsayilan: VARSAYILAN,
+    // borsa/coinler belgesinin verisiyle birleştir
+    liste(veri) {
+      const m = new Map(VARSAYILAN.map((c) => [c.sym, Object.assign({}, c)]));
+      ((veri && veri.liste) || []).forEach((c) => { if (c && c.sym) m.set(c.sym, Object.assign(m.get(c.sym) || {}, c)); });
+      return [...m.values()].filter((c) => !c.silindi).sort((a, b) => (a.sira ?? 99) - (b.sira ?? 99));
+    },
+    durumId: (sym) => (sym === "BERKAY" ? "durum" : "durum_" + sym),
+    grafikId: (sym, gun) => (sym === "BERKAY" ? gun : sym + "_" + gun),
+    bakiye: (c, sym) => (!c ? 0 : sym === "BERKAY" ? c.bkc || 0 : (c.coin && c.coin[sym]) || 0),
+    eslesir: (c, q) => { const s = sade(q).trim(); return !s || sade(c.sym).includes(s) || sade(c.ad).includes(s); },
+    // Yuvarlak coin logosu
+    logo(c, boy) {
+      const e = document.createElement("span");
+      e.className = "bx-coin-logo" + (c.sym === "BERKAY" ? "" : " diger");
+      if (boy) { e.style.width = e.style.height = boy + "px"; e.style.fontSize = Math.round(boy * 0.5) + "px"; }
+      if (c.sym !== "BERKAY") e.style.setProperty("--coin", c.renk || "#5a3fd4");
+      e.textContent = c.emoji || c.sym.slice(0, 1);
+      e.setAttribute("aria-hidden", "true");
+      return e;
+    },
+  };
 })();

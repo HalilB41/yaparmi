@@ -11,19 +11,22 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   if (!$("bxaOzet")) return;
-  const E = window.BorsaEgri, api = window.BorsaApi, sayi = window.BorsaSayi;
+  const E = window.BorsaEgri, api = window.BorsaApi, sayi = window.BorsaSayi, BC = window.BorsaCoin;
   const para = (x, k = 2) => (Number.isFinite(x) ? x.toLocaleString("tr-TR", { minimumFractionDigits: k, maximumFractionDigits: k }) : "—");
   const isaretli = (x, k = 2) => (x >= 0 ? "+" : "") + para(x, k);
   function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   const tarih = (ms) => (ms ? new Date(ms).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "-");
 
   let basladi = false, d = null, cuzdanlar = [], grafik = null, eskiMumlar = new Map(), cizilen = null, cizimAcik = false, gizli = null;
+  let coinler = BC.liste(null), secili = "BERKAY", kapatDurum = null, kapatGizli = null;
+  // Bu işlemler seçili coin için yapılır (sunucuya coin gönderilir)
+  const COINLI = new Set(["adminAyar", "adminGrafikSifirla", "adminRota", "adminFiyat", "adminMM", "adminTransfer", "adminArz", "adminPozKapat"]);
 
-  window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin" && !basladi) { basladi = true; baslat(); } });
 
   async function islem(btn, durumEl, ad, veri) {
     if (btn) btn.disabled = true;
     durumEl.textContent = "İşleniyor…";
+    if (COINLI.has(ad)) veri = Object.assign({ coin: secili }, veri || {});
     try { const r = await api(ad, veri); durumEl.textContent = "✅ " + (r.mesaj || "Tamam"); return r; }
     catch (err) { durumEl.textContent = "⚠️ " + err.message; return null; }
     finally { if (btn) btn.disabled = false; }
@@ -31,22 +34,14 @@
 
   function baslat() {
     grafik = new window.BorsaGrafik($("bxaGrafik"));
-    api("tick").catch((err) => { $("bxaGenelDurum").textContent = "⚠️ Sunucu: " + err.message; });
-    setInterval(() => { if (document.visibilityState === "visible" && !$("bxaOzet").closest(".adm-panel").hidden) api("tick").catch(() => {}); }, 10000);
+    api("tickHepsi").catch((err) => { $("bxaGenelDurum").textContent = "⚠️ Sunucu: " + err.message; });
+    setInterval(() => { if (document.visibilityState === "visible" && !$("bxaOzet").closest(".adm-panel").hidden) api("tickHepsi").catch(() => {}); }, 10000);
 
-    db.collection("borsa").doc("durum").onSnapshot((s) => {
-      if (!s.exists) { $("bxaOzet").innerHTML = '<p class="muted">Borsa henüz başlamadı. Biri borsaya girince (ya da bu sayfa sunucuya ulaşınca) kurulur.</p>'; return; }
-      d = s.data(); d.poz = d.poz || {}; d.son = d.son || [];
-      ozetCiz(); pozlarCiz(); cuzdanlarCiz(); grafikCiz(); ayarDoldur();
-    }, (err) => { $("bxaGenelDurum").textContent = "⚠️ " + err.message; });
-
-    db.collection("borsa").doc("gizli").onSnapshot((s) => {
-      gizli = s.exists ? s.data() : null;
-      const r = gizli && gizli.rota;
-      grafik.rota(r ? r.noktalar : null);
-      mmCiz();
-      $("bxaRotaBilgi").textContent = r ? `🟡 Aktif rota: ${sayi(r.noktalar[0].p)} → ${sayi(r.noktalar[r.noktalar.length - 1].p)} · bitiş ${tarih(r.noktalar[r.noktalar.length - 1].t)}` : "Aktif rota yok, fiyat serbest.";
-    }, () => {});
+    db.collection("borsa").doc("coinler").onSnapshot((s) => {
+      coinler = BC.liste(s.exists ? s.data() : null);
+      if (!coinler.some((c) => c.sym === secili)) coinSec("BERKAY"); else coinlerCiz();
+    }, () => coinlerCiz());
+    coinSec("BERKAY");
 
     db.collection("borsa_cuzdan").onSnapshot((s) => {
       cuzdanlar = s.docs.map((x) => x.data());
@@ -57,26 +52,81 @@
     db.collection("borsa_market").onSnapshot((s) => urunlerCiz(s.docs.map((x) => Object.assign({ id: x.id }, x.data())).sort((a, b) => (a.sira || 99) - (b.sira || 99))), () => {});
     db.collection("borsa_log").orderBy("ms", "desc").limit(300).onSnapshot((s) => logCiz(s.docs.map((x) => x.data())), () => {});
 
-    for (let i = 0; i < 4; i++) {
-      const g = window.BorsaGun(Date.now() - i * 86400000);
-      db.collection("borsa_grafik").doc(g).get().then((s) => { if (s.exists) { (s.data().m || []).forEach((m) => eskiMumlar.set(m.t, m)); grafikCiz(); } }).catch(() => {});
-    }
     kisilerDoldur();
   }
+
+  // ---------------- Coin seçimi ----------------
+  function coinlerCiz() {
+    const k = $("bxaCoinler"); k.textContent = "";
+    coinler.forEach((c) => {
+      const b = el("button", "bxa-coin" + (c.sym === secili ? " on" : "")); b.type = "button";
+      b.append(BC.logo(c, 26), el("b", null, c.sym));
+      b.title = c.ad;
+      b.addEventListener("click", () => coinSec(c.sym));
+      k.append(b);
+    });
+    const c = coinler.find((x) => x.sym === secili);
+    $("bxaCoinBilgi").textContent = c ? `Seçili: ${c.ad} (${c.sym})` : "";
+  }
+  function coinSec(sym) {
+    secili = sym;
+    if (kapatDurum) kapatDurum();
+    if (kapatGizli) kapatGizli();
+    d = null; gizli = null; eskiMumlar = new Map(); ayarDolu = false; mmDolu = false;
+    // MM formunu bu coinin ayarları gelene kadar varsayılana çek
+    $("bxaMMAcik").checked = false; $("bxaMMMod").value = "serbest"; $("bxaMMDakika").value = ""; $("bxaMMHedef").value = ""; $("bxaMMBant").value = 15; $("bxaMMSure").value = 60;
+    mmModGoster(); $("bxaMMSonuc").textContent = ""; $("bxaFiyatDurum").textContent = ""; $("bxaAyarDurum").textContent = "";
+    document.querySelectorAll(".bxa-sym").forEach((x) => { x.textContent = sym; });
+    coinlerCiz();
+    $("bxaOzet").innerHTML = '<p class="muted">Yükleniyor…</p>';
+    kapatDurum = db.collection("borsa").doc(BC.durumId(sym)).onSnapshot((s) => {
+      if (!s.exists) { $("bxaOzet").innerHTML = `<p class="muted">${sym} henüz başlamadı. Bu sayfa sunucuya ulaşınca birkaç saniyede kurulur.</p>`; return; }
+      d = s.data(); d.poz = d.poz || {}; d.son = d.son || [];
+      ozetCiz(); pozlarCiz(); cuzdanlarCiz(); grafikCiz(); ayarDoldur(); kisilerDoldur();
+    }, (err) => { $("bxaGenelDurum").textContent = "⚠️ " + err.message + " (Firestore kurallarını güncelledin mi?)"; });
+    kapatGizli = db.collection("borsa").doc(sym === "BERKAY" ? "gizli" : "gizli_" + sym).onSnapshot((s) => {
+      gizli = s.exists ? s.data() : null;
+      const r = gizli && gizli.rota;
+      grafik.rota(r ? r.noktalar : null);
+      mmCiz();
+      $("bxaRotaBilgi").textContent = r ? `🟡 Aktif rota: ${sayi(r.noktalar[0].p)} → ${sayi(r.noktalar[r.noktalar.length - 1].p)} · bitiş ${tarih(r.noktalar[r.noktalar.length - 1].t)}` : "Aktif rota yok, fiyat serbest.";
+    }, () => {});
+    const depo = eskiMumlar;
+    for (let i = 0; i < 4; i++) {
+      const g = window.BorsaGun(Date.now() - i * 86400000);
+      db.collection("borsa_grafik").doc(BC.grafikId(sym, g)).get().then((s) => { if (s.exists && depo === eskiMumlar) { (s.data().m || []).forEach((m) => eskiMumlar.set(m.t, m)); grafikCiz(); } }).catch(() => {});
+    }
+    if (!gizli) mmCiz();
+  }
+  function yeniCoinGonder(sil) {
+    const sym = $("bxaYeniSym").value.trim().toUpperCase();
+    if (!sym) { $("bxaYeniDurum").textContent = "Sembol yaz."; return; }
+    if (sil && !confirm(`${sym} listeden kaldırılsın mı? (Bakiyeler silinmez)`)) return;
+    islem(sil ? $("bxaYeniSil") : $("bxaYeniKaydet"), $("bxaYeniDurum"), "adminCoin", sil ? { sym, sil: true } : {
+      sym, ad: $("bxaYeniAd").value, emoji: $("bxaYeniEmoji").value, renk: $("bxaYeniRenk").value,
+      fiyat: Number($("bxaYeniFiyat").value) || 0, derinlik: Number($("bxaYeniDerinlik").value) || 0,
+    }).then((r) => { if (r && !sil) setTimeout(() => api("tickHepsi").catch(() => {}), 500); });
+  }
+  $("bxaYeniKaydet").addEventListener("click", () => yeniCoinGonder(false));
+  $("bxaYeniSil").addEventListener("click", () => yeniCoinGonder(true));
+  $("bxaYeniSym").addEventListener("change", () => {
+    const c = coinler.find((x) => x.sym === $("bxaYeniSym").value.trim().toUpperCase());
+    if (c) { $("bxaYeniAd").value = c.ad || ""; $("bxaYeniEmoji").value = c.emoji || ""; if (c.renk) $("bxaYeniRenk").value = c.renk; }
+  });
 
   // ---------------- Özet ----------------
   function acikKZ() { return Object.values(d.poz).reduce((t, p) => t + E.pnl(p, d.fiyat, d.derinlik), 0); }
   function ozetCiz() {
     if (!d) return;
-    const kullanicilarda = cuzdanlar.reduce((t, c) => t + (c.bkc || 0), 0);
+    const kullanicilarda = cuzdanlar.reduce((t, c) => t + BC.bakiye(c, secili), 0);
     const btlToplam = cuzdanlar.reduce((t, c) => t + (c.btl || 0), 0);
     const poz = Object.values(d.poz);
     const kz = acikKZ();
     const kutular = [
       ["Fiyat", sayi(d.fiyat) + " TL"],
-      ["Toplam arz", para(d.toplamArz, 0) + " BERKAY"],
-      ["Kasada (admin)", para(d.kasaBKC, 2) + " BERKAY"],
-      ["Kullanıcılarda", para(kullanicilarda, 2) + " BERKAY"],
+      ["Toplam arz", para(d.toplamArz, 0) + " " + secili],
+      ["Kasada (admin)", para(d.kasaBKC, 2) + " " + secili],
+      ["Kullanıcılarda", para(kullanicilarda, 2) + " " + secili],
       ["Arz kontrolü", Math.abs(kullanicilarda + d.kasaBKC - d.toplamArz) < 0.01 ? "✅ Tutuyor" : "⚠️ " + para(kullanicilarda + d.kasaBKC - d.toplamArz)],
       ["Kullanıcılardaki TL", para(btlToplam) + " TL"],
       ["Cüzdan sayısı", String(cuzdanlar.length)],
@@ -126,7 +176,7 @@
   });
   $("bxaSifirlaBtn").addEventListener("click", async () => {
     const f = Number($("bxaSifirlaFiyat").value) || 1;
-    if (!confirm(`Grafiğin TÜM geçmişi silinecek ve fiyat ${f} TL olacak.\n\n• BERKAY/TL bakiyeleri aynen kalır.\n• Açık kaldıraç pozisyonları kalır; girişleri aynı oranda ölçeklenir, herkesin K/Z'si değişmez.\n• Çizili rota silinir.\n\nGeri alınamaz. Emin misin?`)) return;
+    if (!confirm(`${secili} grafiğinin TÜM geçmişi silinecek ve fiyat ${f} TL olacak.\n\n• Coin/TL bakiyeleri aynen kalır.\n• Açık kaldıraç pozisyonları kalır; girişleri aynı oranda ölçeklenir, herkesin K/Z'si değişmez.\n• Çizili rota silinir.\n\nGeri alınamaz. Emin misin?`)) return;
     const r = await islem($("bxaSifirlaBtn"), $("bxaFiyatDurum"), "adminGrafikSifirla", { fiyat: f });
     if (r) { eskiMumlar.clear(); grafikCiz(); mmDolu = false; }
   });
@@ -134,7 +184,7 @@
   $("bxaFiyatBtn").addEventListener("click", () => {
     const f = Number($("bxaFiyat").value);
     if (!(f > 0)) { $("bxaFiyatDurum").textContent = "Fiyat yaz."; return; }
-    if (!confirm(`Fiyat anında ${f} olacak. Kaldıraçta olanlar likide olabilir. Emin misin?`)) return;
+    if (!confirm(`${secili} fiyatı anında ${f} olacak. Kaldıraçta olanlar likide olabilir. Emin misin?`)) return;
     islem($("bxaFiyatBtn"), $("bxaFiyatDurum"), "adminFiyat", { fiyat: f });
   });
 
@@ -207,7 +257,7 @@
     sel.textContent = ""; sel.append(new Option("Seç…", ""));
     [...harita.entries()].sort((a, b) => a[1].localeCompare(b[1], "tr")).forEach(([uid, ad]) => {
       const c = cuzdanlar.find((x) => x.uid === uid);
-      sel.append(new Option(c ? `${ad} (${para(c.bkc, 0)} BERKAY · ${para(c.btl, 0)} TL)` : `${ad} (cüzdan yok)`, uid));
+      sel.append(new Option(c ? `${ad} (${para(BC.bakiye(c, secili), secili === "BERKAY" ? 0 : 2)} ${secili} · ${para(c.btl, 0)} TL)` : `${ad} (cüzdan yok)`, uid));
     });
     sel.value = secili;
   }
@@ -220,7 +270,7 @@
   $("bxaArzBtn").addEventListener("click", () => {
     const deg = Number($("bxaArz").value);
     if (!deg) { $("bxaParaDurum").textContent = "Değişim yaz."; return; }
-    if (!confirm(deg > 0 ? `${deg} BERKAY basılıp kasaya eklenecek.` : `${-deg} BERKAY kasadan yakılacak.`)) return;
+    if (!confirm(deg > 0 ? `${deg} ${secili} basılıp kasaya eklenecek.` : `${-deg} ${secili} kasadan yakılacak.`)) return;
     islem($("bxaArzBtn"), $("bxaParaDurum"), "adminArz", { degisim: deg }).then((r) => { if (r) $("bxaArz").value = ""; });
   });
 
@@ -233,12 +283,13 @@
       const poz = Object.values(d.poz).filter((p) => p.uid === c.uid);
       const teminat = poz.reduce((t, p) => t + p.teminat, 0);
       const kz = poz.reduce((t, p) => t + E.pnl(p, d.fiyat, d.derinlik), 0);
-      const toplam = c.bkc * d.fiyat + c.btl + poz.reduce((t, p) => t + Math.max(0, p.teminat + E.pnl(p, d.fiyat, d.derinlik)), 0);
+      const toplam = BC.bakiye(c, secili) * d.fiyat + c.btl + poz.reduce((t, p) => t + Math.max(0, p.teminat + E.pnl(p, d.fiyat, d.derinlik)), 0);
       return { c, poz, teminat, kz, toplam };
     }).sort((a, b) => b.toplam - a.toplam);
     satirlar.forEach(({ c, poz, teminat, kz, toplam }) => {
       const tr = el("tr");
-      tr.append(el("td", null, c.ad), el("td", null, para(c.bkc, 4)), el("td", null, ((c.bkc / d.toplamArz) * 100).toFixed(3) + "%"), el("td", null, para(c.btl)),
+      const m = BC.bakiye(c, secili);
+      tr.append(el("td", null, c.ad), el("td", null, para(m, 4)), el("td", null, ((m / d.toplamArz) * 100).toFixed(3) + "%"), el("td", null, para(c.btl)),
         el("td", null, poz.length ? `${poz.length} poz · ${para(teminat)} TL` : "—"),
         el("td", kz >= 0 ? "yukari" : "asagi", poz.length ? isaretli(kz) : "—"),
         el("td", (c.gerceklesen || 0) >= 0 ? "yukari" : "asagi", isaretli(c.gerceklesen || 0)),
@@ -354,4 +405,7 @@
     });
   }
   setInterval(() => { if (d) { pozlarCiz(); } }, 15000);
+  // ilk çizim (coinler gelmeden)
+  coinlerCiz();
+  window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin" && !basladi) { basladi = true; baslat(); } });
 })();

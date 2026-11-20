@@ -26,15 +26,30 @@
   });
 
   function hedefAd() { return istenen || (profile && profile.kullaniciAdi); }
+  // Bütün coinlerin durumu (değer hesabı için): sym → durum
+  const BC = window.BorsaCoin;
+  let coinler = BC.liste(null);
+  const durumlar = {}, dinlenen = {};
+  function pozlari(uid) {
+    const l = [];
+    Object.entries(durumlar).forEach(([sym, dd]) => Object.values(dd.poz || {}).forEach((p) => { if (p.uid === uid) l.push({ p, dd, sym }); }));
+    return l;
+  }
   function deger(c) {
     if (!c) return 0;
-    const fiyat = d ? d.fiyat : 1;
-    const acik = d ? Object.values(d.poz || {}).filter((p) => p.uid === c.uid).reduce((t, p) => t + Math.max(0, p.teminat + E.pnl(p, d.fiyat, d.derinlik)), 0) : 0;
-    return (c.bkc || 0) * fiyat + (c.btl || 0) + acik;
+    let t = c.btl || 0;
+    coinler.forEach((k) => { const m = BC.bakiye(c, k.sym); const dd = durumlar[k.sym]; if (m) t += m * (dd ? dd.fiyat : k.sym === "BERKAY" ? 1 : 0); });
+    pozlari(c.uid).forEach(({ p, dd }) => { t += Math.max(0, p.teminat + E.pnl(p, dd.fiyat, dd.derinlik)); });
+    return t;
   }
 
   function dinle() {
-    db.collection("borsa").doc("durum").onSnapshot((s) => { d = s.exists ? s.data() : null; ciz(); }, () => {});
+    const coinDinle = () => coinler.forEach((k) => {
+      if (dinlenen[k.sym]) return;
+      dinlenen[k.sym] = true;
+      db.collection("borsa").doc(BC.durumId(k.sym)).onSnapshot((s) => { if (s.exists) durumlar[k.sym] = s.data(); if (k.sym === "BERKAY") d = durumlar.BERKAY || null; ciz(); }, () => {});
+    });
+    db.collection("borsa").doc("coinler").onSnapshot((s) => { coinler = BC.liste(s.exists ? s.data() : null); coinDinle(); }, () => coinDinle());
     Ekonomi.cuzdanlar((l) => {
       cuzdanlar = l;
       const c = l.find((x) => x.ad === hedefAd());
@@ -81,8 +96,9 @@
     // Cüzdan
     const toplam = deger(c);
     const oz = $("pfCuzdan"); oz.textContent = "";
-    [["BERKAY", para(c.bkc || 0)], ["TL", para(c.btl || 0)], ["Toplam değer", para(toplam) + " TL"], ["Borsada gerçekleşen K/Z", isaretli(c.gerceklesen || 0) + " TL"]]
-      .forEach(([a, b]) => { const x = el("div"); x.append(el("span", null, a), el("b", null, b)); oz.append(x); });
+    const kalemler = [["BERKAY", para(c.bkc || 0)], ["TL", para(c.btl || 0)], ["Toplam değer", para(toplam) + " TL"], ["Borsada gerçekleşen K/Z", isaretli(c.gerceklesen || 0) + " TL"]];
+    coinler.forEach((k) => { const m = BC.bakiye(c, k.sym); if (k.sym !== "BERKAY" && m > 1e-9) kalemler.splice(kalemler.length - 2, 0, [k.sym, para(m, m < 10 ? 4 : 2)]); });
+    kalemler.forEach(([a, b]) => { const x = el("div"); x.append(el("span", null, a), el("b", null, b)); oz.append(x); });
 
     // Rekorlar
     const rek = c.rekorlar || {};
@@ -95,11 +111,11 @@
     const kazanma = kapali.length ? kapali.filter((g) => g.pnl > 0).length / kapali.length : 0;
     const borsa = [];
     borsa.push(satir("📊 Kapanan işlem", `${kapali.length} · %${(kazanma * 100).toFixed(0)} kârlı`));
-    if (enIyi) borsa.push(satir(`🤑 En iyi: ${enIyi.kaldirac}x ${enIyi.yon.toUpperCase()}`, `${isaretli(enIyi.pnl)} TL (${isaretli(enIyi.yuzde, 0)}%)`, "yukari"));
-    if (enKotu) borsa.push(satir(`💀 En büyük likidasyon: ${enKotu.kaldirac}x ${enKotu.yon.toUpperCase()}`, `−${para(enKotu.teminat)} TL`, "asagi"));
-    if (d) Object.values(d.poz || {}).filter((p) => p.uid === c.uid).forEach((p) => {
+    if (enIyi) borsa.push(satir(`🤑 En iyi: ${enIyi.coin || "BERKAY"} ${enIyi.kaldirac}x ${enIyi.yon.toUpperCase()}`, `${isaretli(enIyi.pnl)} TL (${isaretli(enIyi.yuzde, 0)}%)`, "yukari"));
+    if (enKotu) borsa.push(satir(`💀 En büyük likidasyon: ${enKotu.coin || "BERKAY"} ${enKotu.kaldirac}x ${enKotu.yon.toUpperCase()}`, `−${para(enKotu.teminat)} TL`, "asagi"));
+    pozlari(c.uid).forEach(({ p, dd: d, sym }) => {
       const pnl = E.pnl(p, d.fiyat, d.derinlik);
-      borsa.push(satir(`⚡ Açık: ${p.kaldirac}x ${p.yon.toUpperCase()}`, `${isaretli(pnl)} TL (${isaretli((pnl / p.teminat) * 100, 0)}%)`, pnl >= 0 ? "yukari" : "asagi"));
+      borsa.push(satir(`⚡ Açık: ${sym} ${p.kaldirac}x ${p.yon.toUpperCase()}`, `${isaretli(pnl)} TL (${isaretli((pnl / p.teminat) * 100, 0)}%)`, pnl >= 0 ? "yukari" : "asagi"));
     });
     kutu("pfBorsa", kapali.length || borsa.length > 1 ? borsa : []);
 

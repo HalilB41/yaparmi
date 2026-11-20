@@ -73,6 +73,38 @@ const MAX_KALDIRAC = 20;
 const MAX_POZ_ORAN = 0.5; // tek pozisyon en fazla derinliğin yarısı kadar büyüklükte (fiyatı en fazla ~%65 iter)
 const AKIS_SAY = 25;
 
+// ---------------- Coinler ----------------
+// BERKAY sitenin ana parası (ödüller, market, çark hep BERKAY). Diğerleri aynı mantıkla çalışan
+// ayrı piyasalar: her birinin kendi fiyatı, grafiği, arzı, kaldıraç pozisyonları ve MM'si var.
+// Admin yenisini ekleyebilir (borsa/coinler belgesi). Cüzdanda BERKAY = c.bkc, diğerleri = c.coin[SYM].
+const VARSAYILAN_COINLER = [
+  { sym: "BERKAY", ad: "BerkayCoin", emoji: "B", renk: "#f5b82e", fiyat: 1, derinlik: 10_000, sira: 0 },
+  { sym: "KURBAN", ad: "Kurban", emoji: "🐑", renk: "#d9480f", fiyat: 0.5, derinlik: 10_000, sira: 1 },
+  { sym: "BURGER", ad: "Burger", emoji: "🍔", renk: "#f59f00", fiyat: 2, derinlik: 10_000, sira: 2 },
+  { sym: "ALIHAN", ad: "Alihan", emoji: "☕", renk: "#8d5524", fiyat: 1, derinlik: 10_000, sira: 3 },
+  { sym: "HALIL", ad: "Halil", emoji: "👑", renk: "#7048e8", fiyat: 3, derinlik: 10_000, sira: 4 },
+  { sym: "BTC", ad: "Bitcoin", emoji: "₿", renk: "#f7931a", fiyat: 1000, derinlik: 200_000, sira: 5 },
+  { sym: "ETH", ad: "Ethereum", emoji: "Ξ", renk: "#627eea", fiyat: 100, derinlik: 100_000, sira: 6 },
+  { sym: "SOL", ad: "Solana", emoji: "◎", renk: "#14b88a", fiyat: 10, derinlik: 50_000, sira: 7 },
+];
+const ANA = "BERKAY";
+function coinListesi(snap) {
+  const kayitli = snap && snap.exists && Array.isArray(snap.data().liste) ? snap.data().liste : [];
+  const m = new Map(VARSAYILAN_COINLER.map((c) => [c.sym, { ...c }]));
+  for (const c of kayitli) if (c && c.sym) m.set(c.sym, Object.assign(m.get(c.sym) || {}, c));
+  return [...m.values()].filter((c) => !c.silindi).sort((a, b) => (a.sira ?? 99) - (b.sira ?? 99));
+}
+function symTemiz(x) { return String(x || ANA).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10) || ANA; }
+const durumId = (sym) => (sym === ANA ? "durum" : "durum_" + sym);
+const gizliId = (sym) => (sym === ANA ? "gizli" : "gizli_" + sym);
+const grafikId = (sym, gun) => (sym === ANA ? gun : sym + "_" + gun);
+// Cüzdandaki coin bakiyesi
+function bakiye(c, sym) { return sym === ANA ? c.bkc || 0 : (c.coin && c.coin[sym]) || 0; }
+function bakiyeYaz(c, sym, v) {
+  if (sym === ANA) c.bkc = r6(v);
+  else { c.coin = Object.assign({}, c.coin || {}); c.coin[sym] = r6(v); if (c.coin[sym] <= 1e-9) delete c.coin[sym]; }
+}
+
 class Hata extends Error {
   constructor(mesaj, kod = 400) { super(mesaj); this.kod = kod; }
 }
@@ -129,17 +161,20 @@ function likFiyati(poz, D) {
 }
 
 // ---------------- Durum ----------------
-function yeniDurum(now) {
+function yeniDurum(now, def) {
+  const f = def && def.fiyat > 0 ? def.fiyat : BASLANGIC_FIYAT;
   return {
-    fiyat: BASLANGIC_FIYAT,
-    toplamArz: BASLANGIC_ARZ,
-    kasaBKC: BASLANGIC_ARZ,
-    derinlik: 10_000,
+    sym: def ? def.sym : ANA,
+    fiyat: f,
+    toplamArz: def && def.arz > 0 ? def.arz : BASLANGIC_ARZ,
+    kasaBKC: def && def.arz > 0 ? def.arz : BASLANGIC_ARZ,
+    derinlik: def && def.derinlik > 0 ? def.derinlik : 10_000,
     oynaklik: 0.003,
     maxKaldirac: MAX_KALDIRAC,
     acik: true,
     sonTick: now,
-    son: [{ t: Math.floor(now / MUM_MS) * MUM_MS, o: BASLANGIC_FIYAT, h: BASLANGIC_FIYAT, l: BASLANGIC_FIYAT, c: BASLANGIC_FIYAT, v: 0 }],
+    son: [{ t: Math.floor(now / MUM_MS) * MUM_MS, o: f, h: f, l: f, c: f, v: 0 }],
+    saat: [],
     poz: {},
     akis: [],
     rotaVar: false,
@@ -212,6 +247,13 @@ function mumYaz(d, t, p, hacim, tasanlar) {
     son.push({ t: kova, o: r6(o), h: r6(Math.max(o, p)), l: r6(Math.min(o, p)), c: r6(p), v: r2(hacim) });
   }
   if (son.length > SON_MUM) tasanlar.push(...son.splice(0, son.length - SON_MUM));
+  // Saatlik özet (son 25 saat): coin listesindeki 24s değişim / hacim için
+  const saat = (d.saat ||= []);
+  const sk = Math.floor(t / 3600_000) * 3600_000;
+  const ss = saat[saat.length - 1];
+  if (ss && ss.t === sk) { ss.c = r6(p); ss.h = r6(Math.max(ss.h, p)); ss.l = r6(Math.min(ss.l, p)); ss.v = r2((ss.v || 0) + hacim); }
+  else if (!ss || sk > ss.t) { const o = ss ? ss.c : p; saat.push({ t: sk, o: r6(o), h: r6(Math.max(o, p)), l: r6(Math.min(o, p)), c: r6(p), v: r2(hacim) }); }
+  if (saat.length > 25) saat.splice(0, saat.length - 25);
 }
 
 function akisEkle(d, kayit) {
@@ -270,7 +312,7 @@ function pozKapatIc(d, poz, t, sebep, kapananlar) {
   delete d.poz[poz.id];
   akisEkle(d, { t, ad: poz.ad, tur: sebep === "likide" ? "lik" : "kapat", yon: poz.yon, x: poz.kaldirac, m: r2(poz.notional), f: r6(d.fiyat) });
   const kayit = {
-    id: poz.id, uid: poz.uid, ad: poz.ad, yon: poz.yon, kaldirac: poz.kaldirac, teminat: r2(poz.teminat),
+    id: poz.id, uid: poz.uid, coin: d.sym || ANA, ad: poz.ad, yon: poz.yon, kaldirac: poz.kaldirac, teminat: r2(poz.teminat),
     notional: r2(poz.notional), boyut: r6(poz.boyut), giris: r6(poz.giris), cikis: r6(cikis),
     pnl: r2(gercekPnl), yuzde: r2((gercekPnl / poz.teminat) * 100), iade: r2(iade),
     acilis: poz.acilis, kapanis: t, sebep,
@@ -350,15 +392,16 @@ function ilerlet(d, gizli, now, kapananlar) {
 
 // ---------------- İşlem çatısı ----------------
 // Her işlem bir Firestore transaction içinde: önce okumalar, sonra hesap, sonra yazmalar.
-async function islem(db, now, ekOkumalar, hesapla) {
-  const durumRef = db.collection("borsa").doc("durum");
-  const gizliRef = db.collection("borsa").doc("gizli");
+async function islem(db, now, ekOkumalar, hesapla, sym = ANA, def = null) {
+  const durumRef = db.collection("borsa").doc(durumId(sym));
+  const gizliRef = db.collection("borsa").doc(gizliId(sym));
   return db.runTransaction(async (tx) => {
     const [dSnap, gSnap] = await Promise.all([tx.get(durumRef), tx.get(gizliRef)]);
     const ek = {};
     for (const [ad, ref] of Object.entries(ekOkumalar || {})) ek[ad] = await tx.get(ref);
     const yeni = !dSnap.exists;
-    const d = yeni ? yeniDurum(now) : dSnap.data();
+    const d = yeni ? yeniDurum(now, def || VARSAYILAN_COINLER.find((c) => c.sym === sym)) : dSnap.data();
+    d.sym = sym;
     d.poz = d.poz || {};
     d.akis = d.akis || [];
     d.son = d.son || [];
@@ -372,28 +415,29 @@ async function islem(db, now, ekOkumalar, hesapla) {
     // yazmalar
     tx.set(durumRef, d);
     if (k.gizliDegisti || !gSnap.exists) tx.set(gizliRef, { rota: gizli.rota || null, mm: gizli.mm || null });
-    if (yeni) for (const u of BASLANGIC_URUNLER) tx.set(db.collection("borsa_market").doc(u.id), { ...u, olusturma: now });
-    if (!d.dijitalTohum) { d.dijitalTohum = true; for (const u of DIJITAL_URUNLER) tx.set(db.collection("borsa_market").doc(u.id), { ...u, olusturma: now }, { merge: true }); }
+    if (yeni && sym === ANA) for (const u of BASLANGIC_URUNLER) tx.set(db.collection("borsa_market").doc(u.id), { ...u, olusturma: now });
+    if (sym === ANA && !d.dijitalTohum) { d.dijitalTohum = true; for (const u of DIJITAL_URUNLER) tx.set(db.collection("borsa_market").doc(u.id), { ...u, olusturma: now }, { merge: true }); }
     const gunler = {};
     for (const m of k.tasanlar) (gunler[gunAnahtari(m.t)] ||= []).push(m);
     for (const [gun, mumlar] of Object.entries(gunler)) {
-      tx.set(db.collection("borsa_grafik").doc(gun), { m: FieldValue.arrayUnion(...mumlar) }, { merge: true });
+      tx.set(db.collection("borsa_grafik").doc(grafikId(sym, gun)), { m: FieldValue.arrayUnion(...mumlar) }, { merge: true });
     }
     for (const kayit of k.liste) {
       tx.set(db.collection("borsa_gecmis").doc(kayit.id), kayit);
       if (kayit.sebep === "likide") {
-        k.loglar.push({ uid: kayit.uid, ad: kayit.ad, tur: "likidasyon", detay: `${kayit.kaldirac}x ${kayit.yon.toUpperCase()} likide oldu (−${kayit.teminat} TL teminat)`, btl: 0, bkc: 0 });
+        k.loglar.push({ uid: kayit.uid, ad: kayit.ad, tur: "likidasyon", detay: `${sym} ${kayit.kaldirac}x ${kayit.yon.toUpperCase()} likide oldu (−${kayit.teminat} TL teminat)`, btl: 0, bkc: 0 });
       }
     }
-    for (const l of k.loglar) tx.set(db.collection("borsa_log").doc(), { ...l, ms: now, tarih: FieldValue.serverTimestamp() });
+    for (const l of k.loglar) tx.set(db.collection("borsa_log").doc(), { coin: sym, ...l, ms: now, tarih: FieldValue.serverTimestamp() });
     if (k.grafikSil && sonuc) sonuc.__grafikSil = true;
     return sonuc;
   });
 }
 
 // Grafik gün belgelerini (borsa_grafik/*) sil — sıfırlamadan sonra, transaction dışında
-async function grafikGunleriniSil(db) {
-  const belgeler = await db.collection("borsa_grafik").listDocuments();
+async function grafikGunleriniSil(db, sym = ANA) {
+  const hepsi = await db.collection("borsa_grafik").listDocuments();
+  const belgeler = hepsi.filter((r) => (sym === ANA ? /^\d{4}-\d{2}-\d{2}$/.test(r.id) : r.id.startsWith(sym + "_")));
   for (let i = 0; i < belgeler.length; i += 400) {
     const b = db.batch();
     belgeler.slice(i, i + 400).forEach((r) => b.delete(r));
@@ -403,7 +447,14 @@ async function grafikGunleriniSil(db) {
 }
 
 function cuzdanCevap(c) {
-  return c ? { bkc: r6(c.bkc || 0), btl: r6(c.btl || 0), gerceklesen: r2(c.gerceklesen || 0), bonus: c.bonus || 0 } : null;
+  return c ? { bkc: r6(c.bkc || 0), btl: r6(c.btl || 0), coin: c.coin || {}, gerceklesen: r2(c.gerceklesen || 0), bonus: c.bonus || 0 } : null;
+}
+// İstenen coini kayıttan bul (yoksa hata)
+async function coinBul(db, sym) {
+  const liste = coinListesi(await db.collection("borsa").doc("coinler").get());
+  const def = liste.find((c) => c.sym === sym);
+  if (!def) throw new Hata(`${sym} diye bir coin yok.`);
+  return { def, liste };
 }
 function pozOzet(p) { return { ...p }; }
 
@@ -412,10 +463,15 @@ async function kullaniciIslem(db, kim, govde, now) {
   const tur = govde.islem;
   const cuzRef = db.collection("borsa_cuzdan").doc(kim.uid);
 
-  if (tur === "tick") {
-    const snap = await db.collection("borsa").doc("durum").get();
-    if (snap.exists && now - (snap.data().sonTick || 0) < ADIM_MS) return { ok: true };
-    await islem(db, now, {}, async () => null);
+  if (tur === "tick" || tur === "tickHepsi") {
+    // tick: tek coin · tickHepsi: listedeki bütün coinler (coin listesi sayfası açıkken)
+    const liste = coinListesi(await db.collection("borsa").doc("coinler").get());
+    const hedefler = tur === "tick" ? liste.filter((c) => c.sym === symTemiz(govde.coin)) : liste;
+    await Promise.all(hedefler.map(async (def) => {
+      const snap = await db.collection("borsa").doc(durumId(def.sym)).get();
+      if (snap.exists && now - (snap.data().sonTick || 0) < ADIM_MS) return;
+      await islem(db, now, {}, async () => null, def.sym, def).catch(() => {});
+    }));
     return { ok: true };
   }
 
@@ -433,6 +489,8 @@ async function kullaniciIslem(db, kim, govde, now) {
 
   // geri kalanların hepsi cüzdan ister
   const urunRef = tur === "marketAl" ? db.collection("borsa_market").doc(String(govde.urunId || "-")) : null;
+  const sym = tur === "marketAl" ? ANA : symTemiz(govde.coin);
+  const { def } = sym === ANA ? { def: null } : await coinBul(db, sym);
   return islem(db, now, urunRef ? { c: cuzRef, u: urunRef } : { c: cuzRef }, async ({ tx, d, ek, k }) => {
     if (!ek.c.exists) throw new Hata("Önce borsaya giriş yap (cüzdanın yok).");
     const c = ek.c.data();
@@ -448,27 +506,28 @@ async function kullaniciIslem(db, kim, govde, now) {
       if (!(N > 0)) throw new Hata("Geçerli bir TL miktarı yaz.");
       if (N > c.btl + 1e-9) throw new Hata("Yeterli TL'n yok.");
       const r = egriAl(d.fiyat, N, D);
-      if (r.q > d.kasaBKC) throw new Hata("Kasada bu kadar BERKAY kalmadı.");
-      c.btl = r6(c.btl - N); c.bkc = r6(c.bkc + r.q);
+      if (r.q > d.kasaBKC) throw new Hata(`Kasada bu kadar ${sym} kalmadı.`);
+      c.btl = r6(c.btl - N); bakiyeYaz(c, sym, bakiye(c, sym) + r.q);
       d.kasaBKC = r6(d.kasaBKC - r.q);
       d.fiyat = r.p1;
       mumYaz(d, now, d.fiyat, N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: "al", m: r2(N), q: r6(r.q), f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-al", detay: `${r6(r.q)} BERKAY aldı (${r2(N)} TL)`, bkc: r6(r.q), btl: -N });
-      mesaj = `${r.q.toFixed(4)} BERKAY aldın.`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-al", detay: `${r6(r.q)} ${sym} aldı (${r2(N)} TL)`, bkc: sym === ANA ? r6(r.q) : 0, btl: -N });
+      mesaj = `${r.q.toFixed(4)} ${sym} aldın.`;
       ekCevap = { q: r6(r.q), ort: r6(N / r.q) };
     } else if (tur === "spotSat") {
-      const q = r6(sayi(govde.bkc));
-      if (!(q > 0)) throw new Hata("Geçerli bir BERKAY miktarı yaz.");
-      if (q > c.bkc + 1e-9) throw new Hata("Yeterli BERKAY'ın yok.");
+      const q = r6(sayi(govde.miktar ?? govde.bkc));
+      if (!(q > 0)) throw new Hata(`Geçerli bir ${sym} miktarı yaz.`);
+      const elde = bakiye(c, sym);
+      if (q > elde + 1e-9) throw new Hata(`Yeterli ${sym} bakiyen yok.`);
       const r = egriSat(d.fiyat, q, D);
-      c.bkc = r6(c.bkc - q); c.btl = r6(c.btl + r.N);
+      bakiyeYaz(c, sym, Math.max(0, elde - q)); c.btl = r6(c.btl + r.N);
       d.kasaBKC = r6(d.kasaBKC + q);
       d.fiyat = Math.max(1e-6, r.p1);
       mumYaz(d, now, d.fiyat, r.N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: "sat", m: r2(r.N), q, f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-sat", detay: `${q} BERKAY sattı (${r2(r.N)} TL)`, bkc: -q, btl: r6(r.N) });
-      mesaj = `${q} BERKAY sattın, ${r.N.toFixed(2)} TL geldi.`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-sat", detay: `${q} ${sym} sattı (${r2(r.N)} TL)`, bkc: sym === ANA ? -q : 0, btl: r6(r.N) });
+      mesaj = `${q} ${sym} sattın, ${r.N.toFixed(2)} TL geldi.`;
       ekCevap = { N: r6(r.N), ort: r6(r.N / q) };
     } else if (tur === "pozAc") {
       const yon = govde.yon === "short" ? "short" : "long";
@@ -477,22 +536,22 @@ async function kullaniciIslem(db, kim, govde, now) {
       const maxX = Math.min(MAX_KALDIRAC, d.maxKaldirac || MAX_KALDIRAC);
       if (!(x >= 1 && x <= maxX)) throw new Hata(`Kaldıraç 1x ile ${maxX}x arası olmalı.`);
       if (!(M >= 1)) throw new Hata("Teminat en az 1 TL olmalı.");
-      if (M > c.btl + 1e-9) throw new Hata("Yeterli TL'n yok. Spot'tan BERKAY satıp TL alabilirsin.");
+      if (M > c.btl + 1e-9) throw new Hata("Yeterli TL'n yok. Spot'tan coin satıp TL alabilirsin.");
       const acik = Object.values(d.poz).filter((p) => p.uid === kim.uid).length;
-      if (acik >= MAX_ACIK_POZ) throw new Hata(`Aynı anda en fazla ${MAX_ACIK_POZ} pozisyon açabilirsin.`);
+      if (acik >= MAX_ACIK_POZ) throw new Hata(`${sym}'da aynı anda en fazla ${MAX_ACIK_POZ} pozisyon açabilirsin.`);
       const N = M * x;
       if (N > D * MAX_POZ_ORAN) throw new Hata(`Pozisyon büyüklüğü (teminat × kaldıraç) en fazla ${Math.floor(D * MAX_POZ_ORAN)} TL olabilir. Teminatı ya da kaldıracı düşür.`);
       const r = yon === "long" ? egriAl(d.fiyat, N, D) : egriShortAc(d.fiyat, N, D);
       const id = randomUUID().replace(/-/g, "").slice(0, 16);
-      const poz = { id, uid: kim.uid, ad: kim.ad, yon, kaldirac: x, teminat: M, notional: r6(N), boyut: r6(r.q), giris: r6(N / r.q), acilis: now };
+      const poz = { id, coin: sym, uid: kim.uid, ad: kim.ad, yon, kaldirac: x, teminat: M, notional: r6(N), boyut: r6(r.q), giris: r6(N / r.q), acilis: now };
       poz.lik = r6(likFiyati(poz, D));
       d.poz[id] = poz;
       c.btl = r6(c.btl - M);
       d.fiyat = Math.max(1e-6, r.p1);
       mumYaz(d, now, d.fiyat, N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: yon, x, m: r2(N), f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-ac", detay: `${x}x ${yon.toUpperCase()} açtı · teminat ${M} TL · büyüklük ${r2(N)} TL`, bkc: 0, btl: -M });
-      mesaj = `${x}x ${yon.toUpperCase()} açıldı. Ortalama giriş ${poz.giris.toFixed(4)}`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-ac", detay: `${sym} ${x}x ${yon.toUpperCase()} açtı · teminat ${M} TL · büyüklük ${r2(N)} TL`, bkc: 0, btl: -M });
+      mesaj = `${sym} ${x}x ${yon.toUpperCase()} açıldı. Ortalama giriş ${poz.giris.toFixed(4)}`;
       ekCevap = { poz: pozOzet(poz) };
     } else if (tur === "pozKapat") {
       const poz = d.poz[String(govde.id || "")];
@@ -500,7 +559,7 @@ async function kullaniciIslem(db, kim, govde, now) {
       const kayit = pozKapatIc(d, poz, now, "kapat", k);
       c.btl = r6(c.btl + kayit.iade);
       c.gerceklesen = r2((c.gerceklesen || 0) + kayit.pnl);
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-kapat", detay: `${poz.kaldirac}x ${poz.yon.toUpperCase()} kapattı · K/Z ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl} TL (%${kayit.yuzde})`, bkc: 0, btl: kayit.iade });
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-kapat", detay: `${sym} ${poz.kaldirac}x ${poz.yon.toUpperCase()} kapattı · K/Z ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl} TL (%${kayit.yuzde})`, bkc: 0, btl: kayit.iade });
       mesaj = `Pozisyon kapandı: ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl.toFixed(2)} TL`;
       ekCevap = { sonuc: kayit };
     } else if (tur === "marketAl") {
@@ -537,7 +596,7 @@ async function kullaniciIslem(db, kim, govde, now) {
 
     tx.set(ek.c.ref, c);
     return { ok: true, mesaj, cuzdan: cuzdanCevap(c), ...ekCevap };
-  });
+  }, sym, def);
 }
 
 // ---------------- Ekonomi: kullanıcı işlemleri ----------------
@@ -747,7 +806,52 @@ async function ekonomiAdminIslem(db, kim, govde, now) {
 // ---------------- Admin işlemleri ----------------
 async function adminIslem(db, kim, govde, now) {
   const tur = govde.islem;
-  const log = (k, detay, ekAlan = {}) => k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "admin", detay, bkc: 0, btl: 0, ...ekAlan });
+  const sym = symTemiz(govde.coin);
+  const log = (k, detay, ekAlan = {}) => k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "admin", detay: (sym !== ANA ? `[${sym}] ` : "") + detay, bkc: 0, btl: 0, ...ekAlan });
+  const { def } = await coinBul(db, sym);
+
+  // Coin ekle / düzenle / kaldır (kayıt: borsa/coinler)
+  if (tur === "adminCoin") {
+    const ref = db.collection("borsa").doc("coinler");
+    return db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const kayitli = snap.exists && Array.isArray(snap.data().liste) ? snap.data().liste : [];
+      const yeniSym = symTemiz(govde.sym);
+      if (!/^[A-Z0-9]{2,10}$/.test(yeniSym)) throw new Hata("Sembol 2–10 harf/rakam olmalı (ör. KURBAN).");
+      const varsayilan = VARSAYILAN_COINLER.find((c) => c.sym === yeniSym);
+      const mevcut = coinListesi(snap).find((c) => c.sym === yeniSym);
+      let kayit = kayitli.find((c) => c.sym === yeniSym);
+      if (govde.sil) {
+        if (yeniSym === ANA) throw new Hata("BERKAY silinemez.");
+        if (!mevcut) throw new Hata("Böyle bir coin yok.");
+        if (kayit) kayit.silindi = true; else kayitli.push({ sym: yeniSym, silindi: true });
+        tx.set(ref, { liste: kayitli });
+        tx.set(db.collection("borsa_log").doc(), { uid: kim.uid, ad: kim.ad, tur: "admin", detay: `Coin listeden kaldırıldı: ${yeniSym}`, bkc: 0, btl: 0, coin: yeniSym, ms: now, tarih: FieldValue.serverTimestamp() });
+        return { ok: true, mesaj: `${yeniSym} listeden kaldırıldı (bakiyeler cüzdanlarda durur, geri eklenince görünür).` };
+      }
+      const ad = String(govde.ad || "").trim().slice(0, 24);
+      const emoji = String(govde.emoji || "").trim().slice(0, 4);
+      const renk = /^#[0-9a-fA-F]{6}$/.test(String(govde.renk || "")) ? govde.renk : null;
+      const fiyat = sayi(govde.fiyat), derinlik = sayi(govde.derinlik);
+      if (!mevcut) {
+        if (!ad) throw new Hata("Coin adını yaz.");
+        if (!(fiyat > 0 && fiyat < 1e6)) throw new Hata("Başlangıç fiyatı 0 ile 1.000.000 arası olmalı.");
+      }
+      if (!kayit) { kayit = { sym: yeniSym }; kayitli.push(kayit); }
+      delete kayit.silindi;
+      if (ad) kayit.ad = ad;
+      if (emoji) kayit.emoji = emoji;
+      if (renk) kayit.renk = renk;
+      if (!mevcut && !varsayilan) {
+        kayit.fiyat = fiyat;
+        kayit.derinlik = derinlik >= 100 && derinlik <= 1e8 ? derinlik : 10_000;
+        kayit.sira = coinListesi(snap).length + 1;
+      }
+      tx.set(ref, { liste: kayitli });
+      tx.set(db.collection("borsa_log").doc(), { uid: kim.uid, ad: kim.ad, tur: "admin", detay: `Coin ${mevcut ? "düzenlendi" : "eklendi"}: ${yeniSym}${ad ? " (" + ad + ")" : ""}`, bkc: 0, btl: 0, coin: yeniSym, ms: now, tarih: FieldValue.serverTimestamp() });
+      return { ok: true, mesaj: mevcut ? `${yeniSym} güncellendi.` : `${yeniSym} eklendi! Borsada aranınca çıkar.` };
+    });
+  }
 
   if (tur === "adminTransfer") {
     const hedef = String(govde.uid || "");
@@ -762,15 +866,16 @@ async function adminIslem(db, kim, govde, now) {
         if (!ek.kul.exists) throw new Hata("Böyle bir kullanıcı yok.");
         c = { uid: hedef, ad: ek.kul.data().kullaniciAdi || "?", bkc: 0, btl: 0, bonus: 0, gerceklesen: 0, olusturma: now, sonIslem: 0 };
       }
-      if (bkc > 0 && bkc > d.kasaBKC) throw new Hata("Kasada o kadar BERKAY yok. Önce arzı artır.");
-      if (bkc < 0 && -bkc > c.bkc + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar BERKAY yok.`);
+      const elde = bakiye(c, sym);
+      if (bkc > 0 && bkc > d.kasaBKC) throw new Hata(`Kasada o kadar ${sym} yok. Önce arzı artır.`);
+      if (bkc < 0 && -bkc > elde + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar ${sym} yok.`);
       if (btl < 0 && -btl > c.btl + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar TL yok.`);
-      c.bkc = r6(c.bkc + bkc); c.btl = r6(c.btl + btl);
+      bakiyeYaz(c, sym, elde + bkc); c.btl = r6(c.btl + btl);
       d.kasaBKC = r6(d.kasaBKC - bkc);
       tx.set(cRef, c);
-      k.loglar.push({ uid: hedef, ad: c.ad, tur: "admin-transfer", detay: `Admin ${bkc ? (bkc > 0 ? "+" : "") + bkc + " BERKAY " : ""}${btl ? (btl > 0 ? "+" : "") + btl + " TL" : ""}`.trim(), bkc, btl });
-      return { ok: true, mesaj: `${c.ad}: ${c.bkc} BERKAY / ${c.btl} TL` };
-    });
+      k.loglar.push({ uid: hedef, ad: c.ad, tur: "admin-transfer", detay: `Admin ${bkc ? (bkc > 0 ? "+" : "") + bkc + " " + sym + " " : ""}${btl ? (btl > 0 ? "+" : "") + btl + " TL" : ""}`.trim(), bkc: sym === ANA ? bkc : 0, btl });
+      return { ok: true, mesaj: `${c.ad}: ${r6(bakiye(c, sym))} ${sym} / ${c.btl} TL` };
+    }, sym, def);
   }
 
   return islem(db, now, {}, async ({ tx, d, gizli, k }) => {
@@ -803,11 +908,11 @@ async function adminIslem(db, kim, govde, now) {
     if (tur === "adminArz") {
       const deg = r6(sayi(govde.degisim));
       if (!deg) throw new Hata("Değişim miktarı yaz.");
-      if (d.kasaBKC + deg < 0) throw new Hata("Kasada yakılacak kadar BERKAY yok.");
+      if (d.kasaBKC + deg < 0) throw new Hata(`Kasada yakılacak kadar ${sym} yok.`);
       d.toplamArz = r6(d.toplamArz + deg);
       d.kasaBKC = r6(d.kasaBKC + deg);
-      log(k, `Arz ${deg > 0 ? "artırıldı" : "yakıldı"}: ${deg > 0 ? "+" : ""}${deg} BERKAY → toplam ${d.toplamArz}`);
-      return { ok: true, mesaj: `Toplam arz: ${d.toplamArz} BERKAY` };
+      log(k, `Arz ${deg > 0 ? "artırıldı" : "yakıldı"}: ${deg > 0 ? "+" : ""}${deg} ${sym} → toplam ${d.toplamArz}`);
+      return { ok: true, mesaj: `Toplam arz: ${d.toplamArz} ${sym}` };
     }
     if (tur === "adminAyar") {
       if (govde.derinlik != null) {
@@ -896,6 +1001,7 @@ async function adminIslem(db, kim, govde, now) {
       log(k, `${poz.ad} kişisinin ${poz.kaldirac}x ${poz.yon.toUpperCase()} pozisyonunu ${mod === "likide" ? "likide etti" : "kapattı"} (K/Z ${kayit.pnl} TL)`);
       return { ok: true, mesaj: mod === "likide" ? "Likide edildi." : "Kapatıldı, para sahibine döndü." };
     }
+    if (["adminUrun", "adminUrunSil", "adminSiparis"].includes(tur) && sym !== ANA) throw new Hata("Market işlemleri BERKAY ile yapılır.");
     if (tur === "adminUrun") {
       const id = String(govde.id || "").trim() || randomUUID().slice(0, 8);
       if (!/^[a-zA-Z0-9_-]{1,40}$/.test(id)) throw new Hata("Geçersiz ürün kimliği.");
@@ -949,7 +1055,7 @@ async function adminIslem(db, kim, govde, now) {
       return { ok: true, mesaj: yeniDurumu === "iptal" ? "İptal edildi, BERKAY iade edildi." : "Güncellendi." };
     }
     throw new Hata("Bilinmeyen admin işlemi.");
-  });
+  }, sym, def);
 }
 
 // ---------------- Giriş noktası ----------------
@@ -982,7 +1088,7 @@ export default async function handler(req, res) {
     } else if (tur.startsWith("admin")) {
       if (!kim.admin) throw new Hata("Bu işlem sadece admin içindir.", 403);
       sonuc = await adminIslem(db, kim, govde, now);
-      if (sonuc && sonuc.__grafikSil) { delete sonuc.__grafikSil; await grafikGunleriniSil(db); }
+      if (sonuc && sonuc.__grafikSil) { delete sonuc.__grafikSil; await grafikGunleriniSil(db, symTemiz(govde.coin)); }
     } else {
       sonuc = await kullaniciIslem(db, kim, govde, now);
     }
@@ -995,4 +1101,4 @@ export default async function handler(req, res) {
 }
 
 // Testler için dışa açık matematik
-export const _ic = { ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
+export const _ic = { coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
