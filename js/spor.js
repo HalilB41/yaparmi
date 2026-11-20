@@ -184,7 +184,7 @@
     "Eldiven kaydı.",
     "Güneş gözüme geldi. (Kapalı alan.)",
     "Isınmadım ki daha.",
-    "Makine Burger'e göre ayarlı.",
+    "Makine bozuk, kesin ayarlı.",
     "Benim suçum yok.",
     "Dün halı sahada yoruldum.",
     "Elim hâlâ sargılı, sayılmaz.",
@@ -400,21 +400,12 @@
 
     function tabloCiz() {
       skorlar.innerHTML = "";
-      skorlar.appendChild(el("div", "sp-tablo-baslik", "🏆 Rekor tablosu"));
-      const satirlar = [
-        ["🍔 Burger", 999, "(burger yedikten sonra)"],
-        ["📦 Halil", 910, "(depo kasları)"],
-        ["📚 Kurban", 870, "(KPSS stresi)"],
-        ["🦅 Alihan", -1, "(\"Enver Paşa adına vurmam\")"],
-        ["🥊 Berkay", enIyi, "(sen)"],
-      ].sort((a, b) => b[1] - a[1]);
-      satirlar.forEach(([ad, skor, not]) => {
-        const r = el("div", "sp-tablo-satir" + (ad.includes("Berkay") ? " is-sen" : ""));
-        r.appendChild(el("span", "sp-tablo-ad", ad));
-        r.appendChild(el("span", "sp-tablo-not muted", not));
-        r.appendChild(el("strong", "sp-tablo-skor", skor > 0 ? String(skor) : "—"));
-        skorlar.appendChild(r);
-      });
+      // Sadece kendi en iyin; gerçek sıralama aşağıdaki "Grup rekorları" tablosunda (js/rekor.js)
+      const r = el("div", "sp-tablo-satir is-sen");
+      r.appendChild(el("span", "sp-tablo-ad", "🥊 Senin en iyin"));
+      r.appendChild(el("span", "sp-tablo-not muted", "(bu cihazda)"));
+      r.appendChild(el("strong", "sp-tablo-skor", enIyi > 0 ? String(enIyi) : "—"));
+      skorlar.appendChild(r);
       elSayac.textContent = "🦴 Bu cihazda kırılan el sayısı: " + kirik;
     }
     tabloCiz();
@@ -483,7 +474,7 @@
         if (skor >= 900) {
           durum("is-mutlu", 1400);
           mesaj.textContent = skor === 999
-            ? "💥 999! Burger'in rekoruna ortak oldun! Salon ayakta alkışlıyor."
+            ? "💥 999! Tam puan! Salon ayakta alkışlıyor."
             : "💪 " + skor + "! Salondakiler şokta. Burger burgerini düşürdü.";
           bahane.textContent = "Berkay: \"Ben demiştim.\" (Kimse bir şey dememişti.)";
         } else if (Math.random() < 0.2) {

@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Admin · yaparmi.com</title>
   <meta name="description" content="Yönetim paneli." />
   <meta name="robots" content="noindex, nofollow" />
@@ -192,7 +192,7 @@
 
       <!-- ================= EKONOMİ ================= -->
       <section class="adm-panel admin-grid" data-panel="ekonomi" hidden>
-        <div class="adm-intro wide"><b>💰 Ekonomi</b> BERKAY'ın siteye dağıldığı her şey: günlük giriş ödülü, oyun rekoru ödülü, BERKAY çarkı, tahmin pazarı ve bingo. Bütün ödüller kasadan gelir, ücretler ve bahisler kasaya gider; toplam arz değişmez.</div>
+        <div class="adm-intro wide"><b>💰 Ekonomi</b> BERKAY'ın siteye dağıldığı her şey: günlük giriş ödülü, oyun rekoru ödülü, BERKAY çarkı ve tahmin pazarı. Bütün ödüller kasadan gelir, ücretler ve bahisler kasaya gider; toplam arz değişmez.</div>
 
         <div class="panel card admin-section">
           <h2>🎁 Ödüller</h2>
@@ -237,33 +237,17 @@
           <div id="ekaTahminler"><p class="muted">Yükleniyor…</p></div>
         </div>
 
-        <div class="panel card admin-section wide">
-          <h2>🎱 Berkay Bingo</h2>
-          <div id="ekaBingoOzet" class="muted">Yükleniyor…</div>
-          <div class="eka-bingo-grid">
-            <div>
-              <h3 class="eka-alt">✅ Olanları işaretle</h3>
-              <div id="ekaBingoOlaylar" class="eka-bingo-olaylar"><p class="muted">Aktif tur yok.</p></div>
-              <div class="sayac-butonlar"><button type="button" class="admin-btn reject" id="ekaBingoBitir">⏹️ Turu bitir</button></div>
-            </div>
-            <div>
-              <h3 class="eka-alt">🆕 Yeni tur</h3>
-              <label class="eka-tam">Olaylar (her satıra bir tane, en az 24)
-                <textarea id="ekaBingoMetin" rows="12"></textarea></label>
-              <p class="muted" id="ekaBingoSay" style="font-size:.8rem"></p>
-              <div class="tpl-form adm-form">
-                <label>Ödül (BERKAY) <input type="number" id="ekaBingoOdul" min="0" step="1" value="200" /></label>
-                <button type="button" class="admin-btn publish" id="ekaBingoBaslat">🎱 Yeni turu başlat</button>
-              </div>
-            </div>
-          </div>
-          <p class="suggest-status" id="ekaBingoDurum"></p>
-        </div>
       </section>
 
       <!-- ================= KÂHİN ================= -->
       <section class="adm-panel admin-grid" data-panel="kahin" hidden>
         <div class="adm-intro wide"><b>🔮 Kâhin</b> Bota sorulan her şey burada: kim, ne sordu, bot ne dedi, hangi model cevapladı.</div>
+        <div class="panel card admin-section wide">
+          <h2>🤖 Bot düğmeleri</h2>
+          <label class="kahin-bot-ac"><input type="checkbox" id="kahinSinirsizBot" /> 😈 "Sınırsız bot" düğmesi ana sayfada görünsün</label>
+          <p class="muted" id="kahinBotDurum">Yükleniyor…</p>
+          <p class="muted" style="font-size:.8rem">Kapalıyken ana sayfada sadece 😇 ULTRA MAXİMUS SINIRSIZ BOT görünür. Düğme silinmez, sadece gizlenir; buradan istediğin an geri açarsın.</p>
+        </div>
         <div class="panel card admin-section wide">
           <h2>Sorulanlar</h2>
           <p class="muted">Giriş yapıp soran kullanıcı adıyla, diğerleri "Misafir" olarak görünür. Son 200 soru.</p>
@@ -538,6 +522,7 @@
   <script src="js/bildirim.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/kahin-paylas.js"></script>
+  <script src="js/kahin-ayar-admin.js"></script>
   <script src="js/sayac.js"></script>
   <script src="js/cark-ciz.js"></script>
   <script src="js/cark-admin.js"></script>

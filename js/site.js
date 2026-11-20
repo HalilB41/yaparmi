@@ -17,7 +17,7 @@
   // HTML'inde sadece kendi içerikleri var.
   const NAV = [
     ["/", "Kâhin"], ["/spor", "Spor"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
-    ["/borsa", "Borsa"], ["/tahmin", "Tahmin"], ["/bingo", "Bingo"], ["/cark", "Çark"],
+    ["/borsa", "Borsa"], ["/tahmin", "Tahmin"], ["/cark", "Çark"],
     ["/topluluk", "Topluluk"], ["/soz", "Sözler"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
@@ -67,6 +67,34 @@
     '<div class="site-footer-in"><span>yaparmi.com · sadece eğlence amaçlıdır, kimse alınmasın.</span><nav>' +
     NAV.slice(1).concat([["/basarimlar", "Başarımlar"]]).map(([href, label]) => '<a href="' + href + '">' + label + "</a>").join("") + "</nav></div>";
   document.body.appendChild(footer);
+
+  // ---------------- Telefon: alt menü çubuğu + "Menü" sayfası ----------------
+  // Sadece dar ekranda görünür (CSS: .alt-bar). Üstteki yatay menü telefonda gizlenir.
+  const ALT = [["/", "🔮", "Kâhin"], ["/borsa", "📈", "Borsa"], ["/tahmin", "🎲", "Tahmin"], ["/cark", "🎡", "Çark"]];
+  const IKON = { "/": "🔮", "/spor": "🥊", "/sosyal": "🎭", "/galeri": "🖼️", "/borsa": "📈", "/tahmin": "🎲", "/cark": "🎡", "/topluluk": "📊", "/soz": "🤝" };
+  const altBar = document.createElement("nav");
+  altBar.className = "alt-bar";
+  altBar.setAttribute("aria-label", "Hızlı menü");
+  altBar.innerHTML =
+    ALT.map(([href, ico, ad]) => '<a href="' + href + '"' + (href === here ? ' class="on" aria-current="page"' : "") + "><i>" + ico + "</i><span>" + ad + "</span></a>").join("") +
+    '<button type="button" id="altMenuBtn" aria-expanded="false" aria-controls="altSayfa"><i>☰</i><span>Menü</span></button>';
+  const altSayfa = document.createElement("div");
+  altSayfa.className = "alt-sayfa";
+  altSayfa.id = "altSayfa";
+  altSayfa.hidden = true;
+  altSayfa.innerHTML =
+    '<div class="alt-sayfa-kart" role="dialog" aria-label="Bütün bölümler"><div class="alt-tutamac"></div>' +
+    '<div class="alt-izgara">' +
+    NAV.concat([["/profil", "Profilim"], ["/basarimlar", "Başarımlar"]]).map(([href, ad]) =>
+      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || (href === "/profil" ? "👤" : "🏆")) + "</i><span>" + ad + "</span></a>").join("") +
+    "</div></div>";
+  document.body.appendChild(altBar);
+  document.body.appendChild(altSayfa);
+  const altBtn = document.getElementById("altMenuBtn");
+  const altKapat = () => { altSayfa.hidden = true; altBtn.setAttribute("aria-expanded", "false"); };
+  altBtn.addEventListener("click", () => { altSayfa.hidden = !altSayfa.hidden; altBtn.setAttribute("aria-expanded", String(!altSayfa.hidden)); });
+  altSayfa.addEventListener("click", (e) => { if (e.target === altSayfa) altKapat(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !altSayfa.hidden) altKapat(); });
 
   // Tema: açık / koyu / sistem + renk. Seçim hatırlanır (sayfaların <head>'indeki küçük
   // betik, sayfa açılırken yanıp sönmesin diye aynı ayarları en başta uygular).

@@ -45,8 +45,6 @@
 //   borsa/ekonomi       ödül ayarları: günlük giriş, oyun rekoru, BERKAY çarkı (herkes okur)
 //   tahmin/{id}         tahmin pazarı iddiaları (herkes okur)
 //   tahmin_bahis/{id}   kim neye ne yatırdı (giriş yapan okur)
-//   bingo/aktif         Berkay Bingo turu: olaylar, işaretlenenler, kazanan (herkes okur)
-//   bingo_kart/{tur_uid} kişinin bingo kartı (giriş yapan okur)
 //
 // ---------------- Ekonomi (coin nereden gelir, nereye gider) ----------------
 //   Bütün ödüller KASADAN gelir, bütün ücretler/bahisler KASAYA gider: toplam arz hep korunur.
@@ -55,7 +53,6 @@
 //   BERKAY çarkı: dilimleri ve ağırlıkları admin belirler, sonucu SUNUCU seçer.
 //   Tahmin: yatırılan BERKAY kasaya girer; sonuçlanınca havuz kazananlara yatırdıkları oranda
 //           dağıtılır (kimse bilemediyse herkese iade). İptalde herkese iade.
-//   Bingo: ilk geçerli "BİNGO" diyen ödülü alır, tur kapanır.
 // ============================================================
 
 import { initializeApp, cert, getApps } from "firebase-admin/app";
@@ -198,14 +195,6 @@ function kasaTransfer(d, c, miktar) {
   if (miktar > 0) { const m = Math.min(miktar, d.kasaBKC); d.kasaBKC = r6(d.kasaBKC - m); c.bkc = r6((c.bkc || 0) + m); return m; }
   if (miktar < 0) { const m = Math.min(-miktar, c.bkc || 0); c.bkc = r6((c.bkc || 0) - m); d.kasaBKC = r6(d.kasaBKC + m); return -m; }
   return 0;
-}
-function bingoVar(kart, isaretli) {
-  const ac = new Set(isaretli || []);
-  const h = kart.map((x) => x === "FREE" || ac.has(x));
-  const L = [];
-  for (let i = 0; i < 5; i++) { L.push([0, 1, 2, 3, 4].map((j) => i * 5 + j)); L.push([0, 1, 2, 3, 4].map((j) => j * 5 + i)); }
-  L.push([0, 6, 12, 18, 24], [4, 8, 12, 16, 20]);
-  return L.some((l) => l.every((i) => h[i]));
 }
 
 // Bir pazar işlemi (spot ya da kaldıraç) sonrası mumu güncelle
@@ -540,23 +529,19 @@ async function kullaniciIslem(db, kim, govde, now) {
 }
 
 // ---------------- Ekonomi: kullanıcı işlemleri ----------------
-const EKONOMI_ISLEMLERI = ["gunluk", "oyunSkor", "carkCevir", "tahminBahis", "bingoKatil", "bingoIddia"];
+const EKONOMI_ISLEMLERI = ["gunluk", "oyunSkor", "carkCevir", "tahminBahis"];
 async function ekonomiIslem(db, kim, govde, now) {
   const tur = govde.islem;
   const bugun = gunAnahtari(now);
   const cuzRef = db.collection("borsa_cuzdan").doc(kim.uid);
   const ekoRef = db.collection("borsa").doc("ekonomi");
   const okumalar = { c: cuzRef, e: ekoRef };
-  let tRef = null, bRef = null, bingoRef = null, kartRef = null;
+  let tRef = null, bRef = null;
   if (tur === "tahminBahis") {
     const sec = Math.round(sayi(govde.secenek));
     tRef = db.collection("tahmin").doc(String(govde.id || "-"));
     bRef = db.collection("tahmin_bahis").doc(`${String(govde.id || "-")}_${kim.uid}_${sec}`);
     Object.assign(okumalar, { t: tRef, b: bRef });
-  }
-  if (tur === "bingoKatil" || tur === "bingoIddia") {
-    bingoRef = db.collection("bingo").doc("aktif");
-    okumalar.bg = bingoRef;
   }
   return islem(db, now, okumalar, async ({ tx, d, ek, k }) => {
     const e = ekonomiAyar(ek.e);
@@ -632,33 +617,6 @@ async function ekonomiIslem(db, kim, govde, now) {
       tx.set(ek.b.ref, b);
       k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "tahmin", detay: `"${t.soru}" → ${t.secenekler[sec].ad}: ${m} BERKAY yatırdı`, bkc: -m, btl: 0 });
       cevap = { ok: true, mesaj: `${t.secenekler[sec].ad} için ${m} BERKAY yatırdın.` };
-    } else if (tur === "bingoKatil" || tur === "bingoIddia") {
-      if (!ek.bg.exists) throw new Hata("Aktif bingo turu yok.");
-      const bg = ek.bg.data();
-      const kRef = db.collection("bingo_kart").doc(`${bg.tur}_${kim.uid}`);
-      const kSnap = await tx.get(kRef);
-      if (tur === "bingoKatil") {
-        if (kSnap.exists) cevap = { ok: true, kart: kSnap.data() };
-        else {
-          if (bg.durum !== "acik") throw new Hata("Bu tur bitti, yeni turu bekle.");
-          const ids = bg.olaylar.map((o) => o.id);
-          if (ids.length < 24) throw new Hata("Bu turda yeterli olay yok (admin).");
-          for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
-          const hucreler = ids.slice(0, 24); hucreler.splice(12, 0, "FREE");
-          const kart = { tur: bg.tur, uid: kim.uid, ad: kim.ad, hucreler, olusturma: now };
-          tx.set(kRef, kart);
-          cevap = { ok: true, kart, yeni: true };
-        }
-      } else {
-        if (!kSnap.exists) throw new Hata("Önce karta katıl.");
-        if (bg.durum !== "acik") throw new Hata(bg.kazanan ? `Geç kaldın, ${bg.kazanan.ad} BİNGO yaptı!` : "Bu tur bitti.");
-        if (!bingoVar(kSnap.data().hucreler, bg.isaretli)) throw new Hata("Henüz bingo yok, bir sıra/sütun/çapraz tamamlanmalı.");
-        const odul = kasaTransfer(d, c, Math.max(0, sayi(bg.odul) || 0));
-        bg.durum = "bitti"; bg.kazanan = { uid: kim.uid, ad: kim.ad, odul, t: now }; bg.bitis = now;
-        tx.set(ek.bg.ref, bg);
-        k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "bingo", detay: `BİNGO! ${bg.tur}. tur kazananı +${odul} BERKAY`, bkc: odul, btl: 0 });
-        cevap = { ok: true, mesaj: `🎉 BİNGO! +${odul} BERKAY`, odul };
-      }
     }
     tx.set(cuzRef, c);
     cevap.cuzdan = cuzdanCevap(c);
@@ -771,44 +729,6 @@ async function ekonomiAdminIslem(db, kim, govde, now) {
     });
   }
 
-  if (tur === "adminBingo") {
-    const bRef = db.collection("bingo").doc("aktif");
-    return islem(db, now, { bg: bRef }, async ({ tx, ek, k }) => {
-      const bg = ek.bg.exists ? ek.bg.data() : { tur: 0, durum: "yok", olaylar: [], isaretli: [] };
-      const alt = govde.alt;
-      if (alt === "baslat") {
-        const olaylar = [...new Set((Array.isArray(govde.olaylar) ? govde.olaylar : []).map((x) => String(x || "").trim().slice(0, 60)).filter(Boolean))].slice(0, 80);
-        if (olaylar.length < 24) throw new Hata(`En az 24 farklı olay lazım (şu an ${olaylar.length}).`);
-        const odul = Math.max(0, Math.round(sayi(govde.odul) || 0));
-        const yeni = { tur: (bg.tur || 0) + 1, durum: "acik", olaylar: olaylar.map((ad, i) => ({ id: "o" + i, ad })), isaretli: [], odul, kazanan: null, baslangic: now };
-        tx.set(bRef, yeni);
-        log(k, `Bingo ${yeni.tur}. tur başladı (${olaylar.length} olay, ödül ${odul} BERKAY)`);
-        return { ok: true, mesaj: `${yeni.tur}. tur başladı.` };
-      }
-      if (!ek.bg.exists) throw new Hata("Önce bir tur başlat.");
-      if (alt === "isaretle") {
-        const id = String(govde.id || "");
-        if (!bg.olaylar.some((o) => o.id === id)) throw new Hata("Olay bulunamadı.");
-        const set = new Set(bg.isaretli || []);
-        if (govde.deger) set.add(id); else set.delete(id);
-        bg.isaretli = [...set];
-        tx.set(bRef, bg);
-        const ad = bg.olaylar.find((o) => o.id === id).ad;
-        log(k, `Bingo: "${ad}" ${govde.deger ? "oldu ✅" : "geri alındı"}`);
-        return { ok: true, mesaj: govde.deger ? `✅ ${ad}` : `↩️ ${ad}` };
-      }
-      if (alt === "bitir") {
-        bg.durum = "bitti"; bg.bitis = now; tx.set(bRef, bg);
-        log(k, `Bingo ${bg.tur}. turu bitirdi${bg.kazanan ? "" : " (kazanan yok)"}`);
-        return { ok: true, mesaj: "Tur bitti." };
-      }
-      if (alt === "odul") {
-        bg.odul = Math.max(0, Math.round(sayi(govde.odul) || 0)); tx.set(bRef, bg);
-        return { ok: true, mesaj: `Ödül ${bg.odul} BERKAY.` };
-      }
-      throw new Hata("Bilinmeyen bingo işlemi.");
-    });
-  }
   return null;
 }
 
@@ -1039,7 +959,7 @@ export default async function handler(req, res) {
     let sonuc;
     if (EKONOMI_ISLEMLERI.includes(tur)) {
       sonuc = await ekonomiIslem(db, kim, govde, now);
-    } else if (["adminEkonomi", "adminKozmetik", "adminTahmin", "adminBingo"].includes(tur)) {
+    } else if (["adminEkonomi", "adminKozmetik", "adminTahmin"].includes(tur)) {
       if (!kim.admin) throw new Hata("Bu işlem sadece admin içindir.", 403);
       sonuc = await ekonomiAdminIslem(db, kim, govde, now);
     } else if (tur.startsWith("admin")) {
@@ -1058,4 +978,4 @@ export default async function handler(req, res) {
 }
 
 // Testler için dışa açık matematik
-export const _ic = { ekonomiIslem, ekonomiAdminIslem, bingoVar, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
+export const _ic = { ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };

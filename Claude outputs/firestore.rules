@@ -94,10 +94,17 @@ service cloud.firestore {
     // Fotoğraf, Firebase Storage KULLANILMADAN (ücretli Blaze planı
     // istiyor), site.js'te küçültülüp base64 metne çevrilerek doğrudan
     // "resim" alanına yazılıyor — bu yüzden ~900KB üst sınırı var.
+    // Güvenilir yükleyiciler (atkannes, burger) fotoğrafı ONAYSIZ, kendi adıyla ekler.
+    // Listeyi değiştirirsen js/gallery.js'teki GUVENILIR listesini de değiştir.
     match /galeri/{fotoId} {
       allow read: if true;
-      allow create: if isAdmin()
-        && request.resource.data.keys().hasOnly(['resim', 'tarih'])
+      allow create: if (
+          (isAdmin() && request.resource.data.keys().hasOnly(['resim', 'tarih', 'yukleyen']))
+          || (hesapli()
+            && kullaniciAdim().lower() in ['atkannes', 'burger']
+            && request.resource.data.keys().hasOnly(['resim', 'tarih', 'yukleyen'])
+            && request.resource.data.yukleyen == kullaniciAdim())
+        )
         && request.resource.data.resim is string
         && request.resource.data.resim.size() < 900000
         && request.resource.data.tarih == request.time;
@@ -184,10 +191,25 @@ service cloud.firestore {
       allow write: if isAdmin() && docId in ['liste', 'grup'];
     }
 
-    // Topluluk: anketler (günün sorusu / anket / haftanın rezili). Admin açar, herkes okur.
+    // Topluluk: anketler (günün sorusu / anket / haftanın rezili). Kayıtlı herkes açabilir (onaysız),
+    // açan kişi kendi anketini kapatabilir; admin her şeyi değiştirir/siler.
     match /anketler/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create: if isAdmin() || (hesapli()
+        && request.resource.data.keys().hasOnly(['tur', 'baslik', 'secenekler', 'acik', 'dogru', 'acan', 'acanUid', 'tarih'])
+        && request.resource.data.tur in ['anket', 'gunun', 'rezillik']
+        && request.resource.data.baslik is string && request.resource.data.baslik.size() >= 3 && request.resource.data.baslik.size() <= 160
+        && request.resource.data.secenekler is list && request.resource.data.secenekler.size() >= 2 && request.resource.data.secenekler.size() <= 10
+        && request.resource.data.acik == true
+        && request.resource.data.dogru == null
+        && request.resource.data.acanUid == request.auth.uid
+        && request.resource.data.acan == kullaniciAdim()
+        && request.resource.data.tarih == request.time);
+      allow update: if isAdmin() || (hesapli()
+        && resource.data.acanUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acik'])
+        && request.resource.data.acik == false);
+      allow delete: if isAdmin();
     }
     // Oylar: belge ID = anketId_uid → kişi başı tek oy, anket açıkken, kendi adıyla.
     match /anket_oylar/{id} {
@@ -222,6 +244,12 @@ service cloud.firestore {
       allow delete: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
     }
 
+
+    // Site ayarları: ayarlar/kahin { sinirsizBot } → ana sayfadaki "Sınırsız bot" düğmesi görünsün mü.
+    match /ayarlar/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && docId == 'kahin';
+    }
 
     // Sınırsız Çark ayarları (açık/kapalı, tur, hak, dilimler).
     // Herkes okur, sadece admin değiştirir.
@@ -380,20 +408,12 @@ service cloud.firestore {
       allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
       allow write: if false;
     }
-    // ===== EKONOMİ: Tahmin pazarı + Berkay Bingo (yazan sadece sunucu) =====
+    // ===== EKONOMİ: Tahmin pazarı (yazan sadece sunucu) =====
     match /tahmin/{id} {
       allow read: if true;
       allow write: if false;
     }
     match /tahmin_bahis/{id} {
-      allow read: if request.auth != null;
-      allow write: if false;
-    }
-    match /bingo/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
-    match /bingo_kart/{id} {
       allow read: if request.auth != null;
       allow write: if false;
     }

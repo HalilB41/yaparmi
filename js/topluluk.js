@@ -52,7 +52,13 @@
     const ust = el("div", "tpl-anket-ust");
     const [ico, ad] = TUR[a.tur] || TUR.anket;
     ust.appendChild(el("span", "tpl-etiket", ico + " " + ad));
-    ust.appendChild(el("span", "muted", tarihYaz(a.tarih) + (a.acik ? "" : " · kapandı")));
+    ust.appendChild(el("span", "muted", (a.acan ? "✍️ " + a.acan + " · " : "") + tarihYaz(a.tarih) + (a.acik ? "" : " · kapandı")));
+    if (a.acik && profile && a.acanUid && a.acanUid === profile.uid) {
+      const kap = el("button", "link-btn tpl-kapat", "Anketi kapat");
+      kap.type = "button";
+      kap.addEventListener("click", () => { if (confirm("Anketin kapansın mı? Kimse oy veremez.")) db.collection("anketler").doc(a.id).update({ acik: false }).catch((e) => alert(e.message)); });
+      ust.appendChild(kap);
+    }
     kart.appendChild(ust);
     kart.appendChild(el("h3", null, a.baslik));
 
@@ -114,12 +120,34 @@
     anketListe.innerHTML = ""; anketKapali.innerHTML = "";
     const acik = anketler.filter((a) => a.acik);
     const kapali = anketler.filter((a) => !a.acik);
-    if (!acik.length) anketListe.appendChild(el("p", "muted", "Şu an açık anket yok. Admin yenisini açınca burada görünür."));
+    if (!acik.length) anketListe.appendChild(el("p", "muted", "Şu an açık anket yok. Yukarıdan ilkini sen aç!"));
     acik.forEach((a) => anketListe.appendChild(anketKart(a)));
     if (!kapali.length) anketKapali.appendChild(el("p", "muted", "Henüz kapanan anket yok."));
     kapali.slice(0, 30).forEach((a) => anketKapali.appendChild(anketKart(a)));
     liderlikCiz();
   }
+
+  // ---------------- Anket aç (herkes, onaysız) ----------------
+  $("kAnketOlustur").addEventListener("click", async () => {
+    const durum = $("kAnketDurum");
+    if (girisGerekli()) { durum.textContent = "Anket açmak için sağ üstten giriş yap."; return; }
+    const baslik = $("kAnketBaslik").value.trim().slice(0, 160);
+    const secenekler = [...new Set($("kAnketSecenek").value.split("\n").map((x) => x.trim().slice(0, 80)).filter(Boolean))].slice(0, 10);
+    if (baslik.length < 3 || secenekler.length < 2) { durum.textContent = "Soru ve en az 2 farklı seçenek yaz."; return; }
+    const btn = $("kAnketOlustur"); btn.disabled = true; durum.textContent = "Yayınlanıyor…";
+    try {
+      await db.collection("anketler").add({
+        tur: TUR[$("kAnketTur").value] ? $("kAnketTur").value : "anket",
+        baslik, secenekler, acik: true, dogru: null,
+        acan: profile.kullaniciAdi, acanUid: profile.uid,
+        tarih: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      $("kAnketBaslik").value = ""; $("kAnketSecenek").value = "";
+      durum.textContent = "✅ Yayında!";
+      $("anketAcKutu").open = false;
+    } catch (err) { durum.textContent = "⚠️ Olmadı: " + err.message; }
+    finally { btn.disabled = false; }
+  });
 
   db.collection("anketler").orderBy("tarih", "desc").limit(100).onSnapshot((snap) => {
     anketler = snap.docs.map((d) => {
@@ -128,6 +156,7 @@
         id: d.id, tur: TUR[v.tur] ? v.tur : "anket", baslik: String(v.baslik || ""),
         secenekler: (Array.isArray(v.secenekler) ? v.secenekler : []).map(String).slice(0, 10),
         acik: !!v.acik, dogru: Number.isInteger(v.dogru) ? v.dogru : null, tarih: v.tarih,
+        acan: typeof v.acan === "string" ? v.acan : "", acanUid: v.acanUid || "",
       };
     });
     anketleriCiz();

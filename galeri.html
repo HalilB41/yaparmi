@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Galeri · yaparmi.com</title>
   <meta name="description" content="Berkay galerisi." />
   <meta name="robots" content="noindex, nofollow" />
@@ -18,34 +18,62 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <main class="page">
-    <header class="page-head">
+  <main class="page gl-page">
+    <header class="page-head gl-head">
       <span class="eyebrow"><i>🖼️</i> Galeri</span>
       <h1>En iyi <em>kareler</em></h1>
-      <p class="lead">Yana kaydır, hepsine bak. Elinde iyi bir fotoğraf varsa aşağıdan öner, admin onaylarsa eklenir.</p>
+      <p class="lead" id="glLead">Grubun arşivi. Dokun, büyüt, kaydırarak gez.</p>
     </header>
-    <div class="panel card gallery-card">
-      <div class="gallery-wrap">
-        <button type="button" class="gallery-arrow gallery-arrow-left" id="galleryPrev" aria-label="Önceki fotoğraf">‹</button>
-        <div class="gallery-scroller" id="galleryScroller">
-          <p class="gallery-empty">Yükleniyor…</p>
-        </div>
-        <button type="button" class="gallery-arrow gallery-arrow-right" id="galleryNext" aria-label="Sonraki fotoğraf">›</button>
-        <div class="gallery-counter" id="galleryCounter" hidden></div>
-      </div>
 
-      <div class="suggest-box">
-        <h3>📤 Fotoğraf öner</h3>
-        <p class="muted">Kayıt olmana gerek yok. Tek seferde en fazla 20 fotoğraf seçebilirsin. Admin onaylarsa galeriye eklenir.</p>
-        <form id="suggestForm" autocomplete="off">
+    <!-- Vitrin: en son eklenen kare -->
+    <section class="gl-vitrin" id="glVitrin" hidden>
+      <div class="gl-vitrin-arka" id="glVitrinArka"></div>
+      <button type="button" class="gl-vitrin-foto" id="glVitrinFoto" aria-label="Son eklenen fotoğrafı büyüt"><img alt="Son eklenen" id="glVitrinImg" /></button>
+      <div class="gl-vitrin-yazi">
+        <span class="gl-rozet">✨ Son eklenen</span>
+        <b id="glVitrinKim"></b>
+        <span id="glVitrinTarih"></span>
+        <span class="gl-sayi" id="glSayi"></span>
+      </div>
+    </section>
+
+    <div class="gl-izgara" id="glIzgara"><p class="gl-bos">Yükleniyor…</p></div>
+
+    <!-- Fotoğraf ekle / öner -->
+    <section class="card gl-yukle" id="glYukle">
+      <div class="gl-yukle-ust">
+        <h2 id="glYukleBaslik">📤 Fotoğraf öner</h2>
+        <p class="muted" id="glYukleYazi">Kayıt olmana gerek yok. Tek seferde en fazla 20 fotoğraf. Admin onaylarsa galeriye eklenir.</p>
+      </div>
+      <form id="suggestForm" autocomplete="off" class="gl-form">
+        <label class="gl-dosya">
           <input type="file" id="suggestFile" accept="image/*" multiple required />
-          <button type="submit">Gönder</button>
-        </form>
-        <div class="suggest-onizleme" id="suggestOnizleme" hidden></div>
-        <p class="suggest-status" id="suggestStatus"></p>
+          <span>🖼️ Fotoğraf seç</span>
+        </label>
+        <button type="submit" class="btn" id="glGonder">Gönder</button>
+      </form>
+      <div class="suggest-onizleme" id="suggestOnizleme" hidden></div>
+      <p class="suggest-status" id="suggestStatus"></p>
+    </section>
+  </main>
+
+  <!-- Tam ekran görüntüleyici -->
+  <div class="gl-lb" id="glLb" hidden role="dialog" aria-modal="true" aria-label="Fotoğraf">
+    <div class="gl-lb-arka" id="glLbArka"></div>
+    <div class="gl-lb-ust">
+      <span id="glLbSayac"></span>
+      <div class="gl-lb-araclar">
+        <button type="button" id="glLbPaylas" aria-label="Paylaş">📤</button>
+        <button type="button" id="glLbIndir" aria-label="İndir">⬇️</button>
+        <button type="button" id="glLbKapat" aria-label="Kapat">✕</button>
       </div>
     </div>
-  </main>
+    <button type="button" class="gl-lb-ok sol" id="glLbOnceki" aria-label="Önceki">‹</button>
+    <div class="gl-lb-sahne" id="glLbSahne"><img id="glLbImg" alt="" /></div>
+    <button type="button" class="gl-lb-ok sag" id="glLbSonraki" aria-label="Sonraki">›</button>
+    <div class="gl-lb-alt" id="glLbAlt"></div>
+  </div>
+  <a class="gl-fab" href="#glYukle" id="glFab" aria-label="Fotoğraf ekle">＋</a>
 
   <!-- Firebase (compat SDK) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>

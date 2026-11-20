@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Topluluk · yaparmi.com</title>
   <meta name="description" content="Günün sorusu, anketler, sayaçlar, vardiya takvimi ve liderlik." />
   <meta name="robots" content="noindex, nofollow" />
@@ -22,7 +22,7 @@
     <header class="page-head">
       <span class="eyebrow"><i>📊</i> Topluluk</span>
       <h1>Grup <em>Topluluğu</em></h1>
-      <p class="lead">Günün sorusunu oyla, haftanın rezilini seç, vardiyanı gir, sayaçlara bak, liderlik tablosunda yerini gör.</p>
+      <p class="lead">Anket aç, günün sorusunu oyla, haftanın rezilini seç, vardiyanı gir, liderlik tablosunda yerini gör. Yazdığın her şey anında yayında.</p>
     </header>
 
     <div class="card cark-kapi" id="toplulukGiris">
@@ -38,6 +38,16 @@
     </nav>
 
     <section class="adm-panel" data-panel="anket" hidden>
+      <details class="card tpl-form-kart tpl-anket-ac" id="anketAcKutu">
+        <summary><b>➕ Anket aç</b> <span class="muted">Herkes açabilir, onay beklemez</span></summary>
+        <div class="tpl-form">
+          <label>Tür <select id="kAnketTur"><option value="anket">🗳️ Anket</option><option value="gunun">🌞 Günün Sorusu</option><option value="rezillik">🤡 Haftanın Rezili</option></select></label>
+          <label class="tpl-genis">Soru <input type="text" id="kAnketBaslik" maxlength="160" placeholder="ör. Berkay bu cuma halı sahaya gelir mi?" /></label>
+          <label class="tpl-genis">Seçenekler (her satıra bir tane, 2–10) <textarea id="kAnketSecenek" rows="4" placeholder="Gelir&#10;Gelmez&#10;Gelir ama kaleye geçer"></textarea></label>
+          <button type="button" class="btn" id="kAnketOlustur">Yayınla</button>
+        </div>
+        <p class="suggest-status" id="kAnketDurum"></p>
+      </details>
       <h2 class="tpl-baslik">Açık anketler</h2>
       <div class="tpl-liste" id="anketListe"><p class="muted">Yükleniyor…</p></div>
       <h2 class="tpl-baslik" style="margin-top:28px">Kapananlar</h2>

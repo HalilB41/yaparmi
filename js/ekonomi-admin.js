@@ -3,7 +3,6 @@
 //   Ödüller (günlük giriş, seri bonusu, oyun rekoru, günlük sınır)
 //   BERKAY çarkı (bedava hak, ücret, dilimler)
 //   Tahmin pazarı (aç, bahisleri kapat, sonuç gir, iptal, sil)
-//   Berkay Bingo (yeni tur, olayları işaretle, turu bitir)
 // Her değişiklik /api/borsa üzerinden (sunucuda) yapılır.
 // ============================================================
 (function () {
@@ -16,16 +15,8 @@
   const VARSAYILAN = { acik: true, gunlukMiktar: 10, seriGun: 7, seriBonus: 50, rekorOdul: 15, oyunGunlukLimit: 30, carkUcret: 10, carkGunlukBedava: 1, carkDilimler: [
     { ad: "+5", miktar: 5, agirlik: 30 }, { ad: "+20", miktar: 20, agirlik: 20 }, { ad: "−10", miktar: -10, agirlik: 18 },
     { ad: "+50", miktar: 50, agirlik: 8 }, { ad: "Boş", miktar: 0, agirlik: 15 }, { ad: "−25", miktar: -25, agirlik: 5 }, { ad: "+200 💎", miktar: 200, agirlik: 1 }] };
-  const BINGO_ORNEK = [
-    "Berkay geç kaldı", "\"Yoldayım\" dedi ama evdeydi", "Bahane uydurdu", "Kubiii dedi", "Spora gideceğim dedi", "Spora gitmedi",
-    "Ehliyet konusu açıldı", "Yemek söyledi", "Telefonu şarjsız kaldı", "Mesajı görüp cevap vermedi", "Birine borç para sordu",
-    "\"Yarın başlıyorum\" dedi", "Bir şeyi kırdı/döktü", "Uyuyakaldı", "Planı son dakika iptal etti", "Hesabı başkası ödedi",
-    "Kendini övdü", "Boks makinesine vurdu", "Story attı", "Sesli mesaj attı (1 dakikadan uzun)", "Oyunda kaybetti, hile dedi",
-    "Diyete başladığını söyledi", "Gece 3'te yazdı", "Bir kız hakkında konuştu", "Saçını/sakalını değiştirdi", "Yeni bir iş fikri attı",
-    "Maç kuponu yaptı", "Kuponu yattı", "\"Abi ben ne yaptım\" dedi", "Fotoğrafta gözleri kapalı çıktı",
-  ];
 
-  let basladi = false, e = VARSAYILAN, ekoDolu = false, dilimler = [], bg = null, metinDolu = false;
+  let basladi = false, e = VARSAYILAN, ekoDolu = false, dilimler = [];
 
   window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin" && !basladi) { basladi = true; baslat(); } });
 
@@ -43,7 +34,6 @@
       if (!ekoDolu) { ekoDolu = true; formDoldur(); }
     }, () => { if (!ekoDolu) { ekoDolu = true; formDoldur(); } });
     db.collection("tahmin").onSnapshot((s) => tahminCiz(s.docs.map((d) => Object.assign({ id: d.id }, d.data()))), (err) => { $("ekaTahminler").innerHTML = '<p class="muted">⚠️ ' + err.message + "</p>"; });
-    db.collection("bingo").doc("aktif").onSnapshot((s) => { bg = s.exists ? s.data() : null; bingoCiz(); }, (err) => { $("ekaBingoOzet").textContent = "⚠️ " + err.message; });
   }
 
   // ---------------- Ödüller ----------------
@@ -131,36 +121,4 @@
     });
   }
 
-  // ---------------- Bingo ----------------
-  function bingoSay() { const n = [...new Set($("ekaBingoMetin").value.split("\n").map((x) => x.trim()).filter(Boolean))].length; $("ekaBingoSay").textContent = `${n} farklı olay ${n < 24 ? "(en az 24 lazım)" : "✅"}`; }
-  $("ekaBingoMetin").addEventListener("input", bingoSay);
-  function bingoCiz() {
-    if (!metinDolu) {
-      metinDolu = true;
-      $("ekaBingoMetin").value = (bg && bg.olaylar && bg.olaylar.length ? bg.olaylar.map((o) => o.ad) : BINGO_ORNEK).join("\n");
-      if (bg && bg.odul != null) $("ekaBingoOdul").value = bg.odul;
-      bingoSay();
-    }
-    const oz = $("ekaBingoOzet");
-    const k = $("ekaBingoOlaylar"); k.textContent = "";
-    if (!bg || !bg.olaylar) { oz.textContent = "Henüz hiç tur başlatılmadı. Sağdaki listeyi düzenleyip yeni turu başlat."; k.append(el("p", "muted", "Aktif tur yok.")); return; }
-    const isaret = new Set(bg.isaretli || []);
-    oz.innerHTML = "";
-    oz.append(el("b", null, `🎱 ${bg.tur}. tur · ${bg.durum === "acik" ? "🟢 açık" : "⏹️ bitti"} · ödül ${bg.odul} BERKAY · ${isaret.size}/${bg.olaylar.length} olay oldu`));
-    if (bg.kazanan) oz.append(el("span", null, ` · 🎉 Kazanan: ${bg.kazanan.ad} (+${bg.kazanan.odul})`));
-    bg.olaylar.forEach((o) => {
-      const l = el("label", "eka-bingo-olay" + (isaret.has(o.id) ? " is-oldu" : ""));
-      const c = el("input"); c.type = "checkbox"; c.checked = isaret.has(o.id); c.disabled = bg.durum !== "acik";
-      c.addEventListener("change", () => islem(null, $("ekaBingoDurum"), "adminBingo", { alt: "isaretle", id: o.id, deger: c.checked }));
-      l.append(c, document.createTextNode(" " + o.ad));
-      k.append(l);
-    });
-    $("ekaBingoBitir").disabled = bg.durum !== "acik";
-  }
-  $("ekaBingoBaslat").addEventListener("click", () => {
-    const olaylar = $("ekaBingoMetin").value.split("\n").map((x) => x.trim()).filter(Boolean);
-    if (bg && bg.durum === "acik" && !confirm("Açık tur var. Yeni tur başlarsa eski kartlar geçersiz olur. Devam?")) return;
-    islem($("ekaBingoBaslat"), $("ekaBingoDurum"), "adminBingo", { alt: "baslat", olaylar, odul: Number($("ekaBingoOdul").value) || 0 });
-  });
-  $("ekaBingoBitir").addEventListener("click", () => { if (confirm("Tur kazanansız bitirilsin mi?")) islem($("ekaBingoBitir"), $("ekaBingoDurum"), "adminBingo", { alt: "bitir" }); });
 })();

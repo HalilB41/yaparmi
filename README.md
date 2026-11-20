@@ -20,7 +20,6 @@ yaparmi-site/
 ├─ spor.html       <- boks makinesi, penaltı, kasksız 85, spor karnesi, Berkay olimpiyatı
 ├─ oyun.html       <- oyun sayfası (2048, Yılan, Hafıza, XOX, Taş Kağıt Makas)
 ├─ tahmin.html      <- Tahmin Pazarı: iddialara BERKAY yatır
-├─ bingo.html       <- Berkay Bingo
 ├─ profil.html      <- /profil?k=ad: cüzdan, sıralama, rekorlar, borsa karnesi
 ├─ borsa.html       <- Berkay Borsası: BERKAY grafiği, spot, 20x kaldıraç, Berkay Market
 ├─ sosyal.html      <- "hikaye seç" oyunu (İzmir'e gitsin / evde kalsın ...)
@@ -35,7 +34,6 @@ yaparmi-site/
 ├─ js/games.js      <- sadece oyun.html (5 oyun)
 ├─ js/ekonomi.js    <- her sayfada: günlük giriş ödülü, oyun rekoru ödülü, isim süsleri
 ├─ js/tahmin.js     <- sadece tahmin.html
-├─ js/bingo.js      <- sadece bingo.html
 ├─ js/profil.js     <- sadece profil.html
 ├─ js/cark-berkay.js <- cark.html: 💰 BERKAY çarkı
 ├─ js/ekonomi-admin.js <- admin.html: 💰 Ekonomi sekmesi
@@ -486,20 +484,12 @@ service cloud.firestore {
       allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
       allow write: if false;
     }
-    // ===== EKONOMİ: Tahmin pazarı + Berkay Bingo (yazan sadece sunucu) =====
+    // ===== EKONOMİ: Tahmin pazarı (yazan sadece sunucu) =====
     match /tahmin/{id} {
       allow read: if true;
       allow write: if false;
     }
     match /tahmin_bahis/{id} {
-      allow read: if request.auth != null;
-      allow write: if false;
-    }
-    match /bingo/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
-    match /bingo_kart/{id} {
       allow read: if request.auth != null;
       allow write: if false;
     }
@@ -576,7 +566,7 @@ git push -u origin main
 - Berkayın Ahırı'ndaki mesajlar Firestore'da kalıcı olarak duruyor (sohbet
   ekranında sadece en son 50 mesaj gösteriliyor). Zamanla çok birikirse
   Firebase konsolundan elle temizleyebilirsin.
-- Sol üstteki ☰ butonu Spor/Sosyal Hayat/Galeri/Borsa/Tahmin/Bingo linklerini
+- Sol üstteki ☰ butonu Spor/Sosyal Hayat/Galeri/Borsa/Tahmin linklerini
   içeren bir menü açar, sağ üstte Giriş Yap/Kayıt Ol duruyor. Sol altta
   Berkayın Ahırı, sağ altta ses açma/kapama butonu sabit duruyor. Dördü de
   gerçek ekran köşesine sabitlenmiş durumda (sayfa içeriği ortalanmış olsa bile).
@@ -668,13 +658,11 @@ Hepsi sunucuda (`api/borsa.js`) yapılır, ayarları **Admin → 💰 Ekonomi** 
   ücretten büyükse insanlar durmadan çevirip kasayı boşaltabilir.
 - **🎲 Tahmin pazarı** (`/tahmin`): admin iddia açar, herkes bir seçeneğe BERKAY yatırır. Sonuç girilince
   havuz bilenlere yatırdıkları oranda dağıtılır; kimse bilemezse ya da iptal edilirse herkese iade.
-- **🎱 Berkay Bingo** (`/bingo`): admin olay listesiyle tur açar, herkese rastgele 5×5 kart çıkar.
-  Olaylar oldukça admin işaretler; bir sıra/sütun/çaprazı ilk tamamlayıp BİNGO diyen ödülü alır.
 - **👤 Profil** (`/profil?k=ad`): cüzdan, zenginler sırası, günlük seri, oyun rekorları, borsa karnesi
   (en iyi işlem, en büyük likidasyon), tahmin sonuçları. Giriş panelinde "Profilim".
 - **🐳 Zenginler listesi** ve **📰 Bu hafta** (en kârlı işlem, haftanın likide olanı) borsa sayfasında.
 - **Market dijital ürünleri:** isim rengi, rozet, özel unvan (7 gün). Anında uygulanır; profil,
-  zenginler listesi, borsa ve tahmin/bingo listelerinde görünür. Admin uygunsuz süsü
+  zenginler listesi, borsa ve tahmin listelerinde görünür. Admin uygunsuz süsü
   Borsa → Cüzdanlar'dan silebilir.
 
-Ders ve Ehliyet sayfaları kaldırıldı (`/ders` ve `/ehliyet` ana sayfaya yönlenir).
+Ders, Ehliyet ve Bingo sayfaları kaldırıldı (`/ders`, `/ehliyet`, `/bingo` ana sayfaya yönlenir).

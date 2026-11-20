@@ -3,7 +3,8 @@
   "trailingSlash": false,
   "redirects": [
     { "source": "/ders", "destination": "/", "permanent": false },
-    { "source": "/ehliyet", "destination": "/", "permanent": false }
+    { "source": "/ehliyet", "destination": "/", "permanent": false },
+    { "source": "/bingo", "destination": "/", "permanent": false }
   ],
   "functions": {
     "api/ask.js": {
