@@ -3,7 +3,7 @@
 //   - Özet: fiyat, arz, kasa, dolaşım, açık pozisyonlar, piyasa aç/kapat
 //   - Fiyatı yönet: grafiğe çizgi çiz → fiyat o rotayı izler; ya da anında fiyat ver
 //   - Ayarlar: derinlik, oynaklık, maksimum kaldıraç
-//   - Arz: kullanıcıya BERKAY/TL gönder ya da geri al, toplam arzı bas/yak
+//   - Arz: kullanıcıya BERKAY/USDT gönder ya da geri al, toplam arzı bas/yak
 //   - Cüzdanlar, kaldıraç pozisyonları (kapat / likide et), siparişler, market, para hareketleri
 // Para değiştiren her şey /api/borsa üzerinden (sunucuda) yapılır.
 // ============================================================
@@ -82,6 +82,8 @@
     kapatDurum = db.collection("borsa").doc(BC.durumId(sym)).onSnapshot((s) => {
       if (!s.exists) { $("bxaOzet").innerHTML = `<p class="muted">${sym} henüz başlamadı. Bu sayfa sunucuya ulaşınca birkaç saniyede kurulur.</p>`; return; }
       d = s.data(); d.poz = d.poz || {}; d.son = d.son || [];
+      const c = coinler.find((x) => x.sym === sym);
+      $("bxaCoinBilgi").textContent = (c ? `Seçili: ${c.ad} (${c.sym})` : sym) + (d.gercek ? " · 🌐 Gerçek fiyat (Binance): fiyat verme, rota, MM ve grafik sıfırlama bu coinde kapalı; derinlik sadece en büyük pozisyon sınırını belirler." : "");
       ozetCiz(); pozlarCiz(); cuzdanlarCiz(); grafikCiz(); ayarDoldur(); kisilerDoldur();
     }, (err) => { $("bxaGenelDurum").textContent = "⚠️ " + err.message + " (Firestore kurallarını güncelledin mi?)"; });
     kapatGizli = db.collection("borsa").doc(sym === "BERKAY" ? "gizli" : "gizli_" + sym).onSnapshot((s) => {
@@ -123,16 +125,16 @@
     const poz = Object.values(d.poz);
     const kz = acikKZ();
     const kutular = [
-      ["Fiyat", sayi(d.fiyat) + " TL"],
+      ["Fiyat", sayi(d.fiyat) + " USDT"],
       ["Toplam arz", para(d.toplamArz, 0) + " " + secili],
       ["Kasada (admin)", para(d.kasaBKC, 2) + " " + secili],
       ["Kullanıcılarda", para(kullanicilarda, 2) + " " + secili],
       ["Arz kontrolü", Math.abs(kullanicilarda + d.kasaBKC - d.toplamArz) < 0.01 ? "✅ Tutuyor" : "⚠️ " + para(kullanicilarda + d.kasaBKC - d.toplamArz)],
-      ["Kullanıcılardaki TL", para(btlToplam) + " TL"],
+      ["Kullanıcılardaki USDT", para(btlToplam) + " USDT"],
       ["Cüzdan sayısı", String(cuzdanlar.length)],
-      ["Açık pozisyon", poz.length + " · " + para(poz.reduce((t, p) => t + p.notional, 0), 0) + " TL"],
-      ["Kaldıraçtakilerin K/Z", isaretli(kz) + " TL"],
-      ["Piyasa değeri", para(d.fiyat * (d.toplamArz - d.kasaBKC), 0) + " TL"],
+      ["Açık pozisyon", poz.length + " · " + para(poz.reduce((t, p) => t + p.notional, 0), 0) + " USDT"],
+      ["Kaldıraçtakilerin K/Z", isaretli(kz) + " USDT"],
+      ["Piyasa değeri", para(d.fiyat * (d.toplamArz - d.kasaBKC), 0) + " USDT"],
       ["Piyasa", d.acik ? "🟢 Açık" : "🔴 Kapalı"],
       ["Rota", d.rotaVar ? "🟡 Çizgi izleniyor" : "Serbest"],
     ];
@@ -176,7 +178,7 @@
   });
   $("bxaSifirlaBtn").addEventListener("click", async () => {
     const f = Number($("bxaSifirlaFiyat").value) || 1;
-    if (!confirm(`${secili} grafiğinin TÜM geçmişi silinecek ve fiyat ${f} TL olacak.\n\n• Coin/TL bakiyeleri aynen kalır.\n• Açık kaldıraç pozisyonları kalır; girişleri aynı oranda ölçeklenir, herkesin K/Z'si değişmez.\n• Çizili rota silinir.\n\nGeri alınamaz. Emin misin?`)) return;
+    if (!confirm(`${secili} grafiğinin TÜM geçmişi silinecek ve fiyat ${f} USDT olacak.\n\n• Coin/USDT bakiyeleri aynen kalır.\n• Açık kaldıraç pozisyonları kalır; girişleri aynı oranda ölçeklenir, herkesin K/Z'si değişmez.\n• Çizili rota silinir.\n\nGeri alınamaz. Emin misin?`)) return;
     const r = await islem($("bxaSifirlaBtn"), $("bxaFiyatDurum"), "adminGrafikSifirla", { fiyat: f });
     if (r) { eskiMumlar.clear(); grafikCiz(); mmDolu = false; }
   });
@@ -201,8 +203,8 @@
     const st = $("bxaMMDurum");
     if (!mm) { st.textContent = "Piyasa yapıcı hiç açılmadı."; return; }
     const al = mm.alinan || 0, sat = mm.satilan || 0;
-    const son = mm.sonIslem ? ` · son işlem ${tarih(mm.sonIslem.t)}: ${mm.sonIslem.N > 0 ? "🟢 aldı" : "🔴 sattı"} ${para(Math.abs(mm.sonIslem.N))} TL → ${sayi(mm.sonIslem.f)}` : "";
-    st.textContent = `${mm.acik ? "🟢 Çalışıyor" : "⚪ Kapalı"} · toplam alım ${para(al)} TL · toplam satış ${para(sat)} TL · net ${isaretli(al - sat)} TL${mm.mod === "serbest" && mm.ort ? ` · ortalama ${sayi(mm.ort)}` : ""}${son}`;
+    const son = mm.sonIslem ? ` · son işlem ${tarih(mm.sonIslem.t)}: ${mm.sonIslem.N > 0 ? "🟢 aldı" : "🔴 sattı"} ${para(Math.abs(mm.sonIslem.N))} USDT → ${sayi(mm.sonIslem.f)}` : "";
+    st.textContent = `${mm.acik ? "🟢 Çalışıyor" : "⚪ Kapalı"} · toplam alım ${para(al)} USDT · toplam satış ${para(sat)} USDT · net ${isaretli(al - sat)} USDT${mm.mod === "serbest" && mm.ort ? ` · ortalama ${sayi(mm.ort)}` : ""}${son}`;
   }
   function mmModGoster() { const m = $("bxaMMMod").value; $("bxaMMHedefKutu").hidden = m !== "denge"; $("bxaMMBantKutu").hidden = m !== "denge" && m !== "serbest"; $("bxaMMSureKutu").hidden = m !== "serbest"; }
   $("bxaMMMod").addEventListener("change", mmModGoster);
@@ -215,7 +217,7 @@
     const yuzde = (Math.exp(tl / d.derinlik) - 1) * 100;
     const oneri = Math.round(d.derinlik * 0.05);
     el.innerHTML = `Bu miktar fiyatı dakikada en fazla <b>%${yuzde < 1000 ? yuzde.toFixed(1) : "1000+"}</b> oynatabilir. ` +
-      (yuzde > 15 ? `<b style="color:var(--err)">⚠️ Çok yüksek, grafik zıplar.</b> Derinlik ${d.derinlik.toLocaleString("tr-TR")} iken önerilen ~${oneri.toLocaleString("tr-TR")} TL (dakikada ~%5).` : "✅ Makul.");
+      (yuzde > 15 ? `<b style="color:var(--err)">⚠️ Çok yüksek, grafik zıplar.</b> Derinlik ${d.derinlik.toLocaleString("tr-TR")} iken önerilen ~${oneri.toLocaleString("tr-TR")} USDT (dakikada ~%5).` : "✅ Makul.");
   }
   $("bxaMMDakika").addEventListener("input", mmEtkiGoster);
   $("bxaMMAcik").addEventListener("change", mmEtkiGoster);
@@ -257,7 +259,7 @@
     sel.textContent = ""; sel.append(new Option("Seç…", ""));
     [...harita.entries()].sort((a, b) => a[1].localeCompare(b[1], "tr")).forEach(([uid, ad]) => {
       const c = cuzdanlar.find((x) => x.uid === uid);
-      sel.append(new Option(c ? `${ad} (${para(BC.bakiye(c, secili), secili === "BERKAY" ? 0 : 2)} ${secili} · ${para(c.btl, 0)} TL)` : `${ad} (cüzdan yok)`, uid));
+      sel.append(new Option(c ? `${ad} (${para(BC.bakiye(c, secili), secili === "BERKAY" ? 0 : 2)} ${secili} · ${para(c.btl, 0)} USDT)` : `${ad} (cüzdan yok)`, uid));
     });
     sel.value = secili;
   }
@@ -290,10 +292,10 @@
       const tr = el("tr");
       const m = BC.bakiye(c, secili);
       tr.append(el("td", null, c.ad), el("td", null, para(m, 4)), el("td", null, ((m / d.toplamArz) * 100).toFixed(3) + "%"), el("td", null, para(c.btl)),
-        el("td", null, poz.length ? `${poz.length} poz · ${para(teminat)} TL` : "—"),
+        el("td", null, poz.length ? `${poz.length} poz · ${para(teminat)} USDT` : "—"),
         el("td", kz >= 0 ? "yukari" : "asagi", poz.length ? isaretli(kz) : "—"),
         el("td", (c.gerceklesen || 0) >= 0 ? "yukari" : "asagi", isaretli(c.gerceklesen || 0)),
-        el("td", null, para(toplam) + " TL"));
+        el("td", null, para(toplam) + " USDT"));
       const sus = el("td");
       const k = c.kozmetik || {};
       if (k.renk || k.rozet || k.unvan) {
@@ -321,9 +323,9 @@
       tr.append(el("td", null, tarih(p.acilis)));
       const td = el("td", "bx-butonlar");
       const kapat = el("button", "admin-btn", "Kapat"); kapat.type = "button"; kapat.title = "Normal kapat, kâr/zarar sahibine";
-      kapat.addEventListener("click", () => { if (confirm(`${p.ad} kişisinin pozisyonu kapatılsın mı? (${isaretli(pnl)} TL sahibine)`)) islem(kapat, $("bxaGenelDurum"), "adminPozKapat", { id: p.id, mod: "kapat" }); });
+      kapat.addEventListener("click", () => { if (confirm(`${p.ad} kişisinin pozisyonu kapatılsın mı? (${isaretli(pnl)} USDT sahibine)`)) islem(kapat, $("bxaGenelDurum"), "adminPozKapat", { id: p.id, mod: "kapat" }); });
       const lik = el("button", "admin-btn reject", "💀 Likide et"); lik.type = "button";
-      lik.addEventListener("click", () => { if (confirm(`${p.ad} kişisinin ${p.teminat} TL teminatı yanacak. Likide edilsin mi?`)) islem(lik, $("bxaGenelDurum"), "adminPozKapat", { id: p.id, mod: "likide" }); });
+      lik.addEventListener("click", () => { if (confirm(`${p.ad} kişisinin ${p.teminat} USDT teminatı yanacak. Likide edilsin mi?`)) islem(lik, $("bxaGenelDurum"), "adminPozKapat", { id: p.id, mod: "likide" }); });
       td.append(kapat, lik); tr.append(td);
       tb.append(tr);
     });

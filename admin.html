@@ -61,8 +61,8 @@
               <label>Ad <input type="text" id="bxaYeniAd" maxlength="24" placeholder="ör. Pepe" /></label>
               <label>Logo (emoji ya da harf) <input type="text" id="bxaYeniEmoji" maxlength="4" placeholder="🐸" /></label>
               <label>Renk <input type="color" id="bxaYeniRenk" value="#5a3fd4" /></label>
-              <label>Başlangıç fiyatı (TL) <input type="number" id="bxaYeniFiyat" step="any" min="0" placeholder="ör. 1" /></label>
-              <label>Likidite derinliği (TL) <input type="number" id="bxaYeniDerinlik" step="any" min="100" placeholder="10000" /></label>
+              <label>Başlangıç fiyatı (USDT) <input type="number" id="bxaYeniFiyat" step="any" min="0" placeholder="ör. 1" /></label>
+              <label>Likidite derinliği (USDT) <input type="number" id="bxaYeniDerinlik" step="any" min="100" placeholder="10000" /></label>
               <div class="sayac-butonlar">
                 <button type="button" class="admin-btn publish" id="bxaYeniKaydet">💾 Kaydet</button>
                 <button type="button" class="admin-btn reject" id="bxaYeniSil">🗑️ Listeden kaldır</button>
@@ -102,7 +102,7 @@
             <span class="muted" id="bxaRotaBilgi"></span>
           </div>
           <div class="bx-admin-araclar" style="border-top:1px dashed var(--line);padding-top:10px">
-            <label>Grafiği sıfırla, başlangıç fiyatı <input type="number" id="bxaSifirlaFiyat" step="any" min="0" value="1" /> TL</label>
+            <label>Grafiği sıfırla, başlangıç fiyatı <input type="number" id="bxaSifirlaFiyat" step="any" min="0" value="1" /> USDT</label>
             <button type="button" class="admin-btn reject" id="bxaSifirlaBtn">🧹 Grafiği sıfırla</button>
             <span class="muted" style="font-size:.8rem">Tüm mumlar ve son işlemler silinir. Bakiyeler ve açık pozisyonlar kalır (K/Z'leri değişmez).</span>
           </div>
@@ -115,7 +115,7 @@
           <div class="tpl-form adm-form">
             <label><input type="checkbox" id="bxaMMAcik" /> Açık</label>
             <label>Mod <select id="bxaMMMod"><option value="serbest">🌊 Serbest (sabit hedef yok)</option><option value="denge">⚖️ Sabit hedef</option><option value="al">🟢 Sürekli al</option><option value="sat">🔴 Sürekli sat</option></select></label>
-            <label>Dakikada en fazla (TL) <input type="number" id="bxaMMDakika" min="0" step="any" placeholder="ör. 200" /></label>
+            <label>Dakikada en fazla (USDT) <input type="number" id="bxaMMDakika" min="0" step="any" placeholder="ör. 200" /></label>
             <label id="bxaMMHedefKutu">Hedef fiyat <input type="number" id="bxaMMHedef" min="0" step="any" placeholder="ör. 1.5" /> <button type="button" class="link-btn" id="bxaMMHedefSimdi">şimdiki fiyat</button></label>
             <label id="bxaMMSureKutu">Ortalama süresi (dk) <input type="number" id="bxaMMSure" min="5" max="1440" step="1" value="60" /></label>
             <label id="bxaMMBantKutu">Bant (±%) <input type="number" id="bxaMMBant" min="0" max="90" step="0.5" value="2" /></label>
@@ -132,12 +132,12 @@
         <div class="panel card admin-section">
           <h2>⚙️ Piyasa ayarları</h2>
           <div class="tpl-form adm-form">
-            <label>Likidite derinliği (TL) <input type="number" id="bxaDerinlik" min="100" step="100" /></label>
+            <label>Likidite derinliği (USDT) <input type="number" id="bxaDerinlik" min="100" step="100" /></label>
             <label>Oynaklık (10 sn başına, 0 = kapalı) <input type="number" id="bxaOynaklik" min="0" max="0.05" step="0.0005" /></label>
             <label>Maksimum kaldıraç (1–20) <input type="number" id="bxaMaxX" min="1" max="20" step="1" /></label>
             <button type="button" class="admin-btn publish" id="bxaAyarKaydet">💾 Kaydet</button>
           </div>
-          <p class="muted" style="font-size:.8rem">Derinlik büyüdükçe fiyat alım/satımla daha az oynar. 10.000'de 200 TL'lik alım fiyatı ~%2 iter. Tek kaldıraç pozisyonu en fazla derinliğin yarısı kadar büyüklükte olabilir (10.000'de 5.000 TL, fiyatı en fazla ~%65 iter).</p>
+          <p class="muted" style="font-size:.8rem">Derinlik büyüdükçe fiyat alım/satımla daha az oynar. 10.000'de 200 USDT'lik alım fiyatı ~%2 iter. Tek kaldıraç pozisyonu en fazla derinliğin yarısı kadar büyüklükte olabilir (10.000'de 5.000 USDT, fiyatı en fazla ~%65 iter).</p>
           <p class="suggest-status" id="bxaAyarDurum"></p>
         </div>
 
@@ -146,7 +146,7 @@
           <div class="tpl-form adm-form">
             <label>Kullanıcı <select id="bxaKisi"><option value="">Seç…</option></select></label>
             <label><span class="bxa-sym">BERKAY</span> (+ gönder / − geri al) <input type="number" id="bxaBkc" step="any" placeholder="ör. 500 ya da -100" /></label>
-            <label>TL (+ gönder / − geri al) <input type="number" id="bxaBtl" step="any" placeholder="ör. 100" /></label>
+            <label>USDT (+ gönder / − geri al) <input type="number" id="bxaBtl" step="any" placeholder="ör. 100" /></label>
             <button type="button" class="admin-btn publish" id="bxaGonder">💸 Uygula</button>
           </div>
           <div class="tpl-form adm-form" style="margin-top:14px">
@@ -159,7 +159,7 @@
         <div class="panel card admin-section wide">
           <h2>👛 Cüzdanlar · kimde ne var</h2>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
-            <thead><tr><th>Kullanıcı</th><th class="bxa-sym">BERKAY</th><th>Arz payı</th><th>TL</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th><th>Süsler</th></tr></thead>
+            <thead><tr><th>Kullanıcı</th><th class="bxa-sym">BERKAY</th><th>Arz payı</th><th>USDT</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th><th>Süsler</th></tr></thead>
             <tbody id="bxaCuzdanlar"><tr><td colspan="8" class="muted">Yükleniyor…</td></tr></tbody>
           </table></div>
         </div>
@@ -211,7 +211,7 @@
           <h2>🧾 Para hareketleri</h2>
           <p class="muted">Kim ne aldı, ne sattı, kime ne gitti. Son 300 kayıt.</p>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
-            <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Tür</th><th>Detay</th><th>BERKAY</th><th>TL</th></tr></thead>
+            <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Tür</th><th>Detay</th><th>BERKAY</th><th>USDT</th></tr></thead>
             <tbody id="bxaLog"><tr><td colspan="6" class="muted">Yükleniyor…</td></tr></tbody>
           </table></div>
         </div>

@@ -1,6 +1,6 @@
 // ============================================================
 // profil.js — sadece profil.html. /profil?k=kullaniciAdi (yoksa kendi profilin).
-// Cüzdan (BERKAY/TL, toplam değer, sıralama, günlük seri), oyun rekorları,
+// Cüzdan (BERKAY/USDT, toplam değer, sıralama, günlük seri), oyun rekorları,
 // borsa karnesi (en iyi işlem, en büyük likidasyon, açık pozisyonlar),
 // tahmin sonuçları ve zenginler listesi.
 // ============================================================
@@ -96,7 +96,7 @@
     // Cüzdan
     const toplam = deger(c);
     const oz = $("pfCuzdan"); oz.textContent = "";
-    const kalemler = [["BERKAY", para(c.bkc || 0)], ["TL", para(c.btl || 0)], ["Toplam değer", para(toplam) + " TL"], ["Borsada gerçekleşen K/Z", isaretli(c.gerceklesen || 0) + " TL"]];
+    const kalemler = [["BERKAY", para(c.bkc || 0)], ["USDT", para(c.btl || 0)], ["Toplam değer", para(toplam) + " USDT"], ["Borsada gerçekleşen K/Z", isaretli(c.gerceklesen || 0) + " USDT"]];
     coinler.forEach((k) => { const m = BC.bakiye(c, k.sym); if (k.sym !== "BERKAY" && m > 1e-9) kalemler.splice(kalemler.length - 2, 0, [k.sym, para(m, m < 10 ? 4 : 2)]); });
     kalemler.forEach(([a, b]) => { const x = el("div"); x.append(el("span", null, a), el("b", null, b)); oz.append(x); });
 
@@ -111,11 +111,11 @@
     const kazanma = kapali.length ? kapali.filter((g) => g.pnl > 0).length / kapali.length : 0;
     const borsa = [];
     borsa.push(satir("📊 Kapanan işlem", `${kapali.length} · %${(kazanma * 100).toFixed(0)} kârlı`));
-    if (enIyi) borsa.push(satir(`🤑 En iyi: ${enIyi.coin || "BERKAY"} ${enIyi.kaldirac}x ${enIyi.yon.toUpperCase()}`, `${isaretli(enIyi.pnl)} TL (${isaretli(enIyi.yuzde, 0)}%)`, "yukari"));
-    if (enKotu) borsa.push(satir(`💀 En büyük likidasyon: ${enKotu.coin || "BERKAY"} ${enKotu.kaldirac}x ${enKotu.yon.toUpperCase()}`, `−${para(enKotu.teminat)} TL`, "asagi"));
+    if (enIyi) borsa.push(satir(`🤑 En iyi: ${enIyi.coin || "BERKAY"} ${enIyi.kaldirac}x ${enIyi.yon.toUpperCase()}`, `${isaretli(enIyi.pnl)} USDT (${isaretli(enIyi.yuzde, 0)}%)`, "yukari"));
+    if (enKotu) borsa.push(satir(`💀 En büyük likidasyon: ${enKotu.coin || "BERKAY"} ${enKotu.kaldirac}x ${enKotu.yon.toUpperCase()}`, `−${para(enKotu.teminat)} USDT`, "asagi"));
     pozlari(c.uid).forEach(({ p, dd: d, sym }) => {
       const pnl = E.pnl(p, d.fiyat, d.derinlik);
-      borsa.push(satir(`⚡ Açık: ${sym} ${p.kaldirac}x ${p.yon.toUpperCase()}`, `${isaretli(pnl)} TL (${isaretli((pnl / p.teminat) * 100, 0)}%)`, pnl >= 0 ? "yukari" : "asagi"));
+      borsa.push(satir(`⚡ Açık: ${sym} ${p.kaldirac}x ${p.yon.toUpperCase()}`, `${isaretli(pnl)} USDT (${isaretli((pnl / p.teminat) * 100, 0)}%)`, pnl >= 0 ? "yukari" : "asagi"));
     });
     kutu("pfBorsa", kapali.length || borsa.length > 1 ? borsa : []);
 
@@ -137,7 +137,7 @@
     const l = [...cuzdanlar].sort((a, b) => deger(b) - deger(a)).slice(0, 15);
     kutu("pfZengin", l.map((c, i) => {
       const r = el("div", "bx-satir" + (c.uid === vurgu ? " pf-vurgu" : ""));
-      r.append(el("span", "rk-sira", ["🥇", "🥈", "🥉"][i] || String(i + 1)), Ekonomi.isim(c.ad, c.kozmetik || null), el("span", "bx-sag", para(deger(c)) + " TL"));
+      r.append(el("span", "rk-sira", ["🥇", "🥈", "🥉"][i] || String(i + 1)), Ekonomi.isim(c.ad, c.kozmetik || null), el("span", "bx-sag", para(deger(c)) + " USDT"));
       return r;
     }));
   }

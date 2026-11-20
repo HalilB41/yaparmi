@@ -2048,3 +2048,7 @@ button, .btn, a, input[type="range"], summary { touch-action: manipulation; } /*
 .bxa-coin:hover { border-color: var(--accent); }
 .bxa-coin.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
 .bxa-coin-ekle summary { cursor: pointer; font-weight: 800; margin: 4px 0 8px; }
+.bx-dex-etiket.canli { background: rgba(61,220,132,.16); color: #3ddc84; border: 1px solid rgba(61,220,132,.4); }
+.bx-dex-etiket.canli::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 4px; vertical-align: 1px; animation: bx-canli 1.6s ease-in-out infinite; }
+@keyframes bx-canli { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .bx-dex-etiket.canli::before { animation: none; } }

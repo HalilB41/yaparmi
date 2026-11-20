@@ -13,11 +13,11 @@
 //
 // ---------------- Para birimleri ----------------
 //   BERKAY → coin. Toplam arz 1.000.000. Dağıtılmayan kısım "kasa"da durur.
-//   TL     → nakit. BERKAY'ın fiyatı TL cinsinden. Spot'ta BERKAY satınca TL
-//          gelir, TL ile BERKAY alınır. Kaldıraçta teminat TL'dir.
+//   USDT     → nakit. BERKAY'ın fiyatı USDT cinsinden. Spot'ta BERKAY satınca USDT
+//          gelir, USDT ile BERKAY alınır. Kaldıraçta teminat USDT'dir.
 //
 // ---------------- Fiyat nasıl oluşur? ----------------
-//   Her alım fiyatı yükseltir, her satış düşürür:  fiyat × e^(±TL / derinlik)
+//   Her alım fiyatı yükseltir, her satış düşürür:  fiyat × e^(±USDT / derinlik)
 //   Kaldıraçlı pozisyon açmak/kapatmak da aynı eğriden geçer (long = alım,
 //   short = satış), yani kaldıraçla girenler de fiyatı oynatır. Pozisyonun
 //   K/Z'si "şimdi kapatsan ne alırsın"dır (kapatmak da fiyatı geri iter).
@@ -28,8 +28,8 @@
 // ---------------- Piyasa yapıcı (MM) ----------------
 //   Admin açarsa dakikada bir kasa adına alım/satım yapar (aynı eğriden):
 //     denge → fiyat [hedef×(1−bant), hedef×(1+bant)] dışına çıkarsa hedefe doğru,
-//             dakikada en fazla "dakikalık" TL kadar alır/satar
-//     al / sat → her dakika "dakikalık" TL kadar alır / satar
+//             dakikada en fazla "dakikalık" USDT kadar alır/satar
+//     al / sat → her dakika "dakikalık" USDT kadar alır / satar
 //   MM'nin parası kasadır: kullanıcı bakiyelerine ve toplam arza dokunmaz.
 //   Ne kadar alıp sattığı borsa/gizli.mm içinde tutulur (sadece admin görür).
 //
@@ -62,7 +62,7 @@ import { randomUUID } from "node:crypto";
 
 const BASLANGIC_ARZ = 1_000_000;
 const KAYIT_BONUSU = 200; // BERKAY
-const BASLANGIC_FIYAT = 1; // 1 BERKAY = 1 TL
+const BASLANGIC_FIYAT = 1; // 1 BERKAY = 1 USDT
 const ADIM_MS = 10_000; // fiyat her 10 saniyede bir adım atar
 const MUM_MS = 60_000; // 1 dakikalık mumlar
 const SON_MUM = 240; // durum belgesinde tutulan son mum sayısı (4 saat)
@@ -83,10 +83,34 @@ const VARSAYILAN_COINLER = [
   { sym: "BURGER", ad: "Burger", emoji: "🍔", renk: "#f59f00", fiyat: 2, derinlik: 10_000, sira: 2 },
   { sym: "ALIHAN", ad: "Alihan", emoji: "☕", renk: "#8d5524", fiyat: 1, derinlik: 10_000, sira: 3 },
   { sym: "HALIL", ad: "Halil", emoji: "👑", renk: "#7048e8", fiyat: 3, derinlik: 10_000, sira: 4 },
-  { sym: "BTC", ad: "Bitcoin", emoji: "₿", renk: "#f7931a", fiyat: 1000, derinlik: 200_000, sira: 5 },
-  { sym: "ETH", ad: "Ethereum", emoji: "Ξ", renk: "#627eea", fiyat: 100, derinlik: 100_000, sira: 6 },
-  { sym: "SOL", ad: "Solana", emoji: "◎", renk: "#14b88a", fiyat: 10, derinlik: 50_000, sira: 7 },
+  // gercek: fiyat ve mumlar gerçek piyasadan (Binance, olmazsa Coinbase) gelir; alım-satım fiyatı itmez
+  { sym: "BTC", ad: "Bitcoin", emoji: "₿", renk: "#f7931a", fiyat: 1000, derinlik: 200_000, sira: 5, arz: 21_000_000, gercek: { binance: "BTCUSDT", coinbase: "BTC-USD" } },
+  { sym: "ETH", ad: "Ethereum", emoji: "Ξ", renk: "#627eea", fiyat: 100, derinlik: 100_000, sira: 6, arz: 120_000_000, gercek: { binance: "ETHUSDT", coinbase: "ETH-USD" } },
+  { sym: "SOL", ad: "Solana", emoji: "◎", renk: "#14b88a", fiyat: 10, derinlik: 50_000, sira: 7, arz: 600_000_000, gercek: { binance: "SOLUSDT", coinbase: "SOL-USD" } },
 ];
+// ---------------- Gerçek piyasa fiyatı ----------------
+const DIS_ZAMAN_ASIMI = 3500;
+async function disJson(url) {
+  const ac = new AbortController();
+  const z = setTimeout(() => ac.abort(), DIS_ZAMAN_ASIMI);
+  try {
+    const r = await fetch(url, { signal: ac.signal, headers: { accept: "application/json" } });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.json();
+  } finally { clearTimeout(z); }
+}
+// Gerçek 1 dakikalık mumlar [{t,o,h,l,c}] (eskiden yeniye). Son mum o anki dakika (fiyat = son c).
+async function gercekMumlar(g, baslangic, now) {
+  const adet = Math.min(1000, Math.max(2, Math.ceil((now - baslangic) / MUM_MS) + 1));
+  try {
+    const j = await disJson(`https://data-api.binance.vision/api/v3/klines?symbol=${g.binance}&interval=1m&limit=${adet}`);
+    const l = j.map((k) => ({ t: k[0], o: +k[1], h: +k[2], l: +k[3], c: +k[4] })).filter((m) => m.c > 0);
+    if (l.length) return l;
+  } catch { /* Coinbase'e geç */ }
+  const bas = Math.max(baslangic, now - 299 * MUM_MS);
+  const j = await disJson(`https://api.exchange.coinbase.com/products/${g.coinbase}/candles?granularity=60&start=${new Date(bas).toISOString()}&end=${new Date(now).toISOString()}`);
+  return j.map((k) => ({ t: k[0] * 1000, l: +k[1], h: +k[2], o: +k[3], c: +k[4] })).filter((m) => m.c > 0).sort((a, b) => a.t - b.t);
+}
 const ANA = "BERKAY";
 function coinListesi(snap) {
   const kayitli = snap && snap.exists && Array.isArray(snap.data().liste) ? snap.data().liste : [];
@@ -139,16 +163,16 @@ function normal() {
 }
 
 // ---------------- Fiyat eğrisi ----------------
-// N TL harcayıp BERKAY almak: gelen BERKAY ve yeni fiyat
+// N USDT harcayıp BERKAY almak: gelen BERKAY ve yeni fiyat
 function egriAl(p, N, D) { return { q: (D / p) * (1 - Math.exp(-N / D)), p1: p * Math.exp(N / D) }; }
-// q BERKAY satmak: gelen TL ve yeni fiyat
+// q BERKAY satmak: gelen USDT ve yeni fiyat
 function egriSat(p, q, D) { const x = (q * p) / D; return { N: D * Math.log1p(x), p1: p / (1 + x) }; }
-// N TL'lik short açmak: satılan (ödünç) BERKAY ve yeni fiyat
+// N USDT'lik short açmak: satılan (ödünç) BERKAY ve yeni fiyat
 function egriShortAc(p, N, D) { return { q: (D / p) * Math.expm1(N / D), p1: p * Math.exp(-N / D) }; }
-// q BERKAY'ı geri almak (short kapatma): ödenen TL ve yeni fiyat
+// q BERKAY'ı geri almak (short kapatma): ödenen USDT ve yeni fiyat
 function egriGeriAl(p, q, D) { const x = Math.min((q * p) / D, 0.98); return { N: -D * Math.log1p(-x), p1: p / (1 - x) }; }
 
-// Pozisyon şu an kapatılsa kâr/zarar (TL) — kapanışın fiyatı itmesini de hesaba katar
+// Pozisyon şu an kapatılsa kâr/zarar (USDT) — kapanışın fiyatı itmesini de hesaba katar
 function pozPnl(poz, p, D) {
   if (poz.v === 2) return poz.yon === "long" ? poz.boyut * (p - poz.giris) : poz.boyut * (poz.giris - p);
   if (poz.yon === "long") return egriSat(p, poz.boyut, D).N - poz.notional;
@@ -247,13 +271,29 @@ function mumYaz(d, t, p, hacim, tasanlar) {
     son.push({ t: kova, o: r6(o), h: r6(Math.max(o, p)), l: r6(Math.min(o, p)), c: r6(p), v: r2(hacim) });
   }
   if (son.length > SON_MUM) tasanlar.push(...son.splice(0, son.length - SON_MUM));
-  // Saatlik özet (son 25 saat): coin listesindeki 24s değişim / hacim için
+  saatYaz(d, t, p, hacim);
+}
+// Saatlik özet (son 25 saat): coin listesindeki 24s değişim / hacim için
+function saatYaz(d, t, p, hacim) {
   const saat = (d.saat ||= []);
   const sk = Math.floor(t / 3600_000) * 3600_000;
   const ss = saat[saat.length - 1];
   if (ss && ss.t === sk) { ss.c = r6(p); ss.h = r6(Math.max(ss.h, p)); ss.l = r6(Math.min(ss.l, p)); ss.v = r2((ss.v || 0) + hacim); }
   else if (!ss || sk > ss.t) { const o = ss ? ss.c : p; saat.push({ t: sk, o: r6(o), h: r6(Math.max(o, p)), l: r6(Math.min(o, p)), c: r6(p), v: r2(hacim) }); }
   if (saat.length > 25) saat.splice(0, saat.length - 25);
+}
+
+// Gerçek piyasadan gelen hazır mumu yaz (aynı dakikada sitedeki işlem hacmi korunur)
+function mumKoy(d, m, tasanlar) {
+  const son = d.son;
+  const sonMum = son[son.length - 1];
+  if (sonMum && sonMum.t === m.t) {
+    sonMum.o = r6(m.o); sonMum.h = r6(Math.max(m.h, m.c)); sonMum.l = r6(Math.min(m.l, m.c)); sonMum.c = r6(m.c);
+  } else if (!sonMum || m.t > sonMum.t) {
+    son.push({ t: m.t, o: r6(m.o), h: r6(m.h), l: r6(m.l), c: r6(m.c), v: 0 });
+  } else return;
+  if (son.length > SON_MUM) tasanlar.push(...son.splice(0, son.length - SON_MUM));
+  saatYaz(d, m.t, m.l, 0); saatYaz(d, m.t, m.h, 0); saatYaz(d, m.t, m.c, 0);
 }
 
 function akisEkle(d, kayit) {
@@ -288,7 +328,7 @@ function likidasyonlar(d, t, kapananlar) {
   }
 }
 
-// Pozisyonu eğri üzerinden kapat (fiyatı iter); kullanıcıya dönecek TL'yi döndürür
+// Pozisyonu eğri üzerinden kapat (fiyatı iter); kullanıcıya dönecek USDT'yi döndürür
 function pozKapatIc(d, poz, t, sebep, kapananlar) {
   const D = d.derinlik;
   const p0 = d.fiyat;
@@ -321,7 +361,7 @@ function pozKapatIc(d, poz, t, sebep, kapananlar) {
   return kayit;
 }
 
-// Piyasa yapıcı: dakikada bir işlem. Döndürdüğü TL: + alım, − satım
+// Piyasa yapıcı: dakikada bir işlem. Döndürdüğü USDT: + alım, − satım
 function mmAdim(d, mm) {
   if (!mm || !mm.acik) return 0;
   const D = d.derinlik, p = d.fiyat, max = Math.max(0, sayi(mm.dakikalik) || 0);
@@ -354,6 +394,28 @@ function mmAdim(d, mm) {
 
 // Zamanı "şimdi"ye kadar ilerlet: oynaklık + rota + likidasyonlar
 function ilerlet(d, gizli, now, kapananlar) {
+  if (d.gercek) {
+    // Gerçek coin: fiyat dışarıdan. Alınamadıysa hiçbir şey ilerlemez (sonTick aynı kalır).
+    const mumlar = kapananlar.dis;
+    if (!mumlar) return;
+    const sonT = d.son.length ? d.son[d.son.length - 1].t : 0;
+    for (const m of mumlar) {
+      if (m.t < sonT) continue;
+      if (Object.keys(d.poz).length) for (const p of [m.l, m.h]) { d.fiyat = p; likidasyonlar(d, m.t, kapananlar); }
+      d.fiyat = m.c;
+      mumKoy(d, m, kapananlar.tasanlar);
+    }
+    // Saat farkı yüzünden son mum atlansa bile güncel fiyat her zaman uygulanır
+    const sonFiyat = mumlar[mumlar.length - 1].c;
+    if (Math.abs(d.fiyat - sonFiyat) > 1e-12 || Object.keys(d.poz).length) {
+      d.fiyat = sonFiyat;
+      mumYaz(d, now, d.fiyat, 0, kapananlar.tasanlar);
+      likidasyonlar(d, now, kapananlar);
+    }
+    d.sonTick = now;
+    d.disZaman = now;
+    return;
+  }
   if (!d.acik) { d.sonTick = now; return; }
   if (now - d.sonTick > MAX_GERI_MS) d.sonTick = now - MAX_GERI_MS;
   const adim = Math.floor((now - d.sonTick) / ADIM_MS);
@@ -390,23 +452,77 @@ function ilerlet(d, gizli, now, kapananlar) {
   d.rotaVar = !!(gizli && gizli.rota);
 }
 
+// Sahte fiyatla açılmış BTC/ETH/SOL'u gerçek fiyata geçir (bir kez):
+// eldeki coinler ESKİ fiyattan USDT'ye çevrilir, açık pozisyonlar eski fiyattan kapatılıp iade edilir,
+// grafik silinip gerçek mumlarla baştan kurulur. Böylece kimse 20 USDT'ye aldığı "BTC" ile zengin olmaz.
+async function gercegeGec(db, sym, def, dis, now) {
+  const durumRef = db.collection("borsa").doc(durumId(sym));
+  await db.runTransaction(async (tx) => {
+    const dSnap = await tx.get(durumRef);
+    if (!dSnap.exists || dSnap.data().gercek) return;
+    const cs = await tx.get(db.collection("borsa_cuzdan"));
+    const d = dSnap.data(); d.poz = d.poz || {};
+    const p0 = d.fiyat, D = d.derinlik;
+    const cuz = {};
+    cs.docs.forEach((x) => { cuz[x.id] = x.data(); });
+    const loglar = [], gecmis = [];
+    for (const [uid, c] of Object.entries(cuz)) {
+      const m = bakiye(c, sym);
+      if (m > 1e-12) {
+        const tl = r6(m * p0);
+        bakiyeYaz(c, sym, 0); c.btl = r6((c.btl || 0) + tl);
+        loglar.push({ uid, ad: c.ad, tur: "admin", detay: `${sym} gerçek fiyata geçti: ${r6(m)} ${sym} eski fiyattan (${r6(p0)}) ${r2(tl)} USDT'ye çevrildi`, bkc: 0, btl: tl });
+        c._degisti = true;
+      }
+    }
+    for (const poz of Object.values(d.poz)) {
+      const iade = r2(Math.max(0, poz.teminat + pozPnl(poz, p0, D)));
+      const c = cuz[poz.uid];
+      if (c) { c.btl = r6((c.btl || 0) + iade); c._degisti = true; }
+      gecmis.push({ id: poz.id, uid: poz.uid, ad: poz.ad, coin: sym, yon: poz.yon, kaldirac: poz.kaldirac, teminat: r2(poz.teminat), notional: r2(poz.notional), boyut: r6(poz.boyut), giris: r6(poz.giris), cikis: r6(p0), pnl: r2(iade - poz.teminat), yuzde: r2(((iade - poz.teminat) / poz.teminat) * 100), iade, acilis: poz.acilis, kapanis: now, sebep: "yenileme" });
+    }
+    const yeni = yeniDurum(now, def);
+    Object.assign(yeni, { sym, gercek: true, son: [], saat: [], sonTick: now, sifirlama: now, acik: d.acik !== false, maxKaldirac: d.maxKaldirac || MAX_KALDIRAC, derinlik: d.derinlik || def.derinlik });
+    const tasan = [];
+    for (const m of dis) { yeni.fiyat = m.c; mumKoy(yeni, m, tasan); }
+    for (const [uid, c] of Object.entries(cuz)) if (c._degisti) { delete c._degisti; tx.set(db.collection("borsa_cuzdan").doc(uid), c); }
+    for (const g of gecmis) tx.set(db.collection("borsa_gecmis").doc(g.id), g);
+    tx.set(durumRef, yeni);
+    tx.set(db.collection("borsa").doc(gizliId(sym)), { rota: null, mm: null });
+    for (const l of loglar) tx.set(db.collection("borsa_log").doc(), { coin: sym, ...l, ms: now, tarih: FieldValue.serverTimestamp() });
+  });
+  await grafikGunleriniSil(db, sym).catch(() => {});
+}
+
 // ---------------- İşlem çatısı ----------------
 // Her işlem bir Firestore transaction içinde: önce okumalar, sonra hesap, sonra yazmalar.
 async function islem(db, now, ekOkumalar, hesapla, sym = ANA, def = null) {
   const durumRef = db.collection("borsa").doc(durumId(sym));
   const gizliRef = db.collection("borsa").doc(gizliId(sym));
+  def = def || VARSAYILAN_COINLER.find((c) => c.sym === sym) || null;
+  let dis = null;
+  if (def && def.gercek) {
+    // Gerçek coin: işlemden önce piyasadan son mumları çek (transaction içinde dış istek yapılmaz)
+    const on = await durumRef.get();
+    const sonTick = on.exists ? on.data().sonTick || 0 : 0;
+    const baslangic = on.exists && on.data().gercek ? Math.max(sonTick - MUM_MS, now - SON_MUM * MUM_MS) : now - SON_MUM * MUM_MS;
+    try { dis = await gercekMumlar(def.gercek, baslangic, now); if (!dis.length) dis = null; } catch { dis = null; }
+    if (on.exists && !on.data().gercek && dis) await gercegeGec(db, sym, def, dis, now);
+  }
   return db.runTransaction(async (tx) => {
     const [dSnap, gSnap] = await Promise.all([tx.get(durumRef), tx.get(gizliRef)]);
     const ek = {};
     for (const [ad, ref] of Object.entries(ekOkumalar || {})) ek[ad] = await tx.get(ref);
     const yeni = !dSnap.exists;
-    const d = yeni ? yeniDurum(now, def || VARSAYILAN_COINLER.find((c) => c.sym === sym)) : dSnap.data();
+    const d = yeni ? yeniDurum(now, def) : dSnap.data();
     d.sym = sym;
+    if (yeni && def && def.gercek) { d.gercek = true; d.son = []; d.sonTick = now - SON_MUM * MUM_MS; }
     d.poz = d.poz || {};
     d.akis = d.akis || [];
     d.son = d.son || [];
     const gizli = gSnap.exists ? gSnap.data() : { rota: null, mm: null };
-    const k = { tasanlar: [], liste: [], gizliDegisti: false, loglar: [], grafikSil: false };
+    const k = { tasanlar: [], liste: [], gizliDegisti: false, loglar: [], grafikSil: false, dis };
+    if (d.gercek && !dis && yeni) throw new Hata(`${sym} gerçek fiyatı şu an alınamadı, birazdan tekrar dene.`, 503);
     ilerlet(d, gizli, now, k);
     const sonuc = await hesapla({ tx, d, gizli, ek, k });
     likidasyonlar(d, now, k);
@@ -425,7 +541,7 @@ async function islem(db, now, ekOkumalar, hesapla, sym = ANA, def = null) {
     for (const kayit of k.liste) {
       tx.set(db.collection("borsa_gecmis").doc(kayit.id), kayit);
       if (kayit.sebep === "likide") {
-        k.loglar.push({ uid: kayit.uid, ad: kayit.ad, tur: "likidasyon", detay: `${sym} ${kayit.kaldirac}x ${kayit.yon.toUpperCase()} likide oldu (−${kayit.teminat} TL teminat)`, btl: 0, bkc: 0 });
+        k.loglar.push({ uid: kayit.uid, ad: kayit.ad, tur: "likidasyon", detay: `${sym} ${kayit.kaldirac}x ${kayit.yon.toUpperCase()} likide oldu (−${kayit.teminat} USDT teminat)`, btl: 0, bkc: 0 });
       }
     }
     for (const l of k.loglar) tx.set(db.collection("borsa_log").doc(), { coin: sym, ...l, ms: now, tarih: FieldValue.serverTimestamp() });
@@ -500,19 +616,22 @@ async function kullaniciIslem(db, kim, govde, now) {
     let mesaj = "", ekCevap = {};
 
     if (tur !== "marketAl" && !d.acik) throw new Hata("Piyasa şu an kapalı.");
+    // Gerçek coinde bayat fiyatla işlem olmasın: bu istekte piyasadan taze fiyat gelmiş olmalı
+    if (d.gercek && !k.dis) throw new Hata(`${sym} gerçek fiyatı şu an alınamadı, birkaç saniye sonra tekrar dene.`);
+    const G = !!d.gercek;
 
     if (tur === "spotAl") {
       const N = r6(sayi(govde.btl));
-      if (!(N > 0)) throw new Hata("Geçerli bir TL miktarı yaz.");
-      if (N > c.btl + 1e-9) throw new Hata("Yeterli TL'n yok.");
-      const r = egriAl(d.fiyat, N, D);
+      if (!(N > 0)) throw new Hata("Geçerli bir USDT miktarı yaz.");
+      if (N > c.btl + 1e-9) throw new Hata("Yeterli USDT'n yok.");
+      const r = G ? { q: N / d.fiyat, p1: d.fiyat } : egriAl(d.fiyat, N, D);
       if (r.q > d.kasaBKC) throw new Hata(`Kasada bu kadar ${sym} kalmadı.`);
       c.btl = r6(c.btl - N); bakiyeYaz(c, sym, bakiye(c, sym) + r.q);
       d.kasaBKC = r6(d.kasaBKC - r.q);
       d.fiyat = r.p1;
       mumYaz(d, now, d.fiyat, N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: "al", m: r2(N), q: r6(r.q), f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-al", detay: `${r6(r.q)} ${sym} aldı (${r2(N)} TL)`, bkc: sym === ANA ? r6(r.q) : 0, btl: -N });
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-al", detay: `${r6(r.q)} ${sym} aldı (${r2(N)} USDT)`, bkc: sym === ANA ? r6(r.q) : 0, btl: -N });
       mesaj = `${r.q.toFixed(4)} ${sym} aldın.`;
       ekCevap = { q: r6(r.q), ort: r6(N / r.q) };
     } else if (tur === "spotSat") {
@@ -520,14 +639,14 @@ async function kullaniciIslem(db, kim, govde, now) {
       if (!(q > 0)) throw new Hata(`Geçerli bir ${sym} miktarı yaz.`);
       const elde = bakiye(c, sym);
       if (q > elde + 1e-9) throw new Hata(`Yeterli ${sym} bakiyen yok.`);
-      const r = egriSat(d.fiyat, q, D);
+      const r = G ? { N: q * d.fiyat, p1: d.fiyat } : egriSat(d.fiyat, q, D);
       bakiyeYaz(c, sym, Math.max(0, elde - q)); c.btl = r6(c.btl + r.N);
       d.kasaBKC = r6(d.kasaBKC + q);
       d.fiyat = Math.max(1e-6, r.p1);
       mumYaz(d, now, d.fiyat, r.N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: "sat", m: r2(r.N), q, f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-sat", detay: `${q} ${sym} sattı (${r2(r.N)} TL)`, bkc: sym === ANA ? -q : 0, btl: r6(r.N) });
-      mesaj = `${q} ${sym} sattın, ${r.N.toFixed(2)} TL geldi.`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "spot-sat", detay: `${q} ${sym} sattı (${r2(r.N)} USDT)`, bkc: sym === ANA ? -q : 0, btl: r6(r.N) });
+      mesaj = `${q} ${sym} sattın, ${r.N.toFixed(2)} USDT geldi.`;
       ekCevap = { N: r6(r.N), ort: r6(r.N / q) };
     } else if (tur === "pozAc") {
       const yon = govde.yon === "short" ? "short" : "long";
@@ -535,22 +654,24 @@ async function kullaniciIslem(db, kim, govde, now) {
       const M = r6(sayi(govde.teminat));
       const maxX = Math.min(MAX_KALDIRAC, d.maxKaldirac || MAX_KALDIRAC);
       if (!(x >= 1 && x <= maxX)) throw new Hata(`Kaldıraç 1x ile ${maxX}x arası olmalı.`);
-      if (!(M >= 1)) throw new Hata("Teminat en az 1 TL olmalı.");
-      if (M > c.btl + 1e-9) throw new Hata("Yeterli TL'n yok. Spot'tan coin satıp TL alabilirsin.");
+      if (!(M >= 1)) throw new Hata("Teminat en az 1 USDT olmalı.");
+      if (M > c.btl + 1e-9) throw new Hata("Yeterli USDT'n yok. Spot'tan coin satıp USDT alabilirsin.");
       const acik = Object.values(d.poz).filter((p) => p.uid === kim.uid).length;
       if (acik >= MAX_ACIK_POZ) throw new Hata(`${sym}'da aynı anda en fazla ${MAX_ACIK_POZ} pozisyon açabilirsin.`);
       const N = M * x;
-      if (N > D * MAX_POZ_ORAN) throw new Hata(`Pozisyon büyüklüğü (teminat × kaldıraç) en fazla ${Math.floor(D * MAX_POZ_ORAN)} TL olabilir. Teminatı ya da kaldıracı düşür.`);
-      const r = yon === "long" ? egriAl(d.fiyat, N, D) : egriShortAc(d.fiyat, N, D);
+      if (N > D * MAX_POZ_ORAN) throw new Hata(`Pozisyon büyüklüğü (teminat × kaldıraç) en fazla ${Math.floor(D * MAX_POZ_ORAN)} USDT olabilir. Teminatı ya da kaldıracı düşür.`);
+      // Gerçek coinde pozisyon fiyatı itmez: giriş = piyasa fiyatı, K/Z düz hesap (v:2)
+      const r = G ? { q: N / d.fiyat, p1: d.fiyat } : yon === "long" ? egriAl(d.fiyat, N, D) : egriShortAc(d.fiyat, N, D);
       const id = randomUUID().replace(/-/g, "").slice(0, 16);
-      const poz = { id, coin: sym, uid: kim.uid, ad: kim.ad, yon, kaldirac: x, teminat: M, notional: r6(N), boyut: r6(r.q), giris: r6(N / r.q), acilis: now };
-      poz.lik = r6(likFiyati(poz, D));
+      const poz = { id, coin: sym, uid: kim.uid, ad: kim.ad, yon, kaldirac: x, teminat: M, notional: r6(N), boyut: G ? N / d.fiyat : r6(r.q), giris: G ? d.fiyat : r6(N / r.q), acilis: now };
+      if (G) poz.v = 2;
+      poz.lik = r6(G ? (yon === "long" ? Math.max(0, poz.giris - (LIK_ORAN * M) / poz.boyut) : poz.giris + (LIK_ORAN * M) / poz.boyut) : likFiyati(poz, D));
       d.poz[id] = poz;
       c.btl = r6(c.btl - M);
       d.fiyat = Math.max(1e-6, r.p1);
       mumYaz(d, now, d.fiyat, N, k.tasanlar);
       akisEkle(d, { t: now, ad: kim.ad, tur: yon, x, m: r2(N), f: r6(d.fiyat) });
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-ac", detay: `${sym} ${x}x ${yon.toUpperCase()} açtı · teminat ${M} TL · büyüklük ${r2(N)} TL`, bkc: 0, btl: -M });
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-ac", detay: `${sym} ${x}x ${yon.toUpperCase()} açtı · teminat ${M} USDT · büyüklük ${r2(N)} USDT`, bkc: 0, btl: -M });
       mesaj = `${sym} ${x}x ${yon.toUpperCase()} açıldı. Ortalama giriş ${poz.giris.toFixed(4)}`;
       ekCevap = { poz: pozOzet(poz) };
     } else if (tur === "pozKapat") {
@@ -559,8 +680,8 @@ async function kullaniciIslem(db, kim, govde, now) {
       const kayit = pozKapatIc(d, poz, now, "kapat", k);
       c.btl = r6(c.btl + kayit.iade);
       c.gerceklesen = r2((c.gerceklesen || 0) + kayit.pnl);
-      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-kapat", detay: `${sym} ${poz.kaldirac}x ${poz.yon.toUpperCase()} kapattı · K/Z ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl} TL (%${kayit.yuzde})`, bkc: 0, btl: kayit.iade });
-      mesaj = `Pozisyon kapandı: ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl.toFixed(2)} TL`;
+      k.loglar.push({ uid: kim.uid, ad: kim.ad, tur: "poz-kapat", detay: `${sym} ${poz.kaldirac}x ${poz.yon.toUpperCase()} kapattı · K/Z ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl} USDT (%${kayit.yuzde})`, bkc: 0, btl: kayit.iade });
+      mesaj = `Pozisyon kapandı: ${kayit.pnl >= 0 ? "+" : ""}${kayit.pnl.toFixed(2)} USDT`;
       ekCevap = { sonuc: kayit };
     } else if (tur === "marketAl") {
       if (!ek.u.exists) throw new Hata("Ürün bulunamadı.");
@@ -869,19 +990,22 @@ async function adminIslem(db, kim, govde, now) {
       const elde = bakiye(c, sym);
       if (bkc > 0 && bkc > d.kasaBKC) throw new Hata(`Kasada o kadar ${sym} yok. Önce arzı artır.`);
       if (bkc < 0 && -bkc > elde + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar ${sym} yok.`);
-      if (btl < 0 && -btl > c.btl + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar TL yok.`);
+      if (btl < 0 && -btl > c.btl + 1e-9) throw new Hata(`${c.ad} kişisinde o kadar USDT yok.`);
       bakiyeYaz(c, sym, elde + bkc); c.btl = r6(c.btl + btl);
       d.kasaBKC = r6(d.kasaBKC - bkc);
       tx.set(cRef, c);
-      k.loglar.push({ uid: hedef, ad: c.ad, tur: "admin-transfer", detay: `Admin ${bkc ? (bkc > 0 ? "+" : "") + bkc + " " + sym + " " : ""}${btl ? (btl > 0 ? "+" : "") + btl + " TL" : ""}`.trim(), bkc: sym === ANA ? bkc : 0, btl });
-      return { ok: true, mesaj: `${c.ad}: ${r6(bakiye(c, sym))} ${sym} / ${c.btl} TL` };
+      k.loglar.push({ uid: hedef, ad: c.ad, tur: "admin-transfer", detay: `Admin ${bkc ? (bkc > 0 ? "+" : "") + bkc + " " + sym + " " : ""}${btl ? (btl > 0 ? "+" : "") + btl + " USDT" : ""}`.trim(), bkc: sym === ANA ? bkc : 0, btl });
+      return { ok: true, mesaj: `${c.ad}: ${r6(bakiye(c, sym))} ${sym} / ${c.btl} USDT` };
     }, sym, def);
   }
 
   return islem(db, now, {}, async ({ tx, d, gizli, k }) => {
+    if (d.gercek && ["adminGrafikSifirla", "adminFiyat", "adminRota", "adminMM"].includes(tur)) {
+      throw new Hata(`${sym} gerçek piyasa fiyatını izliyor: fiyat verme, rota, MM ve grafik sıfırlama bu coinde kapalı.`);
+    }
     if (tur === "adminGrafikSifirla") {
-      // Grafik geçmişini siler, fiyatı başlangıca (varsayılan 1 TL) çeker.
-      // Bakiyeler (BERKAY/TL adetleri) aynen kalır. Açık pozisyonlar da kalır ama giriş ve
+      // Grafik geçmişini siler, fiyatı başlangıca (varsayılan 1 USDT) çeker.
+      // Bakiyeler (BERKAY/USDT adetleri) aynen kalır. Açık pozisyonlar da kalır ama giriş ve
       // büyüklükleri aynı oranda ölçeklenir: herkesin K/Z'si sıfırlamadan önce neyse sonra da odur
       // (long'lar bedava kâra geçmez, short'lar boşuna likide olmaz).
       const yeni = sayi(govde.fiyat ?? BASLANGIC_FIYAT);
@@ -902,8 +1026,8 @@ async function adminIslem(db, kim, govde, now) {
       d.sifirlama = now;
       k.tasanlar.length = 0; // eski mumları gün belgelerine yazma
       k.grafikSil = true;
-      log(k, `Grafiği sıfırladı: fiyat ${yeni} TL (açık ${Object.keys(d.poz).length} pozisyon ×${r6(kat)} ölçeklendi)`);
-      return { ok: true, mesaj: `Grafik sıfırlandı, fiyat ${yeni} TL. Bakiyeler ve pozisyonlar korundu.` };
+      log(k, `Grafiği sıfırladı: fiyat ${yeni} USDT (açık ${Object.keys(d.poz).length} pozisyon ×${r6(kat)} ölçeklendi)`);
+      return { ok: true, mesaj: `Grafik sıfırlandı, fiyat ${yeni} USDT. Bakiyeler ve pozisyonlar korundu.` };
     }
     if (tur === "adminArz") {
       const deg = r6(sayi(govde.degisim));
@@ -970,7 +1094,7 @@ async function adminIslem(db, kim, govde, now) {
       const mod = ["serbest", "denge", "al", "sat"].includes(govde.mod) ? govde.mod : "serbest";
       const dakikalik = sayi(govde.dakikalik), hedef = sayi(govde.hedef), bant = sayi(govde.bant);
       const sure = Math.max(5, Math.min(1440, Math.round(sayi(govde.sure) || 60)));
-      if (!(dakikalik >= 0 && dakikalik <= 1e7)) throw new Hata("Dakikalık miktar 0 ile 10.000.000 TL arası olmalı.");
+      if (!(dakikalik >= 0 && dakikalik <= 1e7)) throw new Hata("Dakikalık miktar 0 ile 10.000.000 USDT arası olmalı.");
       if (mod === "denge" && !(hedef > 0)) throw new Hata("Denge modu için hedef fiyat yaz.");
       if ((mod === "denge" || mod === "serbest") && !(bant >= 0 && bant <= 90)) throw new Hata("Bant %0 ile %90 arası olmalı.");
       gizli.mm = {
@@ -980,7 +1104,7 @@ async function adminIslem(db, kim, govde, now) {
         sonIslem: govde.sifirla ? null : eski.sonIslem || null, guncelleme: now,
       };
       k.gizliDegisti = true;
-      const ozet = !govde.acik ? "kapalı" : mod === "serbest" ? `serbest: son ${sure} dk ortalamasından ±%${bant} kopunca törpüler, dakikada en fazla ${dakikalik} TL` : mod === "denge" ? `denge: hedef ${hedef} ±%${bant}, dakikada en fazla ${dakikalik} TL` : `her dakika ${dakikalik} TL ${mod === "al" ? "alım" : "satış"}`;
+      const ozet = !govde.acik ? "kapalı" : mod === "serbest" ? `serbest: son ${sure} dk ortalamasından ±%${bant} kopunca törpüler, dakikada en fazla ${dakikalik} USDT` : mod === "denge" ? `denge: hedef ${hedef} ±%${bant}, dakikada en fazla ${dakikalik} USDT` : `her dakika ${dakikalik} USDT ${mod === "al" ? "alım" : "satış"}`;
       log(k, `Piyasa yapıcı: ${ozet}`);
       return { ok: true, mesaj: `Piyasa yapıcı ${ozet}.` };
     }
@@ -998,7 +1122,7 @@ async function adminIslem(db, kim, govde, now) {
         c.gerceklesen = r2((c.gerceklesen || 0) + kayit.pnl);
         tx.set(cRef, c);
       }
-      log(k, `${poz.ad} kişisinin ${poz.kaldirac}x ${poz.yon.toUpperCase()} pozisyonunu ${mod === "likide" ? "likide etti" : "kapattı"} (K/Z ${kayit.pnl} TL)`);
+      log(k, `${poz.ad} kişisinin ${poz.kaldirac}x ${poz.yon.toUpperCase()} pozisyonunu ${mod === "likide" ? "likide etti" : "kapattı"} (K/Z ${kayit.pnl} USDT)`);
       return { ok: true, mesaj: mod === "likide" ? "Likide edildi." : "Kapatıldı, para sahibine döndü." };
     }
     if (["adminUrun", "adminUrunSil", "adminSiparis"].includes(tur) && sym !== ANA) throw new Hata("Market işlemleri BERKAY ile yapılır.");

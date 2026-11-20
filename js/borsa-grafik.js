@@ -465,9 +465,9 @@
     { sym: "BURGER", ad: "Burger", emoji: "🍔", renk: "#f59f00", sira: 2 },
     { sym: "ALIHAN", ad: "Alihan", emoji: "☕", renk: "#8d5524", sira: 3 },
     { sym: "HALIL", ad: "Halil", emoji: "👑", renk: "#7048e8", sira: 4 },
-    { sym: "BTC", ad: "Bitcoin", emoji: "₿", renk: "#f7931a", sira: 5 },
-    { sym: "ETH", ad: "Ethereum", emoji: "Ξ", renk: "#627eea", sira: 6 },
-    { sym: "SOL", ad: "Solana", emoji: "◎", renk: "#14b88a", sira: 7 },
+    { sym: "BTC", ad: "Bitcoin", emoji: "₿", renk: "#f7931a", sira: 5, gercek: true },
+    { sym: "ETH", ad: "Ethereum", emoji: "Ξ", renk: "#627eea", sira: 6, gercek: true },
+    { sym: "SOL", ad: "Solana", emoji: "◎", renk: "#14b88a", sira: 7, gercek: true },
   ];
   const sade = (x) => String(x || "").toLocaleLowerCase("tr").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ö/g, "o").replace(/ç/g, "c").replace(/i̇/g, "i");
   window.BorsaCoin = {

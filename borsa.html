@@ -60,14 +60,14 @@
       <section class="card bx-serit" id="bxSerit">
         <div class="bx-coin">
           <span class="bx-coin-logo" id="bxCoinLogo" aria-hidden="true">B</span>
-          <div><b id="bxCoinAd">BERKAY</b><span id="bxCoinCift">BERKAY / TL</span></div>
+          <div><b id="bxCoinAd">BERKAY</b><span id="bxCoinCift">BERKAY / USDT</span></div>
         </div>
         <div class="bx-fiyat"><span id="bxFiyat">—</span><small id="bxDegisim">—</small></div>
         <dl class="bx-istat">
           <div><dt>24s yüksek</dt><dd id="bxYuksek">—</dd></div>
           <div><dt>24s düşük</dt><dd id="bxDusuk">—</dd></div>
           <div><dt>24s hacim</dt><dd id="bxHacim">—</dd></div>
-          <div><dt>Dolaşımdaki arz</dt><dd id="bxDolasim">—</dd></div>
+          <div><dt id="bxDolasimEtiket">Dolaşımdaki arz</dt><dd id="bxDolasim">—</dd></div>
           <div><dt>Piyasa</dt><dd id="bxPiyasa">—</dd></div>
         </dl>
       </section>
@@ -108,8 +108,8 @@
               <button type="button" class="al on" data-yon="al">Al</button>
               <button type="button" class="sat" data-yon="sat">Sat</button>
             </div>
-            <label class="bx-alan"><span id="bxSpotEtiket">Harcanacak TL</span>
-              <div class="bx-girdi"><input type="number" id="bxSpotMiktar" min="0" step="any" inputmode="decimal" placeholder="0" /><em id="bxSpotBirim">TL</em></div>
+            <label class="bx-alan"><span id="bxSpotEtiket">Harcanacak USDT</span>
+              <div class="bx-girdi"><input type="number" id="bxSpotMiktar" min="0" step="any" inputmode="decimal" placeholder="0" /><em id="bxSpotBirim">USDT</em></div>
             </label>
             <div class="bx-yuzde" data-hedef="spot"><button type="button" data-y="25">25%</button><button type="button" data-y="50">50%</button><button type="button" data-y="75">75%</button><button type="button" data-y="100">Hepsi</button></div>
             <dl class="bx-tahmin" id="bxSpotTahmin"></dl>
@@ -122,7 +122,7 @@
               <button type="button" class="sat" data-yon="short">Short 📉</button>
             </div>
             <label class="bx-alan">Teminat
-              <div class="bx-girdi"><input type="number" id="bxTeminat" min="1" step="any" inputmode="decimal" placeholder="0" /><em>TL</em></div>
+              <div class="bx-girdi"><input type="number" id="bxTeminat" min="1" step="any" inputmode="decimal" placeholder="0" /><em>USDT</em></div>
             </label>
             <div class="bx-yuzde" data-hedef="kaldirac"><button type="button" data-y="25">25%</button><button type="button" data-y="50">50%</button><button type="button" data-y="75">75%</button><button type="button" data-y="100">Hepsi</button></div>
             <label class="bx-alan">Kaldıraç <b id="bxXYazi">10x</b>
@@ -131,12 +131,13 @@
             </label>
             <dl class="bx-tahmin" id="bxKTahmin"></dl>
             <button type="button" class="bx-gonder al" id="bxKBtn">Long aç</button>
-            <p class="bx-not">Kaldıraçla açtığın pozisyon da fiyatı <b>iter</b> (long yükseltir, short düşürür), kapatınca da geri iter. Bu yüzden K/Z <b>"şimdi kapatsan eline geçecek"</b> tutardır: fiyat sadece senin alımınla yükseldiyse kâr görünmez, kâr için başkalarının da alması lazım. Teminatın %90'ı erirse pozisyon <b>likide</b> olur. Teminat TL'dir; TL'n yoksa Spot'tan coin sat.</p>
+            <p class="bx-not bx-gercek-not" id="bxGercekNot" hidden>🌐 Bu coin <b>gerçek piyasa fiyatını</b> (Binance, BTC/USDT gibi) canlı izler. Senin alımın ya da pozisyonun fiyatı <b>itmez</b>; K/Z dünyadaki fiyata göre hesaplanır. Teminatın %90'ı erirse pozisyon <b>likide</b> olur.</p>
+            <p class="bx-not" id="bxEgriNot">Kaldıraçla açtığın pozisyon da fiyatı <b>iter</b> (long yükseltir, short düşürür), kapatınca da geri iter. Bu yüzden K/Z <b>"şimdi kapatsan eline geçecek"</b> tutardır: fiyat sadece senin alımınla yükseldiyse kâr görünmez, kâr için başkalarının da alması lazım. Teminatın %90'ı erirse pozisyon <b>likide</b> olur. Teminat USDT'dir; USDT'n yoksa Spot'tan coin sat.</p>
           </div>
 
           <div class="bx-cuzdan">
             <div><span id="bxBkcEtiket">BERKAY</span><b id="bxBkc">—</b></div>
-            <div><span>TL</span><b id="bxBtl">—</b></div>
+            <div><span>USDT</span><b id="bxBtl">—</b></div>
             <div><span>Toplam değer</span><b id="bxToplam">—</b></div>
             <div><span>Gerçekleşen K/Z</span><b id="bxGercek">—</b></div>
           </div>
@@ -166,7 +167,7 @@
 
       <div class="bx-grid2">
         <section class="card bx-bolum">
-          <div class="bx-bolum-ust"><h2>🐳 Zenginler listesi</h2><small>Bütün coinler + TL + açık pozisyonlar, TL cinsinden</small></div>
+          <div class="bx-bolum-ust"><h2>🐳 Zenginler listesi</h2><small>Bütün coinler + USDT + açık pozisyonlar, USDT cinsinden</small></div>
           <div id="bxZengin" class="bx-liste"><p class="muted">Yükleniyor…</p></div>
         </section>
         <section class="card bx-bolum">
