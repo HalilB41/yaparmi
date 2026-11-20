@@ -583,15 +583,20 @@ async function kullaniciIslem(db, kim, govde, now) {
     // tick: tek coin · tickHepsi: listedeki bütün coinler (coin listesi sayfası açıkken)
     const liste = coinListesi(await db.collection("borsa").doc("coinler").get());
     const hedefler = tur === "tick" ? liste.filter((c) => c.sym === symTemiz(govde.coin)) : liste;
-    await Promise.all(hedefler.map(async (def) => {
+    // Sırayla (paralel değil): gerçek coinlere geçiş bütün cüzdanları kilitliyor, aynı anda koşarsa birbirini kilitler
+    const hatalar = [];
+    for (const def of hedefler) {
       const snap = await db.collection("borsa").doc(durumId(def.sym)).get();
-      if (snap.exists && now - (snap.data().sonTick || 0) < ADIM_MS) return;
-      await islem(db, now, {}, async () => null, def.sym, def).catch(() => {});
-    }));
-    return { ok: true };
+      if (snap.exists && now - (snap.data().sonTick || 0) < ADIM_MS) continue;
+      await islem(db, now, {}, async () => null, def.sym, def).catch((e) => { hatalar.push(def.sym + ": " + (e && e.message)); console.error("tick " + def.sym, e); });
+    }
+    return hatalar.length ? { ok: true, hatalar } : { ok: true };
   }
 
   if (tur === "baslat") {
+    // Cüzdanı zaten olan biri için transaction gerekmez: sayfa açılışı borsadaki yoğunluktan etkilenmesin
+    const mevcut = await cuzRef.get();
+    if (mevcut.exists) return { ok: true, cuzdan: cuzdanCevap(mevcut.data()), yeni: false };
     return islem(db, now, { c: cuzRef }, async ({ tx, d, ek, k }) => {
       if (ek.c.exists) return { ok: true, cuzdan: cuzdanCevap(ek.c.data()), yeni: false };
       const bonus = Math.min(KAYIT_BONUSU, d.kasaBKC);
@@ -1220,7 +1225,9 @@ export default async function handler(req, res) {
   } catch (err) {
     if (err instanceof Hata) return res.status(err.kod).json({ ok: false, hata: err.message });
     console.error("borsa hatası:", err);
-    return res.status(500).json({ ok: false, hata: "Sunucu hatası, tekrar dene." });
+    // Gerçek sebebi de göster (hata ayıklamak için; gizli bilgi içermez)
+    const neden = String((err && (err.details || err.message)) || err).slice(0, 180);
+    return res.status(500).json({ ok: false, hata: "Sunucu hatası: " + neden });
   }
 }
 
