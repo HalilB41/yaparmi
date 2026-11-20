@@ -150,6 +150,7 @@
         addRandomTile();
         render();
         if (window.Basarim) Basarim.rekor("g2048", Math.max(...board.flat()));
+        if (window.Ekonomi) Ekonomi.skor("g2048", Math.max(...board.flat())); // rekorsa BERKAY ödülü
         if (isGameOver()) {
           overEl.hidden = false;
         }
@@ -301,6 +302,7 @@
         score++;
         scoreEl.textContent = String(score);
         if (window.Basarim) Basarim.rekor("yilan", score);
+        if (window.Ekonomi) Ekonomi.skor("yilan", score); // rekorsa BERKAY ödülü
         placeFood();
       } else {
         snake.pop();

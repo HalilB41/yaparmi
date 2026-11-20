@@ -51,7 +51,7 @@
     db.collection("borsa_cuzdan").onSnapshot((s) => {
       cuzdanlar = s.docs.map((x) => x.data());
       cuzdanlarCiz(); ozetCiz(); kisilerDoldur();
-    }, (err) => { $("bxaCuzdanlar").innerHTML = `<tr><td colspan="8">⚠️ ${err.message} (Firestore kurallarını güncelledin mi?)</td></tr>`; });
+    }, (err) => { $("bxaCuzdanlar").innerHTML = `<tr><td colspan="9">⚠️ ${err.message} (Firestore kurallarını güncelledin mi?)</td></tr>`; });
 
     db.collection("borsa_siparis").orderBy("ms", "desc").limit(200).onSnapshot((s) => siparislerCiz(s.docs.map((x) => Object.assign({ id: x.id }, x.data()))), () => {});
     db.collection("borsa_market").onSnapshot((s) => urunlerCiz(s.docs.map((x) => Object.assign({ id: x.id }, x.data())).sort((a, b) => (a.sira || 99) - (b.sira || 99))), () => {});
@@ -214,7 +214,7 @@
   function cuzdanlarCiz() {
     const tb = $("bxaCuzdanlar"); tb.textContent = "";
     if (!d) return;
-    if (!cuzdanlar.length) { tb.innerHTML = '<tr><td colspan="8" class="muted">Henüz kimse borsaya girmedi.</td></tr>'; return; }
+    if (!cuzdanlar.length) { tb.innerHTML = '<tr><td colspan="9" class="muted">Henüz kimse borsaya girmedi.</td></tr>'; return; }
     const satirlar = cuzdanlar.map((c) => {
       const poz = Object.values(d.poz).filter((p) => p.uid === c.uid);
       const teminat = poz.reduce((t, p) => t + p.teminat, 0);
@@ -229,6 +229,15 @@
         el("td", kz >= 0 ? "yukari" : "asagi", poz.length ? isaretli(kz) : "—"),
         el("td", (c.gerceklesen || 0) >= 0 ? "yukari" : "asagi", isaretli(c.gerceklesen || 0)),
         el("td", null, para(toplam) + " TL"));
+      const sus = el("td");
+      const k = c.kozmetik || {};
+      if (k.renk || k.rozet || k.unvan) {
+        sus.append(window.Ekonomi ? Ekonomi.isim(c.ad, k) : el("span", null, c.ad));
+        const silBtn = el("button", "admin-btn reject se-small", "Sil"); silBtn.type = "button"; silBtn.title = "Rengi, rozeti ve unvanı kaldır (uygunsuz unvan vb.)";
+        silBtn.addEventListener("click", () => { if (confirm(`${c.ad} kişisinin isim süsleri silinsin mi? (Para iade edilmez)`)) islem(silBtn, $("bxaGenelDurum"), "adminKozmetik", { uid: c.uid }); });
+        sus.append(" ", silBtn);
+      } else sus.append(el("span", "muted", "—"));
+      tr.append(sus);
       tb.append(tr);
     });
   }
@@ -287,12 +296,13 @@
     if (!liste.length) { k.append(el("p", "muted", "Ürün yok.")); return; }
     liste.forEach((u) => {
       const row = el("div", "bx-satir");
-      row.append(el("b", null, (u.emoji || "🎁") + " " + u.ad), el("span", "muted", para(u.fiyat, 0) + " BERKAY · stok " + (u.stok < 0 ? "∞" : u.stok) + (u.aktif === false ? " · satışta değil" : "")));
+      row.append(el("b", null, (u.emoji || "🎁") + " " + u.ad), el("span", "muted", para(u.fiyat, 0) + " BERKAY · stok " + (u.stok < 0 ? "∞" : u.stok) + (u.tur && u.tur !== "fiziksel" ? " · " + ({ renk: "🎨 renk", rozet: "🏅 rozet", unvan: "🏷️ unvan" }[u.tur] || u.tur) : "") + (u.aktif === false ? " · satışta değil" : "")));
       const sag = el("span", "bx-sag bx-butonlar");
       const duz = el("button", "admin-btn", "Düzenle"); duz.type = "button";
       duz.addEventListener("click", () => {
         $("bxaUrunId").value = u.id; $("bxaUrunEmoji").value = u.emoji || ""; $("bxaUrunAd").value = u.ad || ""; $("bxaUrunAciklama").value = u.aciklama || "";
         $("bxaUrunFiyat").value = u.fiyat; $("bxaUrunStok").value = u.stok; $("bxaUrunSira").value = u.sira || 10; $("bxaUrunAktif").checked = u.aktif !== false;
+        $("bxaUrunTur").value = u.tur || "fiziksel"; $("bxaUrunDeger").value = u.deger || ""; $("bxaUrunSure").value = u.sureGun || 0;
         $("bxaUrunBaslik").textContent = "✏️ Ürünü düzenle"; $("bxaUrunAd").focus();
       });
       const sil = el("button", "admin-btn reject", "Sil"); sil.type = "button";
@@ -303,6 +313,7 @@
   function urunTemizle() {
     ["bxaUrunId", "bxaUrunEmoji", "bxaUrunAd", "bxaUrunAciklama", "bxaUrunFiyat"].forEach((id) => { $(id).value = ""; });
     $("bxaUrunStok").value = "-1"; $("bxaUrunSira").value = "10"; $("bxaUrunAktif").checked = true;
+    $("bxaUrunTur").value = "fiziksel"; $("bxaUrunDeger").value = ""; $("bxaUrunSure").value = "0";
     $("bxaUrunBaslik").textContent = "➕ Ürün ekle";
   }
   $("bxaUrunTemizle").addEventListener("click", urunTemizle);
@@ -310,6 +321,7 @@
     const r = await islem($("bxaUrunKaydet"), $("bxaUrunDurum"), "adminUrun", {
       id: $("bxaUrunId").value || undefined, emoji: $("bxaUrunEmoji").value, ad: $("bxaUrunAd").value, aciklama: $("bxaUrunAciklama").value,
       fiyat: Number($("bxaUrunFiyat").value), stok: Number($("bxaUrunStok").value), sira: Number($("bxaUrunSira").value), aktif: $("bxaUrunAktif").checked,
+      tur: $("bxaUrunTur").value, deger: $("bxaUrunDeger").value, sureGun: Number($("bxaUrunSure").value) || 0,
     });
     if (r) urunTemizle();
   });

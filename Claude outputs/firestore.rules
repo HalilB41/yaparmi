@@ -147,8 +147,6 @@ service cloud.firestore {
         && request.resource.data.tarih == request.time;
     }
 
-    // Ehliyet sayfası: 3 aracın şoför koltuğu resmi + çarpışma sesi.
-    // Herkes okur (oyun oynansın diye), sadece admin "ayarlar" belgesini yazar.
     // Ortak rekor tablosu (spor): herkes kendi kaydını yazar, skor sadece yükselebilir.
     match /rekorlar/{id} {
       allow read: if true;
@@ -224,10 +222,6 @@ service cloud.firestore {
       allow delete: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
     }
 
-    match /ehliyet/{docId} {
-      allow read: if true;
-      allow write: if isAdmin() && docId == 'ayarlar';
-    }
 
     // Sınırsız Çark ayarları (açık/kapalı, tur, hak, dilimler).
     // Herkes okur, sadece admin değiştirir.
@@ -360,9 +354,9 @@ service cloud.firestore {
     // Bakiyeleri SADECE sunucu (api/borsa.js, firebase-admin) yazar; firebase-admin
     // bu kurallara takılmaz. Tarayıcıdan hiçbir borsa belgesi yazılamaz.
     match /borsa/{docId} {
-      // "durum" (fiyat, mumlar, açık pozisyonlar) giriş yapan herkese açık;
-      // "gizli" (adminin çizdiği gelecek fiyat rotası) sadece admine.
-      allow read: if (docId == 'durum' && request.auth != null) || isAdmin();
+      // "durum" (fiyat, mumlar, açık pozisyonlar) ve "ekonomi" (ödül ayarları, çark dilimleri)
+      // giriş yapan herkese açık; "gizli" (adminin çizdiği rota + MM ayarları) sadece admine.
+      allow read: if ((docId == 'durum' || docId == 'ekonomi') && request.auth != null) || isAdmin();
       allow write: if false;
     }
     match /borsa_grafik/{gun} {
@@ -373,16 +367,34 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+    // Cüzdanlar ve kapanan pozisyonlar giriş yapan herkese açık: zenginler listesi ve profiller için.
     match /borsa_cuzdan/{uid} {
-      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow read: if request.auth != null;
       allow write: if false;
     }
     match /borsa_gecmis/{id} {
-      allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
+      allow read: if request.auth != null;
       allow write: if false;
     }
     match /borsa_siparis/{id} {
       allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+    // ===== EKONOMİ: Tahmin pazarı + Berkay Bingo (yazan sadece sunucu) =====
+    match /tahmin/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /tahmin_bahis/{id} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /bingo/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /bingo_kart/{id} {
+      allow read: if request.auth != null;
       allow write: if false;
     }
     match /borsa_log/{id} {

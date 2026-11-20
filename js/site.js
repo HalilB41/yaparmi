@@ -16,9 +16,9 @@
   // Menü, logo, tema düğmesi ve Giriş Yap butonu buradan eklenir; sayfaların
   // HTML'inde sadece kendi içerikleri var.
   const NAV = [
-    ["/", "Kâhin"], ["/spor", "Spor"], ["/ders", "Ders"],
-    ["/ehliyet", "Ehliyet"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
-    ["/borsa", "Borsa"], ["/cark", "Çark"], ["/topluluk", "Topluluk"], ["/soz", "Sözler"],
+    ["/", "Kâhin"], ["/spor", "Spor"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
+    ["/borsa", "Borsa"], ["/tahmin", "Tahmin"], ["/bingo", "Bingo"], ["/cark", "Çark"],
+    ["/topluluk", "Topluluk"], ["/soz", "Sözler"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
   // Logo: içinde soru işareti olan konuşma balonu + sarı yıldız (renkler CSS'ten, .brand-mark)
@@ -327,6 +327,8 @@
         '<span class="who"></span>' +
         (isAdmin ? '<span class="role-badge">ADMIN</span>' : "") +
         (isAdmin ? '<a href="/admin" class="link-btn">⚙️ Admin Paneli</a>' : "") +
+        '<a href="/profil" class="link-btn">👤 Profilim</a>' +
+        '<a href="/borsa" class="link-btn">🪙 Cüzdanım (Borsa)</a>' +
         '<div class="davet-kutu"><b>🔗 Arkadaşını davet et</b><span>Linkinle kayıt olan her arkadaşın sana sayılır, rozet kazanırsın.</span>' +
         '<button type="button" class="btn davet-kopya" id="davetKopya">Davet linkini kopyala</button><small id="davetSayi"></small></div>' +
         '<button type="button" class="link-btn" id="logoutBtn">Çıkış Yap</button>' +

@@ -19,8 +19,9 @@ yaparmi-site/
 ├─ index.html
 ├─ spor.html       <- boks makinesi, penaltı, kasksız 85, spor karnesi, Berkay olimpiyatı
 ├─ oyun.html       <- oyun sayfası (2048, Yılan, Hafıza, XOX, Taş Kağıt Makas)
-├─ ders.html        <- şakadan optik form: telefonu karekoda tut, 85-99 arası rastgele puan
-├─ ehliyet.html     <- Berkay'ın ehliyet serüveni: yazılı sınav, araç seç, sürüş sınavı, L Park
+├─ tahmin.html      <- Tahmin Pazarı: iddialara BERKAY yatır
+├─ bingo.html       <- Berkay Bingo
+├─ profil.html      <- /profil?k=ad: cüzdan, sıralama, rekorlar, borsa karnesi
 ├─ borsa.html       <- Berkay Borsası: BERKAY grafiği, spot, 20x kaldıraç, Berkay Market
 ├─ sosyal.html      <- "hikaye seç" oyunu (İzmir'e gitsin / evde kalsın ...)
 ├─ galeri.html      <- yatay kaydırmalı fotoğraf galerisi + fotoğraf öner
@@ -31,10 +32,14 @@ yaparmi-site/
 ├─ js/script.js     <- sadece index.html: soru-cevap kutusu + Berkayın Ahırı
 ├─ js/gallery.js    <- sadece galeri.html
 ├─ js/admin.js      <- sadece admin.html
-├─ js/ders.js       <- sadece ders.html (sahte karekod, deklanşör sesi, rastgele puan)
 ├─ js/games.js      <- sadece oyun.html (5 oyun)
-├─ js/ehliyet.js    <- sadece ehliyet.html (yazılı + araç seç + sürüş + L Park)
-├─ js/ehliyet-admin.js  <- admin.html: ehliyet'teki 3 araç şoför resmi + çarpışma sesi
+├─ js/ekonomi.js    <- her sayfada: günlük giriş ödülü, oyun rekoru ödülü, isim süsleri
+├─ js/tahmin.js     <- sadece tahmin.html
+├─ js/bingo.js      <- sadece bingo.html
+├─ js/profil.js     <- sadece profil.html
+├─ js/cark-berkay.js <- cark.html: 💰 BERKAY çarkı
+├─ js/ekonomi-admin.js <- admin.html: 💰 Ekonomi sekmesi
+├─ js/kahin-paylas.js <- admin.html: Kâhin sorusunu "soran" bilgisiyle paylaş
 ├─ js/sosyal-hikaye.js  <- Sosyal Hayat hikayesinin varsayılan hali + Firestore'dan okuma
 ├─ js/sosyal.js     <- sadece sosyal.html (hikaye oynatıcı)
 ├─ js/spor.js       <- sadece spor.html (5 bölüm)
@@ -248,8 +253,6 @@ service cloud.firestore {
         && request.resource.data.tarih == request.time;
     }
 
-    // Ehliyet sayfası: 3 aracın şoför koltuğu resmi + çarpışma sesi.
-    // Herkes okur (oyun oynansın diye), sadece admin "ayarlar" belgesini yazar.
     // Ortak rekor tablosu (spor): herkes kendi kaydını yazar, skor sadece yükselebilir.
     match /rekorlar/{id} {
       allow read: if true;
@@ -325,10 +328,6 @@ service cloud.firestore {
       allow delete: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
     }
 
-    match /ehliyet/{docId} {
-      allow read: if true;
-      allow write: if isAdmin() && docId == 'ayarlar';
-    }
 
     // Sınırsız Çark ayarları (açık/kapalı, tur, hak, dilimler).
     // Herkes okur, sadece admin değiştirir.
@@ -457,13 +456,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ===== BERKAY BORSASI (BERKAY) =====
+    // ===== BERKAY BORSASI (BERKAYCOIN) =====
     // Bakiyeleri SADECE sunucu (api/borsa.js, firebase-admin) yazar; firebase-admin
     // bu kurallara takılmaz. Tarayıcıdan hiçbir borsa belgesi yazılamaz.
     match /borsa/{docId} {
-      // "durum" (fiyat, mumlar, açık pozisyonlar) giriş yapan herkese açık;
-      // "gizli" (adminin çizdiği gelecek fiyat rotası) sadece admine.
-      allow read: if (docId == 'durum' && request.auth != null) || isAdmin();
+      // "durum" (fiyat, mumlar, açık pozisyonlar) ve "ekonomi" (ödül ayarları, çark dilimleri)
+      // giriş yapan herkese açık; "gizli" (adminin çizdiği rota + MM ayarları) sadece admine.
+      allow read: if ((docId == 'durum' || docId == 'ekonomi') && request.auth != null) || isAdmin();
       allow write: if false;
     }
     match /borsa_grafik/{gun} {
@@ -474,16 +473,34 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+    // Cüzdanlar ve kapanan pozisyonlar giriş yapan herkese açık: zenginler listesi ve profiller için.
     match /borsa_cuzdan/{uid} {
-      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow read: if request.auth != null;
       allow write: if false;
     }
     match /borsa_gecmis/{id} {
-      allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
+      allow read: if request.auth != null;
       allow write: if false;
     }
     match /borsa_siparis/{id} {
       allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+    // ===== EKONOMİ: Tahmin pazarı + Berkay Bingo (yazan sadece sunucu) =====
+    match /tahmin/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /tahmin_bahis/{id} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /bingo/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /bingo_kart/{id} {
+      allow read: if request.auth != null;
       allow write: if false;
     }
     match /borsa_log/{id} {
@@ -507,8 +524,7 @@ tarayıcıda 720×720'e küçültülüp bir metin (base64) olarak doğrudan
 Firestore'a yazılıyor; Firestore'un ücretsiz (Spark) planı bunun için
 yeterli. Tek kısıtı: bir fotoğrafın sıkıştırılmış hali ~900KB'ı geçemez —
 kod bunu otomatik ayarlıyor (kaliteyi gerekirse kademeli düşürüyor), sen
-bir şey yapmana gerek yok. Ehliyet'teki araç resimleri ve çarpışma sesi de
-aynı mantıkla (base64, Firestore) çalışıyor.
+bir şey yapmana gerek yok.
 
 ### İlk admin hesabını oluştur
 
@@ -560,7 +576,7 @@ git push -u origin main
 - Berkayın Ahırı'ndaki mesajlar Firestore'da kalıcı olarak duruyor (sohbet
   ekranında sadece en son 50 mesaj gösteriliyor). Zamanla çok birikirse
   Firebase konsolundan elle temizleyebilirsin.
-- Sol üstteki ☰ butonu Spor/Ders/Oyun/Ehliyet/Sosyal Hayat/Galeri linklerini
+- Sol üstteki ☰ butonu Spor/Sosyal Hayat/Galeri/Borsa/Tahmin/Bingo linklerini
   içeren bir menü açar, sağ üstte Giriş Yap/Kayıt Ol duruyor. Sol altta
   Berkayın Ahırı, sağ altta ses açma/kapama butonu sabit duruyor. Dördü de
   gerçek ekran köşesine sabitlenmiş durumda (sayfa içeriği ortalanmış olsa bile).
@@ -585,23 +601,6 @@ Hiç kaydetmediysen `js/sosyal-hikaye.js` içindeki varsayılan hikaye çalış�
 **Önemli:** Kaydetmenin çalışması için yukarıdaki Firestore kurallarındaki
 `sosyal_hikaye` bloğunun Firebase Console → Firestore → Rules'a eklenip
 **Publish** edilmesi gerekiyor.
-
-## Ehliyet sayfası
-
-Berkay'ın ehliyet alma serüveni, 4 adım: 1) 10 soruluk yazılı sınav (soru
-havuzundan rastgele 10 tanesi gelir, en az 5 doğru şart), 2) 3 araçtan
-birini seçme, 3) 3 şeritli yolda kuzeye giden sürüş sınavı (◀/▶ ile şerit
-değiştir, 3 kere çarpınca kalırsın, hedef 1500 metre), 4) hedefe varınca
-sürükle-bırak ile **L Park**. Başarılı olursa şakadan bir "ehliyet belgesi"
-çıkar.
-
-`admin` hesabıyla giriş yapıp **Admin Paneli** → **🚘 Ehliyet Ayarları**'ndan:
-üç aracın şoför koltuğuna (resim yüklenmezse 🧑 görünür) birer fotoğraf
-koyabilir, sürüş sınavındaki çarpışma anında çalacak sesi değiştirebilirsin
-(ses yüklemezsen otomatik, dosyasız üretilen bir çarpışma sesi çalar).
-Çarpışma sesi ~900KB altında kısa bir klip olmalı (Firestore belge sınırı
-yüzünden). Bunların çalışması için yukarıdaki Firestore kurallarındaki
-`ehliyet` bloğunun da Rules'a eklenip **Publish** edilmesi gerekiyor.
 
 ## Bot cevap tarzı
 
@@ -654,3 +653,28 @@ Bakiyeler hile yapılamasın diye sadece sunucu yazar. Sunucunun Firebase'e yaza
    ya da zaten gönderdiysen **Deployments → Redeploy**.
 
 Bu yapılmazsa borsa sayfası "Borsa sunucusu henüz ayarlanmamış" der, sitenin geri kalanı etkilenmez.
+
+## Ekonomi: BERKAY her yerde
+
+Bütün ödüller **kasadan** gelir, ücretler ve bahisler **kasaya** gider; toplam arz değişmez.
+Hepsi sunucuda (`api/borsa.js`) yapılır, ayarları **Admin → 💰 Ekonomi** sekmesinde.
+
+- **Günlük giriş ödülü:** kayıtlı kullanıcı siteye girince günde 1 kez (varsayılan 10 BERKAY).
+  Üst üste her 7. günde seri bonusu (+50). Gün atlanırsa seri sıfırlanır.
+- **Oyun ödülü:** Boks, Penaltı, Kasksız 85, 2048 ve Yılan'da kişisel rekor kırınca 15 BERKAY,
+  oyun başına günde en fazla 30. (Skoru tarayıcı bildirir; hile yapılabilir, günlük sınır bu yüzden var.)
+- **💰 BERKAY çarkı** (Çark sayfasında, Sınırsız Çark'tan bağımsız): günde 1 bedava, sonrası 10 BERKAY.
+  Dilimler admin'den. Sonucu sunucu seçer. Admin panelinde "ortalama getiri" gösterilir:
+  ücretten büyükse insanlar durmadan çevirip kasayı boşaltabilir.
+- **🎲 Tahmin pazarı** (`/tahmin`): admin iddia açar, herkes bir seçeneğe BERKAY yatırır. Sonuç girilince
+  havuz bilenlere yatırdıkları oranda dağıtılır; kimse bilemezse ya da iptal edilirse herkese iade.
+- **🎱 Berkay Bingo** (`/bingo`): admin olay listesiyle tur açar, herkese rastgele 5×5 kart çıkar.
+  Olaylar oldukça admin işaretler; bir sıra/sütun/çaprazı ilk tamamlayıp BİNGO diyen ödülü alır.
+- **👤 Profil** (`/profil?k=ad`): cüzdan, zenginler sırası, günlük seri, oyun rekorları, borsa karnesi
+  (en iyi işlem, en büyük likidasyon), tahmin sonuçları. Giriş panelinde "Profilim".
+- **🐳 Zenginler listesi** ve **📰 Bu hafta** (en kârlı işlem, haftanın likide olanı) borsa sayfasında.
+- **Market dijital ürünleri:** isim rengi, rozet, özel unvan (7 gün). Anında uygulanır; profil,
+  zenginler listesi, borsa ve tahmin/bingo listelerinde görünür. Admin uygunsuz süsü
+  Borsa → Cüzdanlar'dan silebilir.
+
+Ders ve Ehliyet sayfaları kaldırıldı (`/ders` ve `/ehliyet` ana sayfaya yönlenir).

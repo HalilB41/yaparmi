@@ -36,6 +36,7 @@
       <nav class="adm-tabs" role="tablist" aria-label="Admin bölümleri">
         <button type="button" role="tab" data-tab="kahin">🔮 Kâhin</button>
         <button type="button" role="tab" data-tab="borsa">📈 Borsa <span class="adm-say" id="admSiparisSay" hidden></span></button>
+        <button type="button" role="tab" data-tab="ekonomi">💰 Ekonomi</button>
         <button type="button" role="tab" data-tab="cark">🎡 Çark <span class="adm-say" id="admCarkSay" hidden></span></button>
         <button type="button" role="tab" data-tab="topluluk">📊 Topluluk</button>
         <button type="button" role="tab" data-tab="icerik">📝 İçerik</button>
@@ -131,7 +132,7 @@
         <div class="panel card admin-section wide">
           <h2>👛 Cüzdanlar · kimde ne var</h2>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
-            <thead><tr><th>Kullanıcı</th><th>BERKAY</th><th>Arz payı</th><th>TL</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th></tr></thead>
+            <thead><tr><th>Kullanıcı</th><th>BERKAY</th><th>Arz payı</th><th>TL</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th><th>Süsler</th></tr></thead>
             <tbody id="bxaCuzdanlar"><tr><td colspan="8" class="muted">Yükleniyor…</td></tr></tbody>
           </table></div>
         </div>
@@ -167,6 +168,9 @@
             <label>Fiyat (BERKAY) <input type="number" id="bxaUrunFiyat" min="1" step="any" /></label>
             <label>Stok (−1 = sınırsız) <input type="number" id="bxaUrunStok" min="-1" step="1" value="-1" /></label>
             <label>Sıra <input type="number" id="bxaUrunSira" step="1" value="10" /></label>
+            <label>Tür <select id="bxaUrunTur"><option value="fiziksel">📦 Gerçek ürün (admin teslim eder)</option><option value="renk">🎨 İsim rengi</option><option value="rozet">🏅 Rozet</option><option value="unvan">🏷️ Unvan</option></select></label>
+            <label>Değer <input type="text" id="bxaUrunDeger" maxlength="24" placeholder="renk: #e0a100 · rozet: 👑 · unvan: boş = kişi yazar" /></label>
+            <label>Süre (gün, 0 = kalıcı) <input type="number" id="bxaUrunSure" min="0" step="1" value="0" /></label>
             <label><input type="checkbox" id="bxaUrunAktif" checked /> Satışta</label>
             <div class="sayac-butonlar">
               <button type="button" class="admin-btn publish" id="bxaUrunKaydet">💾 Kaydet</button>
@@ -183,6 +187,77 @@
             <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Tür</th><th>Detay</th><th>BERKAY</th><th>TL</th></tr></thead>
             <tbody id="bxaLog"><tr><td colspan="6" class="muted">Yükleniyor…</td></tr></tbody>
           </table></div>
+        </div>
+      </section>
+
+      <!-- ================= EKONOMİ ================= -->
+      <section class="adm-panel admin-grid" data-panel="ekonomi" hidden>
+        <div class="adm-intro wide"><b>💰 Ekonomi</b> BERKAY'ın siteye dağıldığı her şey: günlük giriş ödülü, oyun rekoru ödülü, BERKAY çarkı, tahmin pazarı ve bingo. Bütün ödüller kasadan gelir, ücretler ve bahisler kasaya gider; toplam arz değişmez.</div>
+
+        <div class="panel card admin-section">
+          <h2>🎁 Ödüller</h2>
+          <div class="tpl-form adm-form">
+            <label><input type="checkbox" id="ekaAcik" /> Ödüller açık (günlük, oyun, çark)</label>
+            <label>Günlük giriş ödülü (BERKAY) <input type="number" id="ekaGunluk" min="0" step="1" /></label>
+            <label>Seri bonusu her kaçıncı gün <input type="number" id="ekaSeriGun" min="2" step="1" /></label>
+            <label>Seri bonusu (BERKAY) <input type="number" id="ekaSeriBonus" min="0" step="1" /></label>
+            <label>Oyun rekoru ödülü (BERKAY) <input type="number" id="ekaRekor" min="0" step="1" /></label>
+            <label>Oyun başına günlük en fazla (BERKAY) <input type="number" id="ekaOyunLimit" min="0" step="1" /></label>
+            <button type="button" class="admin-btn publish" id="ekaOdulKaydet">💾 Kaydet</button>
+          </div>
+          <p class="muted" style="font-size:.8rem">Oyun ödülü: Boks, Penaltı, Kasksız 85, 2048 ve Yılan'da kişi kendi rekorunu kırınca verilir. Skorları tarayıcı bildirdiği için hile yapılabilir; günlük sınır bu yüzden var.</p>
+          <p class="suggest-status" id="ekaOdulDurum"></p>
+        </div>
+
+        <div class="panel card admin-section">
+          <h2>💰 BERKAY çarkı</h2>
+          <div class="tpl-form adm-form">
+            <label>Günlük bedava hak <input type="number" id="ekaCarkBedava" min="0" step="1" /></label>
+            <label>Sonraki çevirmelerin ücreti (BERKAY) <input type="number" id="ekaCarkUcret" min="0" step="1" /></label>
+          </div>
+          <p class="muted" style="font-size:.8rem">Dilim: yazı, BERKAY (eksi = kaybettirir), ağırlık (büyükse sık çıkar).</p>
+          <div id="ekaDilimler" class="eka-dilimler"></div>
+          <div class="sayac-butonlar">
+            <button type="button" class="admin-btn" id="ekaDilimEkle">➕ Dilim ekle</button>
+            <button type="button" class="admin-btn publish" id="ekaCarkKaydet">💾 Kaydet</button>
+          </div>
+          <p class="muted" id="ekaCarkBeklenen"></p>
+          <p class="suggest-status" id="ekaCarkDurum"></p>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>🎲 Tahmin pazarı</h2>
+          <div class="tpl-form adm-form">
+            <label class="tpl-genis">Soru <input type="text" id="ekaTahminSoru" maxlength="160" placeholder="ör. Berkay bu hafta spora gider mi?" /></label>
+            <label class="tpl-genis">Seçenekler (virgülle) <input type="text" id="ekaTahminSecenek" value="Evet, Hayır" /></label>
+            <label>Bahis kapanışı (boş = elle kapat) <input type="datetime-local" id="ekaTahminKapanis" /></label>
+            <button type="button" class="admin-btn publish" id="ekaTahminAc">🎲 Tahmin aç</button>
+          </div>
+          <p class="suggest-status" id="ekaTahminDurum"></p>
+          <div id="ekaTahminler"><p class="muted">Yükleniyor…</p></div>
+        </div>
+
+        <div class="panel card admin-section wide">
+          <h2>🎱 Berkay Bingo</h2>
+          <div id="ekaBingoOzet" class="muted">Yükleniyor…</div>
+          <div class="eka-bingo-grid">
+            <div>
+              <h3 class="eka-alt">✅ Olanları işaretle</h3>
+              <div id="ekaBingoOlaylar" class="eka-bingo-olaylar"><p class="muted">Aktif tur yok.</p></div>
+              <div class="sayac-butonlar"><button type="button" class="admin-btn reject" id="ekaBingoBitir">⏹️ Turu bitir</button></div>
+            </div>
+            <div>
+              <h3 class="eka-alt">🆕 Yeni tur</h3>
+              <label class="eka-tam">Olaylar (her satıra bir tane, en az 24)
+                <textarea id="ekaBingoMetin" rows="12"></textarea></label>
+              <p class="muted" id="ekaBingoSay" style="font-size:.8rem"></p>
+              <div class="tpl-form adm-form">
+                <label>Ödül (BERKAY) <input type="number" id="ekaBingoOdul" min="0" step="1" value="200" /></label>
+                <button type="button" class="admin-btn publish" id="ekaBingoBaslat">🎱 Yeni turu başlat</button>
+              </div>
+            </div>
+          </div>
+          <p class="suggest-status" id="ekaBingoDurum"></p>
         </div>
       </section>
 
@@ -345,7 +420,7 @@
 
       <!-- ================= OYUNLAR ================= -->
       <section class="adm-panel admin-grid" data-panel="oyunlar" hidden>
-        <div class="adm-intro wide"><b>🎮 Oyunlar</b> Kasksız 85 kaza resmi ve ehliyet oyununun şoför resimleri / çarpışma sesi.</div>
+        <div class="adm-intro wide"><b>🎮 Oyunlar</b> Kasksız 85 kaza resmi.</div>
 
       <div class="panel card admin-section">
         <h2>🏍️ Kasksız 85 kaza resmi</h2>
@@ -360,51 +435,7 @@
           </div>
       </div>
 
-      <div class="panel card admin-section">
-        <h2>🚘 Ehliyet ayarları</h2>
-        <p class="muted">Üç aracın şoför koltuğuna resim ekle (yoksa 🧑 görünür) ve sürüş sınavındaki çarpışma sesini yükle (yoksa otomatik ses çalar).</p>
-          <div class="se-img-box">
-            <img id="ehResim1Onizleme" alt="Araç 1 şoförü" hidden style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
-            <div>
-              <p class="muted" style="margin:0 0 4px; font-size:0.8rem;">🔴 Kırmızı Şahin</p>
-              <input type="file" id="ehResim1Dosya" accept="image/*" />
-              <button type="button" class="admin-btn reject se-small" id="ehResim1Sil" hidden>Resmi kaldır</button>
-              <p class="suggest-status" id="ehResim1Durum"></p>
-            </div>
-          </div>
-
-          <div class="se-img-box">
-            <img id="ehResim2Onizleme" alt="Araç 2 şoförü" hidden style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
-            <div>
-              <p class="muted" style="margin:0 0 4px; font-size:0.8rem;">🔵 Mavi Doğan</p>
-              <input type="file" id="ehResim2Dosya" accept="image/*" />
-              <button type="button" class="admin-btn reject se-small" id="ehResim2Sil" hidden>Resmi kaldır</button>
-              <p class="suggest-status" id="ehResim2Durum"></p>
-            </div>
-          </div>
-
-          <div class="se-img-box">
-            <img id="ehResim3Onizleme" alt="Araç 3 şoförü" hidden style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
-            <div>
-              <p class="muted" style="margin:0 0 4px; font-size:0.8rem;">🟡 Altın Tofaş</p>
-              <input type="file" id="ehResim3Dosya" accept="image/*" />
-              <button type="button" class="admin-btn reject se-small" id="ehResim3Sil" hidden>Resmi kaldır</button>
-              <p class="suggest-status" id="ehResim3Durum"></p>
-            </div>
-          </div>
-
-          <div class="se-img-box">
-            <div>
-              <p class="muted" style="margin:0 0 4px; font-size:0.8rem;">💥 Çarpışma sesi (kısa bir klip, ~900KB altı)</p>
-              <input type="file" id="ehSesDosya" accept="audio/*" />
-              <button type="button" class="admin-btn reject se-small" id="ehSesOynat" hidden>▶ Dinle</button>
-              <button type="button" class="admin-btn reject se-small" id="ehSesSil" hidden>Sesi kaldır</button>
-              <p class="suggest-status" id="ehSesDurum"></p>
-            </div>
-          </div>
-      </div>
-
-            </section>
+</section>
 
       <!-- ================= GALERİ ================= -->
       <section class="adm-panel admin-grid" data-panel="galeri" hidden>
@@ -502,6 +533,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
+  <script src="js/ekonomi.js"></script>
   <script src="js/basarim.js"></script>
   <script src="js/bildirim.js"></script>
   <script src="js/admin.js"></script>
@@ -511,11 +543,11 @@
   <script src="js/cark-admin.js"></script>
   <script src="js/borsa-grafik.js"></script>
   <script src="js/borsa-admin.js"></script>
+  <script src="js/ekonomi-admin.js"></script>
   <script src="js/admin-sekme.js"></script>
   <script src="js/sosyal-hikaye.js"></script>
   <script src="js/sosyal-editor.js"></script>
   <script src="js/spor-admin.js"></script>
   <script src="js/topluluk-admin.js"></script>
-  <script src="js/ehliyet-admin.js"></script>
 </body>
 </html>

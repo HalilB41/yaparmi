@@ -69,6 +69,7 @@
     $("bxIcerik").hidden = false;
     grafik = new window.BorsaGrafik($("bxGrafik"));
     dinle();
+    haftaDinle();
     eskiMumlar();
     setInterval(() => { if (document.visibilityState === "visible") api("tick").catch(() => {}); }, 10000);
     setInterval(() => { if (d && !document.hidden) { arenaCiz(); akisCiz(); } }, 15000);
@@ -84,6 +85,7 @@
       if (oncekiSifir !== undefined && d.sifirlama && d.sifirlama !== oncekiSifir) { gecmisMumlar.clear(); toast("📉 Grafik admin tarafından sıfırlandı.", 5000); }
       grafikGuncelle();
       seritCiz(); pozlarimCiz(); arenaCiz(); akisCiz(); tahminleriCiz(); cuzdanCiz();
+      if (tumCuzdanlar.length) zenginCiz();
       $("bxX").max = String(d.maxKaldirac || 20);
     }, (err) => console.warn("durum:", err.message));
 
@@ -317,7 +319,7 @@
     hepsi.forEach((p) => {
       const yuzde = (p.pnl / p.teminat) * 100;
       const row = el("div", "bx-satir");
-      row.append(el("b", null, p.ad), el("span", "bx-rozet " + (p.yon === "long" ? "al" : "sat"), `${p.kaldirac}x ${p.yon === "long" ? "LONG" : "SHORT"}`), el("span", "muted", para(p.notional, 0) + " TL"));
+      row.append(Ekonomi.isim(p.ad, undefined, { unvan: false }), el("span", "bx-rozet " + (p.yon === "long" ? "al" : "sat"), `${p.kaldirac}x ${p.yon === "long" ? "LONG" : "SHORT"}`), el("span", "muted", para(p.notional, 0) + " TL"));
       const kz = el("span", "bx-sag " + (yuzde >= 0 ? "yukari" : "asagi"), isaretli(yuzde) + "%");
       row.append(kz);
       a.append(row);
@@ -332,7 +334,7 @@
       const row = el("div", "bx-satir" + (k.tur === "lik" ? " bx-lik" : ""));
       let ne = AKIS[k.tur] || k.tur;
       if (k.x && (k.tur === "long" || k.tur === "short" || k.tur === "kapat" || k.tur === "lik")) ne = `${k.x}x ` + ne;
-      row.append(el("b", null, k.ad), el("span", null, ne), el("span", "muted", para(k.m, 0) + " TL"), el("span", "bx-sag muted", kacOnce(k.t)));
+      row.append(Ekonomi.isim(k.ad, undefined, { unvan: false }), el("span", null, ne), el("span", "muted", para(k.m, 0) + " TL"), el("span", "bx-sag muted", kacOnce(k.t)));
       a.append(row);
     });
   }
@@ -367,6 +369,7 @@
       const alt = el("div", "bx-urun-alt");
       alt.append(el("span", "bx-urun-fiyat", para(u.fiyat, 0) + " BERKAY"));
       if (typeof u.stok === "number" && u.stok >= 0) alt.append(el("small", "muted", u.stok ? `Stok: ${u.stok}` : "Tükendi"));
+      if (["renk", "rozet", "unvan"].includes(u.tur)) alt.append(el("small", "bx-dijital", u.tur === "renk" ? "🎨 isim rengi" : u.tur === "rozet" ? "🏅 rozet" : `🏷️ unvan${u.sureGun ? " · " + u.sureGun + " gün" : ""}`));
       b.append(alt);
       const btn = el("button", "btn", "Satın al");
       btn.type = "button";
@@ -376,8 +379,15 @@
       const bar = el("i"); bar.style.width = (oran * 100).toFixed(1) + "%"; ilerleme.append(bar);
       ilerleme.title = oran >= 1 ? "Alabilirsin!" : `%${(oran * 100).toFixed(0)} biriktirdin`;
       btn.addEventListener("click", () => {
-        if (!confirm(`${u.emoji || "🎁"} ${u.ad} için ${u.fiyat} BERKAY harcanacak. Emin misin?`)) return;
-        calistir(btn, () => api("marketAl", { urunId: u.id })).then((r) => { if (r) toast(r.mesaj, 5000); });
+        let unvan;
+        if (u.tur === "unvan" && !u.deger) {
+          unvan = prompt("Unvanın ne olsun? (2–24 harf, ör. Berkay'ın Patronu)", "");
+          if (unvan == null) return;
+          unvan = unvan.trim();
+          if (unvan.length < 2) { toast("Unvan en az 2 harf olmalı."); return; }
+        }
+        if (!confirm(`${u.emoji || "🎁"} ${u.ad}${unvan ? ` ("${unvan}")` : ""} için ${u.fiyat} BERKAY harcanacak. Emin misin?`)) return;
+        calistir(btn, () => api("marketAl", { urunId: u.id, unvan })).then((r) => { if (r) toast(r.mesaj, 5000); });
       });
       b.append(ilerleme);
       k.append(b, btn);
@@ -486,6 +496,46 @@
     const a = document.createElement("a");
     a.href = URL.createObjectURL(paylasBlob); a.download = "berkaycoin-kar.png"; a.click();
   });
+
+  // ---------------- Zenginler + bu hafta ----------------
+  let tumCuzdanlar = [], haftaGecmis = [];
+  function degerHesap(c) {
+    const acik = d ? Object.values(d.poz).filter((p) => p.uid === c.uid).reduce((t, p) => t + Math.max(0, p.teminat + E.pnl(p, d.fiyat, d.derinlik)), 0) : 0;
+    return (c.bkc || 0) * (d ? d.fiyat : 1) + (c.btl || 0) + acik;
+  }
+  function zenginCiz() {
+    const z = $("bxZengin"); z.textContent = "";
+    const l = [...tumCuzdanlar].sort((a, b) => degerHesap(b) - degerHesap(a)).slice(0, 10);
+    if (!l.length) { z.append(el("p", "muted", "Henüz kimse yok.")); return; }
+    l.forEach((c, i) => {
+      const r = el("div", "bx-satir" + (profile && c.uid === profile.uid ? " pf-vurgu" : ""));
+      r.append(el("span", "rk-sira", ["🥇", "🥈", "🥉"][i] || String(i + 1)), Ekonomi.isim(c.ad, c.kozmetik || null), el("span", "bx-sag", para(degerHesap(c), 0) + " TL"));
+      z.append(r);
+    });
+  }
+  function haftaCiz() {
+    const h = $("bxHafta"); h.textContent = "";
+    const liste = haftaGecmis.filter((g) => g.sebep !== "yenileme");
+    const lik = liste.filter((g) => g.sebep === "likide").sort((a, b) => b.teminat - a.teminat)[0];
+    const kar = liste.filter((g) => g.pnl > 0).sort((a, b) => b.pnl - a.pnl)[0];
+    const yuzde = liste.filter((g) => g.pnl > 0).sort((a, b) => b.yuzde - a.yuzde)[0];
+    const satirlar = [];
+    const yap = (ikon, baslik, g, deger, cls) => {
+      const r = el("div", "bx-satir");
+      r.append(el("span", null, ikon + " " + baslik), Ekonomi.isim(g.ad, undefined, { unvan: false }), el("span", "muted", `${g.kaldirac}x ${g.yon.toUpperCase()}`), el("span", "bx-sag " + cls, deger));
+      satirlar.push(r);
+    };
+    if (kar) yap("🤑", "En kârlı işlem", kar, "+" + para(kar.pnl, 0) + " TL", "yukari");
+    if (yuzde && yuzde !== kar) yap("🚀", "En yüksek getiri", yuzde, "+" + para(yuzde.yuzde, 0) + "%", "yukari");
+    if (lik) yap("💀", "Haftanın likide olanı", lik, "−" + para(lik.teminat, 0) + " TL", "asagi");
+    const likSay = liste.filter((g) => g.sebep === "likide").length;
+    const r = el("div", "bx-satir"); r.append(el("span", null, `📊 ${liste.length} pozisyon kapandı · ${likSay} likidasyon`)); satirlar.push(r);
+    satirlar.forEach((x) => h.append(x));
+  }
+  function haftaDinle() {
+    db.collection("borsa_gecmis").where("kapanis", ">=", Date.now() - 7 * 86400000).onSnapshot((s) => { haftaGecmis = s.docs.map((x) => x.data()); haftaCiz(); }, (err) => { $("bxHafta").innerHTML = '<p class="muted">Okunamadı (' + err.message + ').</p>'; });
+    Ekonomi.cuzdanlar((l) => { tumCuzdanlar = l; zenginCiz(); if (d) { arenaCiz(); akisCiz(); } });
+  }
 
   // ---------------- Bildirim ----------------
   let toastZaman = null;

@@ -72,6 +72,21 @@
         <div id="odulListe"><p class="muted">Yükleniyor…</p></div>
       </section>
     </div>
+
+    <!-- BERKAY çarkı: Sınırsız Çark'tan bağımsız, coin ödüllü. Sonucu sunucu seçer (js/cark-berkay.js) -->
+    <section class="card ek-cark" id="ekCark" hidden>
+      <div class="ek-cark-yazi">
+        <h2>💰 BERKAY Çarkı</h2>
+        <p class="muted" id="ekCarkBilgi">Yükleniyor…</p>
+        <div class="ek-cark-sonuc" id="ekCarkSonuc" aria-live="polite"></div>
+        <button type="button" class="btn cark-cevir" id="ekCarkBtn" disabled>Çevir</button>
+        <p class="muted" style="font-size:.8rem">Her gün bedava hak(lar)ın var, sonrası ücretli. Dilimler ve ücret admin panelinden ayarlanır.</p>
+      </div>
+      <div class="cark-sahne ek-cark-sahne">
+        <div class="cark-ok" aria-hidden="true"></div>
+        <canvas class="cark-tuval" id="ekCarkTuval" width="560" height="560" aria-label="BERKAY Çarkı"></canvas>
+      </div>
+    </section>
   </main>
 
   <!-- Kazandın ekranı -->
@@ -96,9 +111,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
+  <script src="js/ekonomi.js"></script>
   <script src="js/basarim.js"></script>
   <script src="js/bildirim.js"></script>
   <script src="js/cark-ciz.js"></script>
   <script src="js/cark.js"></script>
+  <script src="js/cark-berkay.js"></script>
 </body>
 </html>
