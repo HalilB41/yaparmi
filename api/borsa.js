@@ -290,8 +290,10 @@ function mmAdim(d, mm) {
   else {
     const h = sayi(mm.hedef), bant = Math.max(0, sayi(mm.bant) || 0) / 100;
     if (!(h > 0)) return 0;
-    if (p < h * (1 - bant)) N = Math.min(max, D * Math.log(h / p)); // hedefe çıkmak için gereken alım
-    else if (p > h * (1 + bant)) N = -Math.min(max, D * Math.log(p / h));
+    // Bant dışına çıkınca hedefe doğru YUMUŞAK döner: her dakika aradaki farkın (log ölçekte) en fazla
+    // yarısını kapatır ve asla hedefi geçmez. Tek dakikada tavandan dibe ya da dipten tavana zıplamaz.
+    if (p < h * (1 - bant)) N = Math.min(max, 0.5 * D * Math.log(h / p));
+    else if (p > h * (1 + bant)) N = -Math.min(max, 0.5 * D * Math.log(p / h));
   }
   if (Math.abs(N) < 1e-6) return 0;
   if (N > 0) d.fiyat = egriAl(p, N, D).p1;
@@ -775,7 +777,7 @@ async function adminIslem(db, kim, govde, now) {
         poz.boyut = r6(poz.boyut / kat);
         poz.lik = r6(poz.v === 2 ? (poz.yon === "long" ? Math.max(0, poz.giris - (LIK_ORAN * poz.teminat) / poz.boyut) : poz.giris + (LIK_ORAN * poz.teminat) / poz.boyut) : likFiyati(poz, d.derinlik));
       }
-      if (gizli.mm && gizli.mm.hedef > 0) gizli.mm.hedef = r6(gizli.mm.hedef * kat);
+      if (gizli.mm && gizli.mm.hedef > 0) gizli.mm.hedef = r6(yeni); // MM yeni başlangıç fiyatını korusun
       gizli.rota = null;
       k.gizliDegisti = true;
       d.fiyat = yeni;

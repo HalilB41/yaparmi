@@ -156,6 +156,19 @@
   }
   function mmModGoster() { const denge = $("bxaMMMod").value === "denge"; $("bxaMMHedefKutu").hidden = !denge; $("bxaMMBantKutu").hidden = !denge; }
   $("bxaMMMod").addEventListener("change", mmModGoster);
+  // Girilen dakikalık miktarın fiyatı dakikada ne kadar oynatacağını göster (derinliğe göre)
+  function mmEtkiGoster() {
+    const el = $("bxaMMEtki"); if (!el || !d || !(d.derinlik > 0)) return;
+    const tl = Number($("bxaMMDakika").value) || 0;
+    if (!tl) { el.textContent = ""; return; }
+    const yuzde = (Math.exp(tl / d.derinlik) - 1) * 100;
+    const oneri = Math.round(d.derinlik * 0.05);
+    el.innerHTML = `Bu miktar fiyatı dakikada en fazla <b>%${yuzde < 1000 ? yuzde.toFixed(1) : "1000+"}</b> oynatabilir. ` +
+      (yuzde > 15 ? `<b style="color:var(--err)">⚠️ Çok yüksek, grafik zıplar.</b> Derinlik ${d.derinlik.toLocaleString("tr-TR")} iken önerilen ~${oneri.toLocaleString("tr-TR")} TL (dakikada ~%5).` : "✅ Makul.");
+  }
+  $("bxaMMDakika").addEventListener("input", mmEtkiGoster);
+  $("bxaMMAcik").addEventListener("change", mmEtkiGoster);
+  setInterval(mmEtkiGoster, 3000);
   $("bxaMMHedefSimdi").addEventListener("click", () => { if (d) $("bxaMMHedef").value = Number(d.fiyat.toPrecision(4)); });
   async function mmKaydet(sifirla) {
     const r = await islem($("bxaMMKaydet"), $("bxaMMSonuc"), "adminMM", {
