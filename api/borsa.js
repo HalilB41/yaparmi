@@ -64,6 +64,10 @@ const BASLANGIC_ARZ = 1_000_000;
 const KAYIT_BONUSU = 200; // BERKAY
 const BASLANGIC_FIYAT = 1; // 1 BERKAY = 1 USDT
 const ADIM_MS = 10_000; // fiyat her 10 saniyede bir adım atar
+// Firestore kotası (ücretsiz plan: günde 50.000 okuma / 20.000 yazma) için tick seyrek yazılır.
+// Aradaki 10 sn'lik adımlar yine hesaplanır, sadece belgeye daha seyrek toplu yazılır.
+const TICK_TEK_MS = 30_000; // açık olan coin en fazla 30 sn'de bir
+const TICK_LISTE_MS = 300_000; // listedeki diğer coinler en fazla 5 dk'da bir
 const MUM_MS = 60_000; // 1 dakikalık mumlar
 const SON_MUM = 240; // durum belgesinde tutulan son mum sayısı (4 saat)
 const MAX_GERI_MS = 6 * 3600_000; // kimse yokken en fazla 6 saati geriye dönük hesapla
@@ -566,8 +570,16 @@ function cuzdanCevap(c) {
   return c ? { bkc: r6(c.bkc || 0), btl: r6(c.btl || 0), coin: c.coin || {}, gerceklesen: r2(c.gerceklesen || 0), bonus: c.bonus || 0 } : null;
 }
 // İstenen coini kayıttan bul (yoksa hata)
-async function coinBul(db, sym) {
+// Coin listesi sunucuda 60 sn önbellekte (her istekte okuma harcamasın)
+let coinOnbellek = { t: 0, liste: null };
+async function coinListesiOku(db) {
+  if (coinOnbellek.liste && Date.now() - coinOnbellek.t < 60_000) return coinOnbellek.liste;
   const liste = coinListesi(await db.collection("borsa").doc("coinler").get());
+  coinOnbellek = { t: Date.now(), liste };
+  return liste;
+}
+async function coinBul(db, sym) {
+  const liste = await coinListesiOku(db);
   const def = liste.find((c) => c.sym === sym);
   if (!def) throw new Hata(`${sym} diye bir coin yok.`);
   return { def, liste };
@@ -581,13 +593,16 @@ async function kullaniciIslem(db, kim, govde, now) {
 
   if (tur === "tick" || tur === "tickHepsi") {
     // tick: tek coin · tickHepsi: listedeki bütün coinler (coin listesi sayfası açıkken)
-    const liste = coinListesi(await db.collection("borsa").doc("coinler").get());
-    const hedefler = tur === "tick" ? liste.filter((c) => c.sym === symTemiz(govde.coin)) : liste;
+    const liste = await coinListesiOku(db);
+    // Tarayıcı hangi coinlerin bayatladığını (sonTick) zaten biliyor: sadece onları göndersin, sunucu boşuna okumasın
+    const istenen = Array.isArray(govde.coinler) ? new Set(govde.coinler.map(symTemiz)) : null;
+    const hedefler = tur === "tick" ? liste.filter((c) => c.sym === symTemiz(govde.coin)) : liste.filter((c) => !istenen || istenen.has(c.sym));
+    const aralik = tur === "tick" ? TICK_TEK_MS : TICK_LISTE_MS;
     // Sırayla (paralel değil): gerçek coinlere geçiş bütün cüzdanları kilitliyor, aynı anda koşarsa birbirini kilitler
     const hatalar = [];
     for (const def of hedefler) {
       const snap = await db.collection("borsa").doc(durumId(def.sym)).get();
-      if (snap.exists && now - (snap.data().sonTick || 0) < ADIM_MS) continue;
+      if (snap.exists && now - (snap.data().sonTick || 0) < aralik) continue;
       await islem(db, now, {}, async () => null, def.sym, def).catch((e) => { hatalar.push(def.sym + ": " + (e && e.message)); console.error("tick " + def.sym, e); });
     }
     return hatalar.length ? { ok: true, hatalar } : { ok: true };
@@ -952,6 +967,7 @@ async function adminIslem(db, kim, govde, now) {
         if (!mevcut) throw new Hata("Böyle bir coin yok.");
         if (kayit) kayit.silindi = true; else kayitli.push({ sym: yeniSym, silindi: true });
         tx.set(ref, { liste: kayitli });
+        coinOnbellek = { t: 0, liste: null };
         tx.set(db.collection("borsa_log").doc(), { uid: kim.uid, ad: kim.ad, tur: "admin", detay: `Coin listeden kaldırıldı: ${yeniSym}`, bkc: 0, btl: 0, coin: yeniSym, ms: now, tarih: FieldValue.serverTimestamp() });
         return { ok: true, mesaj: `${yeniSym} listeden kaldırıldı (bakiyeler cüzdanlarda durur, geri eklenince görünür).` };
       }
@@ -974,6 +990,7 @@ async function adminIslem(db, kim, govde, now) {
         kayit.sira = coinListesi(snap).length + 1;
       }
       tx.set(ref, { liste: kayitli });
+      coinOnbellek = { t: 0, liste: null };
       tx.set(db.collection("borsa_log").doc(), { uid: kim.uid, ad: kim.ad, tur: "admin", detay: `Coin ${mevcut ? "düzenlendi" : "eklendi"}: ${yeniSym}${ad ? " (" + ad + ")" : ""}`, bkc: 0, btl: 0, coin: yeniSym, ms: now, tarih: FieldValue.serverTimestamp() });
       return { ok: true, mesaj: mevcut ? `${yeniSym} güncellendi.` : `${yeniSym} eklendi! Borsada aranınca çıkar.` };
     });

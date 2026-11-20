@@ -34,8 +34,10 @@
 
   function baslat() {
     grafik = new window.BorsaGrafik($("bxaGrafik"));
-    api("tickHepsi").catch((err) => { $("bxaGenelDurum").textContent = "⚠️ Sunucu: " + err.message; });
-    setInterval(() => { if (document.visibilityState === "visible" && !$("bxaOzet").closest(".adm-panel").hidden) api("tickHepsi").catch(() => {}); }, 10000);
+    api("tick", { coin: "BERKAY" }).catch((err) => { $("bxaGenelDurum").textContent = "⚠️ Sunucu: " + err.message; });
+    const gorunur = () => document.visibilityState === "visible" && !$("bxaOzet").closest(".adm-panel").hidden;
+    // Sadece seçili coin, o da bayatladıysa (sonTick dinlenen belgede var): okuma kotası boşa gitmesin
+    setInterval(() => { if (gorunur() && (!d || Date.now() - (d.sonTick || 0) >= 30000)) api("tick", { coin: secili }).catch(() => {}); }, 15000);
 
     db.collection("borsa").doc("coinler").onSnapshot((s) => {
       coinler = BC.liste(s.exists ? s.data() : null);
@@ -50,7 +52,7 @@
 
     db.collection("borsa_siparis").orderBy("ms", "desc").limit(200).onSnapshot((s) => siparislerCiz(s.docs.map((x) => Object.assign({ id: x.id }, x.data()))), () => {});
     db.collection("borsa_market").onSnapshot((s) => urunlerCiz(s.docs.map((x) => Object.assign({ id: x.id }, x.data())).sort((a, b) => (a.sira || 99) - (b.sira || 99))), () => {});
-    db.collection("borsa_log").orderBy("ms", "desc").limit(300).onSnapshot((s) => logCiz(s.docs.map((x) => x.data())), () => {});
+    db.collection("borsa_log").orderBy("ms", "desc").limit(100).onSnapshot((s) => logCiz(s.docs.map((x) => x.data())), () => {});
 
     kisilerDoldur();
   }

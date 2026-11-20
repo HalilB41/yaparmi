@@ -79,8 +79,14 @@
     dinle();
     haftaDinle();
     coinSec(secili, false);
-    api("tickHepsi").catch(() => {});
-    setInterval(() => { if (document.visibilityState === "visible") api("tickHepsi").catch(() => {}); }, 10000);
+    // Firestore kotası için seyrek: açık coin 30 sn'de, liste 5 dk'da bir ilerletilir (sunucu da aynı sınırı uygular)
+    // Sunucuya sadece gerçekten bayatlamış coin için gidilir: sonTick dinlenen belgede zaten var.
+    // Biri ilerletince herkes yeni sonTick'i görür, başkası aynı işi tekrar yapmaz (Firestore okuma kotası).
+    const bayat = (sym, ms) => { const dd = durumlar[sym]; return !dd || Date.now() - (dd.sonTick || 0) >= ms; };
+    const listeIlerlet = () => { const l = coinler.map((c) => c.sym).filter((s) => bayat(s, 300000)); if (l.length) api("tickHepsi", { coinler: l }).catch(() => {}); };
+    setTimeout(listeIlerlet, 2500); // önce belgeler gelsin, sonra sadece bayatlar istensin
+    setInterval(() => { if (document.visibilityState === "visible" && bayat(secili, 30000)) api("tick", { coin: secili }).catch(() => {}); }, 15000);
+    setInterval(() => { if (document.visibilityState === "visible") listeIlerlet(); }, 60000);
     setInterval(() => { if (!document.hidden) dexCiz(); }, 5000);
     setInterval(() => { if (d && !document.hidden) { arenaCiz(); akisCiz(); pozlarimCiz(); } }, 15000);
   }
@@ -177,6 +183,7 @@
     if (degisti) { $("bxSpotMiktar").value = ""; $("bxTeminat").value = ""; durumYaz(""); }
     eskiMumlar(sym);
     seciliGuncelle();
+    if (degisti && basladi && (!durumlar[sym] || Date.now() - (durumlar[sym].sonTick || 0) >= 30000)) api("tick", { coin: sym }).catch(() => {});
     dexCiz();
     if (kaydir) $("bxSerit").scrollIntoView({ behavior: "smooth", block: "start" });
   }
