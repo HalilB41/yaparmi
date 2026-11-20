@@ -288,7 +288,16 @@ function mmAdim(d, mm) {
   if (mm.mod === "al") N = max;
   else if (mm.mod === "sat") N = -max;
   else {
-    const h = sayi(mm.hedef), bant = Math.max(0, sayi(mm.bant) || 0) / 100;
+    let h = sayi(mm.hedef);
+    if (mm.mod === "serbest") {
+      // Serbest: sabit hedef yok. Referans = fiyatın kayan ortalaması (son ~N dakika, log ölçekte).
+      // Fiyat istediği yöne gidebilir, ortalama da arkasından gelir; MM sadece ani iğneleri törpüler.
+      const sure = Math.max(5, Math.min(1440, sayi(mm.sure) || 60));
+      if (!(mm.ort > 0)) mm.ort = p;
+      mm.ort = r6(Math.exp(Math.log(mm.ort) + (Math.log(p) - Math.log(mm.ort)) / sure));
+      h = mm.ort;
+    }
+    const bant = Math.max(0, sayi(mm.bant) || 0) / 100;
     if (!(h > 0)) return 0;
     // Bant dışına çıkınca hedefe doğru YUMUŞAK döner: her dakika aradaki farkın (log ölçekte) en fazla
     // yarısını kapatır ve asla hedefi geçmez. Tek dakikada tavandan dibe ya da dipten tavana zıplamaz.
@@ -319,6 +328,7 @@ function ilerlet(d, gizli, now, kapananlar) {
     let hacim = 0;
     if (gizli && gizli.mm && gizli.mm.acik && Math.floor(t / MUM_MS) !== Math.floor((t - ADIM_MS) / MUM_MS)) {
       const N = mmAdim(d, gizli.mm);
+      if (gizli.mm.mod === "serbest") kapananlar.gizliDegisti = true; // ortalama her dakika güncellenir
       if (N) {
         hacim = Math.abs(N);
         const st = gizli.mm;
@@ -778,6 +788,7 @@ async function adminIslem(db, kim, govde, now) {
         poz.lik = r6(poz.v === 2 ? (poz.yon === "long" ? Math.max(0, poz.giris - (LIK_ORAN * poz.teminat) / poz.boyut) : poz.giris + (LIK_ORAN * poz.teminat) / poz.boyut) : likFiyati(poz, d.derinlik));
       }
       if (gizli.mm && gizli.mm.hedef > 0) gizli.mm.hedef = r6(yeni); // MM yeni başlangıç fiyatını korusun
+      if (gizli.mm) gizli.mm.ort = r6(yeni);
       gizli.rota = null;
       k.gizliDegisti = true;
       d.fiyat = yeni;
@@ -824,7 +835,9 @@ async function adminIslem(db, kim, govde, now) {
       if (!(f > 0 && f < 1e9)) throw new Hata("Geçerli bir fiyat yaz.");
       d.fiyat = f;
       mumYaz(d, now, f, 0, k.tasanlar);
-      if (gizli.rota) { gizli.rota = null; k.gizliDegisti = true; }
+      if (gizli.rota) gizli.rota = null;
+      if (gizli.mm) gizli.mm.ort = r6(f); // serbest MM yeni fiyattan devam etsin, eskisine çekmesin
+      k.gizliDegisti = true;
       log(k, `Fiyatı elle ${f} yaptı`);
       return { ok: true, mesaj: `Fiyat ${f} oldu.` };
     }
@@ -849,18 +862,20 @@ async function adminIslem(db, kim, govde, now) {
     }
     if (tur === "adminMM") {
       const eski = gizli.mm || {};
-      const mod = ["denge", "al", "sat"].includes(govde.mod) ? govde.mod : "denge";
+      const mod = ["serbest", "denge", "al", "sat"].includes(govde.mod) ? govde.mod : "serbest";
       const dakikalik = sayi(govde.dakikalik), hedef = sayi(govde.hedef), bant = sayi(govde.bant);
+      const sure = Math.max(5, Math.min(1440, Math.round(sayi(govde.sure) || 60)));
       if (!(dakikalik >= 0 && dakikalik <= 1e7)) throw new Hata("Dakikalık miktar 0 ile 10.000.000 TL arası olmalı.");
       if (mod === "denge" && !(hedef > 0)) throw new Hata("Denge modu için hedef fiyat yaz.");
-      if (mod === "denge" && !(bant >= 0 && bant <= 90)) throw new Hata("Bant %0 ile %90 arası olmalı.");
+      if ((mod === "denge" || mod === "serbest") && !(bant >= 0 && bant <= 90)) throw new Hata("Bant %0 ile %90 arası olmalı.");
       gizli.mm = {
-        acik: !!govde.acik, mod, dakikalik, hedef: hedef > 0 ? hedef : null, bant: bant >= 0 ? bant : 2,
+        acik: !!govde.acik, mod, dakikalik, hedef: hedef > 0 ? hedef : null, bant: bant >= 0 ? bant : 2, sure,
+        ort: eski.mod === "serbest" && eski.ort > 0 ? eski.ort : r6(d.fiyat),
         alinan: govde.sifirla ? 0 : eski.alinan || 0, satilan: govde.sifirla ? 0 : eski.satilan || 0,
         sonIslem: govde.sifirla ? null : eski.sonIslem || null, guncelleme: now,
       };
       k.gizliDegisti = true;
-      const ozet = !govde.acik ? "kapalı" : mod === "denge" ? `denge: hedef ${hedef} ±%${bant}, dakikada en fazla ${dakikalik} TL` : `her dakika ${dakikalik} TL ${mod === "al" ? "alım" : "satış"}`;
+      const ozet = !govde.acik ? "kapalı" : mod === "serbest" ? `serbest: son ${sure} dk ortalamasından ±%${bant} kopunca törpüler, dakikada en fazla ${dakikalik} TL` : mod === "denge" ? `denge: hedef ${hedef} ±%${bant}, dakikada en fazla ${dakikalik} TL` : `her dakika ${dakikalik} TL ${mod === "al" ? "alım" : "satış"}`;
       log(k, `Piyasa yapıcı: ${ozet}`);
       return { ok: true, mesaj: `Piyasa yapıcı ${ozet}.` };
     }

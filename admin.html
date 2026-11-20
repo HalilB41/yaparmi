@@ -86,12 +86,13 @@
 
         <div class="panel card admin-section wide">
           <h2>🤖 Piyasa yapıcı (MM)</h2>
-          <p class="muted">Kasa adına <b>dakikada bir</b> alım/satım yapan bot. Kullanıcı bakiyelerine ve toplam arza dokunmaz, sadece fiyatı iter (normal alım-satımla aynı eğriden). <b>Denge</b>: fiyat hedefin ±bant dışına çıkınca hedefe doğru alır/satar, dakikada en fazla girdiğin TL kadar; böylece biri büyük alım yapınca fiyat sınırsız uçmaz, büyük satışta dibe çakılmaz. <b>Sürekli al / sat</b>: her dakika sabit miktar. Çalışması için birinin borsa ya da admin sayfası açık olmalı (kimse yokken geçen süre, biri girince geriye dönük hesaplanır).</p>
+          <p class="muted">Kasa adına <b>dakikada bir</b> alım/satım yapan bot. Kullanıcı bakiyelerine ve toplam arza dokunmaz, sadece fiyatı iter (normal alım-satımla aynı eğriden). <b>Serbest</b>: sabit hedef yok, fiyat istediği yöne gider. MM fiyatın son N dakikalık ortalamasını izler; fiyat bir anda ortalamadan ±bant kadar koparsa (dev alım/satım iğnesi) geri törpüler. Yavaş yükseliş/düşüşe karışmaz, ortalama da arkasından gelir. <b>Sabit hedef</b>: fiyatı girdiğin değerin çevresinde tutar. <b>Sürekli al / sat</b>: her dakika sabit miktar. Çalışması için birinin borsa ya da admin sayfası açık olmalı (kimse yokken geçen süre, biri girince geriye dönük hesaplanır).</p>
           <div class="tpl-form adm-form">
             <label><input type="checkbox" id="bxaMMAcik" /> Açık</label>
-            <label>Mod <select id="bxaMMMod"><option value="denge">⚖️ Denge</option><option value="al">🟢 Sürekli al</option><option value="sat">🔴 Sürekli sat</option></select></label>
+            <label>Mod <select id="bxaMMMod"><option value="serbest">🌊 Serbest (sabit hedef yok)</option><option value="denge">⚖️ Sabit hedef</option><option value="al">🟢 Sürekli al</option><option value="sat">🔴 Sürekli sat</option></select></label>
             <label>Dakikada en fazla (TL) <input type="number" id="bxaMMDakika" min="0" step="any" placeholder="ör. 200" /></label>
             <label id="bxaMMHedefKutu">Hedef fiyat <input type="number" id="bxaMMHedef" min="0" step="any" placeholder="ör. 1.5" /> <button type="button" class="link-btn" id="bxaMMHedefSimdi">şimdiki fiyat</button></label>
+            <label id="bxaMMSureKutu">Ortalama süresi (dk) <input type="number" id="bxaMMSure" min="5" max="1440" step="1" value="60" /></label>
             <label id="bxaMMBantKutu">Bant (±%) <input type="number" id="bxaMMBant" min="0" max="90" step="0.5" value="2" /></label>
             <div class="sayac-butonlar">
               <button type="button" class="admin-btn publish" id="bxaMMKaydet">💾 Kaydet</button>

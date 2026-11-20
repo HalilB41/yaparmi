@@ -145,17 +145,18 @@
     if (!mmDolu && mm) {
       mmDolu = true;
       $("bxaMMAcik").checked = !!mm.acik; $("bxaMMMod").value = mm.mod || "denge";
-      $("bxaMMDakika").value = mm.dakikalik ?? ""; $("bxaMMHedef").value = mm.hedef ?? ""; $("bxaMMBant").value = mm.bant ?? 2;
+      $("bxaMMDakika").value = mm.dakikalik ?? ""; $("bxaMMHedef").value = mm.hedef ?? ""; $("bxaMMBant").value = mm.bant ?? 2; $("bxaMMSure").value = mm.sure ?? 60;
       mmModGoster();
     }
     const st = $("bxaMMDurum");
     if (!mm) { st.textContent = "Piyasa yapıcı hiç açılmadı."; return; }
     const al = mm.alinan || 0, sat = mm.satilan || 0;
     const son = mm.sonIslem ? ` · son işlem ${tarih(mm.sonIslem.t)}: ${mm.sonIslem.N > 0 ? "🟢 aldı" : "🔴 sattı"} ${para(Math.abs(mm.sonIslem.N))} TL → ${sayi(mm.sonIslem.f)}` : "";
-    st.textContent = `${mm.acik ? "🟢 Çalışıyor" : "⚪ Kapalı"} · toplam alım ${para(al)} TL · toplam satış ${para(sat)} TL · net ${isaretli(al - sat)} TL${son}`;
+    st.textContent = `${mm.acik ? "🟢 Çalışıyor" : "⚪ Kapalı"} · toplam alım ${para(al)} TL · toplam satış ${para(sat)} TL · net ${isaretli(al - sat)} TL${mm.mod === "serbest" && mm.ort ? ` · ortalama ${sayi(mm.ort)}` : ""}${son}`;
   }
-  function mmModGoster() { const denge = $("bxaMMMod").value === "denge"; $("bxaMMHedefKutu").hidden = !denge; $("bxaMMBantKutu").hidden = !denge; }
+  function mmModGoster() { const m = $("bxaMMMod").value; $("bxaMMHedefKutu").hidden = m !== "denge"; $("bxaMMBantKutu").hidden = m !== "denge" && m !== "serbest"; $("bxaMMSureKutu").hidden = m !== "serbest"; }
   $("bxaMMMod").addEventListener("change", mmModGoster);
+  mmModGoster();
   // Girilen dakikalık miktarın fiyatı dakikada ne kadar oynatacağını göster (derinliğe göre)
   function mmEtkiGoster() {
     const el = $("bxaMMEtki"); if (!el || !d || !(d.derinlik > 0)) return;
@@ -173,7 +174,7 @@
   async function mmKaydet(sifirla) {
     const r = await islem($("bxaMMKaydet"), $("bxaMMSonuc"), "adminMM", {
       acik: $("bxaMMAcik").checked, mod: $("bxaMMMod").value, dakikalik: Number($("bxaMMDakika").value) || 0,
-      hedef: Number($("bxaMMHedef").value) || 0, bant: Number($("bxaMMBant").value) || 0, sifirla: !!sifirla,
+      hedef: Number($("bxaMMHedef").value) || 0, bant: Number($("bxaMMBant").value) || 0, sure: Number($("bxaMMSure").value) || 60, sifirla: !!sifirla,
     });
     return r;
   }
