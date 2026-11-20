@@ -228,7 +228,7 @@ function loadSorular() {
       (snapshot) => {
         soruTableBody.innerHTML = "";
         if (snapshot.empty) {
-          soruTableBody.innerHTML = '<tr><td colspan="5" class="muted">Henüz soru yok.</td></tr>';
+          soruTableBody.innerHTML = '<tr><td colspan="6" class="muted">Henüz soru yok.</td></tr>';
           return;
         }
         snapshot.forEach((doc) => {
@@ -256,12 +256,24 @@ function loadSorular() {
           tdModel.textContent = data.model || "—";
           tr.appendChild(tdModel);
 
+          // Paylaş: soruyu "kim sordu" bilgisiyle kart yapıp WhatsApp'a gönder (js/kahin-paylas.js)
+          const tdPaylas = document.createElement("td");
+          const btnPaylas = document.createElement("button");
+          btnPaylas.type = "button";
+          btnPaylas.className = "admin-btn se-small";
+          btnPaylas.textContent = "📤 Paylaş";
+          btnPaylas.addEventListener("click", () => {
+            if (window.KahinPaylas) window.KahinPaylas({ soru: data.soru || "", cevap: data.cevap || "", kullaniciAdi: data.kullaniciAdi || "", tarih: formatTarih(data.tarih) });
+          });
+          tdPaylas.appendChild(btnPaylas);
+          tr.appendChild(tdPaylas);
+
           soruTableBody.appendChild(tr);
         });
       },
       (err) => {
         console.error("Soru geçmişi okunamadı:", err.message);
-        soruTableBody.innerHTML = '<tr><td colspan="5" class="muted">Yüklenemedi.</td></tr>';
+        soruTableBody.innerHTML = '<tr><td colspan="6" class="muted">Yüklenemedi.</td></tr>';
       }
     );
 }

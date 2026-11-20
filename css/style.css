@@ -1899,3 +1899,8 @@ table.admin-table input.adm-tl { width: 90px; padding: 6px 8px; border-radius: 8
   .bx-grafik-kutu { height: 300px; }
   .bx-grafik-kart { padding: 10px; }
 }
+
+/* admin: Kâhin sorusunu paylaş (js/kahin-paylas.js) */
+.kp-kart { width: min(100%, 440px); }
+#soruTableBody .admin-btn { white-space: nowrap; }
+.kp-kart img { width: 100%; border-radius: 14px; margin: 10px 0; aspect-ratio: 1080 / 1350; background: var(--surface-2); object-fit: cover; }
