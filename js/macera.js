@@ -156,7 +156,7 @@
     const s = {
       no, sv, W, H: satir.length, k, oto: !!sv.otomatik, tema: sv.tema,
       dusman: [], mermi: [], parca: [], kitapci: [], burger: [], kontrol: [], bitis: null, platform: [],
-      boss: null, arena: null, kamera: 0, sure: 0, olum: 0, toplanan: 0, atilan: 0, atisBekle: 0, bizim: [], basla: null, sallanma: 0, bitti: false, olu: 0, mesaj: null,
+      boss: null, arena: null, kamera: 0, sure: 0, olum: 0, toplanan: 0, atilan: 0, ekstra: 0, cephane: [], cephaneSaat: 0, atisBekle: 0, bizim: [], basla: null, sallanma: 0, bitti: false, olu: 0, mesaj: null,
     };
     let arenaBas = null, arenaDuvar = null;
     for (let r = 0; r < s.H; r++) for (let c = 0; c < W; c++) {
@@ -299,15 +299,31 @@
     if (s.arena && !s.arena.aktif && !s.arena.bitti && p.x > s.arena.bas + T * 2) bossBaslat();
     if (s.boss) bossGuncelle(dt);
     if (s.polis) polisGuncelle(dt);
+    // boss savaşında arenaya bol burger yağar
+    if (s.boss && !s.boss.olu) {
+      s.cephaneSaat -= dt;
+      if (s.cephaneSaat <= 0 && s.cephane.length < 6) {
+        s.cephaneSaat = 1.1;
+        const a0 = s.arena.bas + T, a1 = s.arena.son - T * 2;
+        s.cephane.push({ x: a0 + Math.random() * (a1 - a0), y: 4, w: 26, h: 26, vx: 0, vy: 0, t: 0 });
+      }
+      for (const c of s.cephane) {
+        c.t += dt;
+        if (!c.yer) { c.vy = Math.min(500, c.vy + G * 0.35 * dt); hareket(c, dt, true); }
+        if (kesisir(p, c)) { c.al = true; s.ekstra += 2; SES.burger(); parcaPatla(c.x + 13, c.y + 13, "#f5b82e", 8); }
+        if (c.t > 14 || c.y > s.H * T) c.al = true;
+      }
+      s.cephane = s.cephane.filter((c) => !c.al);
+    } else if (s.cephane.length) s.cephane = [];
     // Z: toplanan burgerleri düz fırlat
     s.atisBekle = Math.max(0, s.atisBekle - dt);
     if (atBasildi) {
       atBasildi = false;
-      if (s.toplanan - s.atilan > 0 && s.atisBekle <= 0) {
+      if ((s.toplanan + s.ekstra - s.atilan) > 0 && s.atisBekle <= 0) {
         s.atilan++; s.atisBekle = 0.28;
         s.bizim.push({ x: p.x + p.w / 2 - 13 + p.yon * 12, y: p.y + 12, w: 26, h: 26, vx: p.yon * 720, t: 0, aci: 0 });
         bip(700, 300, 0.07, "triangle", 0.12);
-      } else if (s.toplanan - s.atilan <= 0 && s.atisBekle <= 0) { s.atisBekle = 0.5; s.mesaj = { yazi: `Hiç ${s.sv.topla || "🍔"} kalmadı, topla!`, t: 1.2 }; }
+      } else if ((s.toplanan + s.ekstra - s.atilan) <= 0 && s.atisBekle <= 0) { s.atisBekle = 0.5; s.mesaj = { yazi: `Hiç ${s.sv.topla || "🍔"} kalmadı, topla!`, t: 1.2 }; }
     }
     for (const m of s.bizim) {
       m.t += dt; m.x += m.vx * dt; m.aci += dt * 14;
@@ -341,6 +357,8 @@
     s.arena.aktif = true;
     // Zorluk: her boss kendi ayarını seviye dosyasından alır (yoksa varsayılan)
     const z = Object.assign({ yuru: 120, atisAra: 1.7, ziplama: 0.5, ofke: 0.25, ciftAtis: true, ucus: 0.85, isabet: 1, ezmePayi: 28, ilkAtis: 1.4 }, b.zorluk || {});
+    z.atisAra *= 1.3; z.isabet *= 0.8; z.yuru *= 0.85; z.ofke *= 0.6; z.ezmePayi += 8; // genel kolaylık
+    s.ekstraBoss = s.ekstra; s.ekstra += 5; s.cephane = []; s.cephaneSaat = 0.6; // girişte 5 burger hediye
     s.boss = { ...b, z, x: s.bossBas.x, y: s.bossBas.y, w: 64, h: 90, vx: 0, vy: 0, kalan: b.can, atis: z.ilkAtis, hedefX: s.bossBas.x, dokunulmaz: 0, yer: false, olu: false, yon: -1 };
     s.atilanBoss = s.atilan;
     s.mesaj = { yazi: `⚠️ ${b.ad}! Z ile ${s.sv.topla || "🍔"} fırlat`, t: 2.5 };
@@ -427,7 +445,7 @@
       if (Math.abs(d.x - s.p.x) < 6 * T) { const o = s.ilkDusman[i]; d.x = o.x; d.y = o.y; d.vy = 0; if (Math.abs(d.x - s.p.x) < 4 * T) d.canli = false; }
     });
     s.mermi = []; s.bizim = [];
-    if (s.boss && !s.arena.bitti) { s.atilan = s.atilanBoss || 0; s.boss = null; s.arena.aktif = false; muzikCal(s.sv.muzik || s.tema); }
+    if (s.boss && !s.arena.bitti) { s.atilan = s.atilanBoss || 0; s.ekstra = s.ekstraBoss || 0; s.cephane = []; s.boss = null; s.arena.aktif = false; muzikCal(s.sv.muzik || s.tema); }
     if (s.polis) s.polis.x = s.p.x - 460;
     // arabalar geri gelsin (motor bölümünde öldükten sonra yol boş kalmasın)
     s.dusman.forEach((d, i) => { if (d.tip === "araba") { const o = s.ilkDusman[i]; d.x = o.x; d.vx = 0; } });
@@ -619,6 +637,7 @@
       else if (d.tip === "araba") { ctx.save(); ctx.translate(d.x + 32, d.y + 17); ctx.scale(-1, 1); emoji("🚗", 0, 0, 56); ctx.restore(); }
     }
     for (const m of s.bizim) emoji(s.sv.topla || "🍔", m.x + 13, m.y + 13, 26, m.aci);
+    for (const c of s.cephane) { emoji(s.sv.topla || "🍔", c.x + 13, c.y + 13 + (c.yer ? Math.sin(performance.now() / 200 + c.x) * 3 : 0), 28); ctx.fillStyle = "#facc15"; ctx.font = "900 11px sans-serif"; ctx.textAlign = "center"; ctx.fillText("+2", c.x + 13, c.y - 4); ctx.textAlign = "left"; }
     for (const m of s.mermi) { emoji(m.emoji, m.x + m.w / 2, m.y + m.h / 2, 28, m.aci); if (m.yazi) { ctx.fillStyle = "#dc2626"; ctx.font = "900 10px sans-serif"; ctx.fillText(m.yazi, m.x - 2, m.y - 4); } }
     if (s.boss) bossCiz(s.boss);
     if (s.polis) {
@@ -654,7 +673,7 @@
       ctx.fillText(`${s.polis.emoji} ${s.polis.ad} ${m} m arkanda`, VW / 2, 80); ctx.textAlign = "left";
     }
     if (s.boss && !s.boss.olu) {
-      const kalan = s.toplanan - s.atilan, y = 100, yazi = `Z ile ${s.sv.topla || "🍔"} fırlatabilirsin · elinde ${kalan}`;
+      const kalan = (s.toplanan + s.ekstra - s.atilan), y = 100, yazi = `Z ile ${s.sv.topla || "🍔"} fırlatabilirsin · elinde ${kalan}`;
       ctx.font = "800 16px sans-serif"; ctx.textAlign = "center"; const g = ctx.measureText(yazi).width + 28;
       ctx.fillStyle = kalan > 0 ? "rgba(234,179,8,.92)" : "rgba(63,63,70,.85)"; ctx.beginPath(); ctx.roundRect(VW / 2 - g / 2, y - 18, g, 28, 14); ctx.fill();
       ctx.fillStyle = kalan > 0 ? "#1c1917" : "#fff"; ctx.fillText(yazi, VW / 2, y + 1); ctx.textAlign = "left";
