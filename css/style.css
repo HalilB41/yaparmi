@@ -2534,3 +2534,15 @@ a.hero-stat:hover { box-shadow: 0 0 0 2px var(--accent-soft); }
 .bx-svg.is-aci .bx-kafa { transform: rotate(-10deg); }
 .bx-svg.is-aci .bx-kafa image { filter: saturate(1.4) hue-rotate(-12deg) brightness(.95); }
 .bx-svg.is-vur .bx-kafa { transform: rotate(4deg); }
+/* Boks: hedef bölgesi (her vuruşta yeri değişir) */
+.sp-bar-boks { position: relative; }
+.sp-bar-hedef { position: absolute; top: -3px; bottom: -3px; width: 8%; border-radius: 6px; background: linear-gradient(90deg, rgba(31,157,85,.15), rgba(31,157,85,.85) 45%, #c8f025 50%, rgba(31,157,85,.85) 55%, rgba(31,157,85,.15)); box-shadow: 0 0 0 2px #fff, 0 0 12px rgba(200,240,37,.8); pointer-events: none; transition: left .25s ease; }
+.sp-bar-hedef::after { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; transform: translateX(-50%); background: #111; }
+/* Fotoğraflı karakter */
+.bx-foto { filter: drop-shadow(0 3px 4px rgba(0,0,0,.3)); }
+.bx-svg.is-aci .bx-foto { filter: drop-shadow(0 3px 4px rgba(0,0,0,.3)) sepia(.4) saturate(2.2) hue-rotate(-20deg); }
+.bx-kafa { transform-origin: 108px 180px; }
+.bx-svg.is-aci .bx-kafa { transform: rotate(-7deg); }
+.bx-svg.is-vur .bx-kafa { transform: rotate(3deg); }
+.sp-bar-boks { overflow: visible; }
+.sp-bar-boks .sp-bar-dolgu { border-radius: 999px; background: linear-gradient(90deg, #6b7280, #9ca3af); }

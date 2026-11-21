@@ -2083,6 +2083,26 @@ async function itirafIslem(db, kim, govde, now) {
   throw new Hata("Bilinmeyen işlem.");
 }
 
+// ---------------- Admin: oyun rekorlarını sıfırla ----------------
+// Spor oyunlarının BERKAY ödülü cüzdandaki kişisel rekora (c.rekorlar[oyun]) bakar; puanlama değişince
+// (ör. boksta herkesin 999'u) eski rekorlar sıfırlanmazsa kimse bir daha ödül alamaz.
+async function rekorSifirla(db, kim, govde) {
+  if (!kim.admin) throw new Hata("Bu işlem sadece admin içindir.", 403);
+  const oyun = String(govde.oyun || "");
+  if (!(oyun in OYUN_UST)) throw new Hata("Bilinmeyen oyun.");
+  const cs = await db.collection("borsa_cuzdan").get();
+  let n = 0;
+  for (const d of cs.docs) {
+    const r = d.data().rekorlar;
+    if (r && r[oyun] != null) {
+      const yeni = { ...r }; delete yeni[oyun];
+      await d.ref.update({ rekorlar: yeni });
+      n++;
+    }
+  }
+  return { ok: true, cuzdan: n };
+}
+
 // ---------------- Giriş noktası ----------------
 const profilOnbellek = new Map();
 export default async function handler(req, res) {
@@ -2121,7 +2141,9 @@ export default async function handler(req, res) {
     const kim = { uid: karar.uid, ad: p.ad, admin: p.admin };
 
     let sonuc;
-    if (ITIRAF_ISLEMLERI.includes(tur)) {
+    if (tur === "adminRekorSifirla") {
+      sonuc = await rekorSifirla(db, kim, govde);
+    } else if (ITIRAF_ISLEMLERI.includes(tur)) {
       sonuc = await itirafIslem(db, kim, govde, now);
     } else if (KUMAR_ISLEMLERI.includes(tur)) {
       sonuc = await kumarIslem(db, kim, govde, now);
@@ -2151,4 +2173,4 @@ export default async function handler(req, res) {
 }
 
 // Testler için dışa açık matematik
-export const _ic = { itirafIslem, itirafIz, ruletAn, ruletSonuc, ruletCarpan, slotDegerlendir, SLOT_SEMBOL, SLOT_AGIRLIK, turnuvaOyunu, TURNUVA, minesCarpan, minesBombalar, bjToplam, bjDeste, PLINKO, oyuncuOlay, seviyeHesap, gunGorevleri, haftaAnahtari, GOREVLER, kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
+export const _ic = { rekorSifirla, itirafIslem, itirafIz, ruletAn, ruletSonuc, ruletCarpan, slotDegerlendir, SLOT_SEMBOL, SLOT_AGIRLIK, turnuvaOyunu, TURNUVA, minesCarpan, minesBombalar, bjToplam, bjDeste, PLINKO, oyuncuOlay, seviyeHesap, gunGorevleri, haftaAnahtari, GOREVLER, kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };

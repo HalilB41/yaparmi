@@ -55,3 +55,24 @@
     }
   });
 })();
+
+// ---------------- Rekorları sıfırla (admin › Oyunlar) ----------------
+(function () {
+  "use strict";
+  const btn = document.getElementById("rekorSifirBtn");
+  if (!btn) return;
+  const durum = (m) => { document.getElementById("rekorSifirDurum").textContent = m; };
+  btn.addEventListener("click", async () => {
+    const oyun = document.getElementById("rekorSifirOyun").value;
+    const ad = document.getElementById("rekorSifirOyun").selectedOptions[0].textContent;
+    if (!confirm(`${ad}: grup rekor tablosu ve herkesin kişisel rekoru silinecek. Emin misin?`)) return;
+    btn.disabled = true; durum("Siliniyor…");
+    try {
+      const s = await db.collection("rekorlar").where("oyun", "==", oyun).get();
+      for (const d of s.docs) await d.ref.delete();
+      const r = await Ekonomi.api("adminRekorSifirla", { oyun });
+      durum(`✅ ${s.size} tablo kaydı ve ${r.cuzdan} kişisel rekor silindi.`);
+    } catch (err) { durum("⚠️ " + err.message); }
+    finally { btn.disabled = false; }
+  });
+})();

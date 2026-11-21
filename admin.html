@@ -492,7 +492,17 @@
 
       <!-- ================= OYUNLAR ================= -->
       <section class="adm-panel admin-grid" data-panel="oyunlar" hidden>
-        <div class="adm-intro wide"><b>🎮 Oyunlar</b> Kasksız 85 kaza resmi.</div>
+        <div class="adm-intro wide"><b>🎮 Oyunlar</b> Rekor tabloları ve Kasksız 85 kaza resmi.</div>
+
+      <div class="panel card admin-section">
+        <h2>🧹 Rekorları sıfırla</h2>
+        <p class="muted">Seçtiğin oyunun grup rekor tablosunu ve herkesin kişisel rekorunu siler (BERKAY rekor ödülü yeniden kazanılabilir olur). Boksta puanlama değişti, eski 999'ları silmek için kullan. Geri alınamaz.</p>
+        <div class="tpl-form adm-form">
+          <label>Oyun <select id="rekorSifirOyun"><option value="boks">🥊 Boks makinesi</option><option value="penalti">⚽ Penaltı</option><option value="motor">🏍️ Kasksız 85</option></select></label>
+          <button type="button" class="admin-btn reject" id="rekorSifirBtn">🧹 Sıfırla</button>
+        </div>
+        <p class="suggest-status" id="rekorSifirDurum"></p>
+      </div>
 
       <div class="panel card admin-section">
         <h2>🏍️ Kasksız 85 kaza resmi</h2>
