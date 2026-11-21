@@ -136,12 +136,20 @@ window.MACERA_SEVIYELER = [
 "emoji": "🤓",
 "can": 5,
 "mermi": "📚",
-"hizli": true
+"zorluk": {
+"yuru": 95,
+"atisAra": 2.3,
+"ziplama": 0.3,
+"ofke": 0.15,
+"ciftAtis": false,
+"isabet": 0.7
+}
 },
 "hikaye": "Final: KPSS. Kütüphanede kitaplar tavandan yağıyor. Son boss Kurban, elinde soru bankalarıyla bekliyor. 5 kez kafasına zıpla, Berkay'ı memur yap.",
 "kim": "Berkay",
 "ikon": "📚",
-"muzik": "kutuphane"
+"muzik": "kutuphane",
+"bossBurger": 5
 },
 {
 "ad": "Kurye Gecesi",

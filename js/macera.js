@@ -305,12 +305,12 @@
       if (s.cephaneSaat <= 0 && s.cephane.length < 6) {
         s.cephaneSaat = 1.1;
         const a0 = s.arena.bas + T, a1 = s.arena.son - T * 2;
-        s.cephane.push({ x: a0 + Math.random() * (a1 - a0), y: 4, w: 26, h: 26, vx: 0, vy: 0, t: 0 });
+        s.cephane.push({ x: a0 + Math.random() * (a1 - a0), y: 4, w: 26, h: 26, vx: 0, vy: 0, t: 0, deger: s.sv.bossBurger || 2 });
       }
       for (const c of s.cephane) {
         c.t += dt;
         if (!c.yer) { c.vy = Math.min(500, c.vy + G * 0.35 * dt); hareket(c, dt, true); }
-        if (kesisir(p, c)) { c.al = true; s.ekstra += 2; SES.burger(); parcaPatla(c.x + 13, c.y + 13, "#f5b82e", 8); }
+        if (kesisir(p, c)) { c.al = true; s.ekstra += c.deger; SES.burger(); parcaPatla(c.x + 13, c.y + 13, "#f5b82e", 8); }
         if (c.t > 14 || c.y > s.H * T) c.al = true;
       }
       s.cephane = s.cephane.filter((c) => !c.al);
@@ -637,7 +637,7 @@
       else if (d.tip === "araba") { ctx.save(); ctx.translate(d.x + 32, d.y + 17); ctx.scale(-1, 1); emoji("🚗", 0, 0, 56); ctx.restore(); }
     }
     for (const m of s.bizim) emoji(s.sv.topla || "🍔", m.x + 13, m.y + 13, 26, m.aci);
-    for (const c of s.cephane) { emoji(s.sv.topla || "🍔", c.x + 13, c.y + 13 + (c.yer ? Math.sin(performance.now() / 200 + c.x) * 3 : 0), 28); ctx.fillStyle = "#facc15"; ctx.font = "900 11px sans-serif"; ctx.textAlign = "center"; ctx.fillText("+2", c.x + 13, c.y - 4); ctx.textAlign = "left"; }
+    for (const c of s.cephane) { emoji(s.sv.topla || "🍔", c.x + 13, c.y + 13 + (c.yer ? Math.sin(performance.now() / 200 + c.x) * 3 : 0), 28); ctx.fillStyle = "#facc15"; ctx.font = "900 11px sans-serif"; ctx.textAlign = "center"; ctx.fillText("+" + c.deger, c.x + 13, c.y - 4); ctx.textAlign = "left"; }
     for (const m of s.mermi) { emoji(m.emoji, m.x + m.w / 2, m.y + m.h / 2, 28, m.aci); if (m.yazi) { ctx.fillStyle = "#dc2626"; ctx.font = "900 10px sans-serif"; ctx.fillText(m.yazi, m.x - 2, m.y - 4); } }
     if (s.boss) bossCiz(s.boss);
     if (s.polis) {
