@@ -208,8 +208,8 @@
   altSayfa.innerHTML =
     '<div class="alt-sayfa-kart" role="dialog" aria-label="Bütün bölümler"><div class="alt-tutamac"></div>' +
     '<div class="alt-izgara">' +
-    NAV.concat([["/profil", "Profilim"], ["/topluluk#tahmin", "Tahmin"], ["/topluluk#soz", "Sözler"], ["/topluluk#itiraf", "İtiraflar"]]).map(([href, ad]) =>
-      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || ({ "/profil": "👤", "/topluluk#tahmin": "🎲", "/topluluk#soz": "🤝", "/topluluk#itiraf": "🤫" })[href] || "🏆") + "</i><span>" + ad + "</span></a>").join("") +
+    NAV.concat([["/profil", "Profilim"], ["/topluluk#wiki", "Berkaypedia"], ["/topluluk#harita", "Harita"], ["/topluluk#olasi", "Kim daha olası?"], ["/topluluk#tahmin", "Tahmin"], ["/topluluk#soz", "Sözler"], ["/topluluk#itiraf", "İtiraflar"]]).map(([href, ad]) =>
+      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || ({ "/profil": "👤", "/topluluk#wiki": "📖", "/topluluk#harita": "🗺️", "/topluluk#olasi": "🤔", "/topluluk#tahmin": "🎲", "/topluluk#soz": "🤝", "/topluluk#itiraf": "🤫" })[href] || "🏆") + "</i><span>" + ad + "</span></a>").join("") +
     "</div></div>";
   document.body.appendChild(altBar);
   document.body.appendChild(altSayfa);
@@ -380,6 +380,20 @@
       throw new Error("Fotoğraf çok büyük/karmaşık, daha küçük ya da daha sade bir fotoğraf dene.");
     }
     return dataUrl;
+  };
+
+  // Oranı koruyarak küçült (en uzun kenar `max`), JPEG; `limit` karakterin altına sığana kadar kaliteyi düşür.
+  window.resimKucult = async function resimKucult(file, max, limit) {
+    max = max || 900; limit = limit || 300000;
+    const bmp = await createImageBitmap(file);
+    const o = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * o); c.height = Math.round(bmp.height * o);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    let q = 0.8, url = c.toDataURL("image/jpeg", q);
+    while (url.length > limit && q > 0.3) { q -= 0.1; url = c.toDataURL("image/jpeg", q); }
+    if (url.length > limit) throw new Error("Fotoğraf çok büyük, daha küçük bir tane dene.");
+    return url;
   };
 
   // ---------------- Giriş Yap / Kayıt Ol widget'ı ----------------

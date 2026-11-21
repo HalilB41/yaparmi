@@ -444,5 +444,133 @@ service cloud.firestore {
     match /borsa_turnuva/{id} {
       allow read, write: if false;
     }
+
+    // ===== BERKAYPEDIA =====
+    // Makale her kaydedildiğinde sürüm 1 artar ve aynı anda wiki_gecmis'e o sürümün kaydı yazılmak
+    // zorundadır (existsAfter). Geçmiş kayıtları değiştirilemez, sadece admin silebilir.
+    function wikiMetinGecerli(d) {
+      return d.baslik is string && d.baslik.size() >= 2 && d.baslik.size() <= 60
+        && d.metin is string && d.metin.size() >= 1 && d.metin.size() <= 8000
+        && d.resimVar is bool;
+    }
+    match /wiki/{slug} {
+      allow read: if true;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['baslik', 'metin', 'surum', 'olusturan', 'olusturanUid', 'olusturma', 'guncelleyen', 'guncelleyenUid', 'guncelleme', 'resimVar'])
+        && wikiMetinGecerli(request.resource.data)
+        && request.resource.data.surum == 1
+        && request.resource.data.olusturanUid == request.auth.uid
+        && request.resource.data.olusturan == kullaniciAdim()
+        && request.resource.data.guncelleyenUid == request.auth.uid
+        && request.resource.data.guncelleyen == kullaniciAdim()
+        && request.resource.data.olusturma == request.time
+        && request.resource.data.guncelleme == request.time
+        && existsAfter(/databases/$(database)/documents/wiki_gecmis/$(slug + '_1'));
+      allow update: if hesapli()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['metin', 'surum', 'guncelleyen', 'guncelleyenUid', 'guncelleme', 'resimVar'])
+        && wikiMetinGecerli(request.resource.data)
+        && request.resource.data.surum == resource.data.surum + 1
+        && request.resource.data.guncelleyenUid == request.auth.uid
+        && request.resource.data.guncelleyen == kullaniciAdim()
+        && request.resource.data.guncelleme == request.time
+        && existsAfter(/databases/$(database)/documents/wiki_gecmis/$(slug + '_' + string(request.resource.data.surum)));
+      allow delete: if isAdmin();
+    }
+    match /wiki_gecmis/{id} {
+      allow read: if true;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['slug', 'baslik', 'metin', 'surum', 'yazan', 'yazanUid', 'tarih', 'ozet', 'fark'])
+        && request.resource.data.yazanUid == request.auth.uid
+        && request.resource.data.yazan == kullaniciAdim()
+        && request.resource.data.tarih == request.time
+        && request.resource.data.ozet is string && request.resource.data.ozet.size() <= 100
+        && request.resource.data.fark is int
+        && request.resource.data.surum is int
+        && id == request.resource.data.slug + '_' + string(request.resource.data.surum)
+        && getAfter(/databases/$(database)/documents/wiki/$(request.resource.data.slug)).data.surum == request.resource.data.surum
+        && getAfter(/databases/$(database)/documents/wiki/$(request.resource.data.slug)).data.metin == request.resource.data.metin;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    match /wiki_resim/{slug} {
+      allow read: if true;
+      allow create, update: if hesapli()
+        && request.resource.data.keys().hasOnly(['resim', 'yukleyen', 'yukleyenUid', 'tarih'])
+        && request.resource.data.resim is string
+        && request.resource.data.resim.size() < 400000
+        && request.resource.data.yukleyenUid == request.auth.uid
+        && request.resource.data.yukleyen == kullaniciAdim()
+        && request.resource.data.tarih == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // ===== KİM DAHA OLASI? =====
+    // Oy = olasi_oy/{soruId_uid} belgesi + sorudaki sayaçta sadece seçilen kişiye +1 (aynı batch'te).
+    match /olasi_soru/{soruId} {
+      function oyYolu() {
+        return /databases/$(database)/documents/olasi_oy/$(soruId + '_' + request.auth.uid);
+      }
+      allow read: if true;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['soru', 'ekleyen', 'ekleyenUid', 'tarih', 'sayim', 'toplam'])
+        && request.resource.data.soru is string
+        && request.resource.data.soru.size() >= 8 && request.resource.data.soru.size() <= 141
+        && request.resource.data.ekleyenUid == request.auth.uid
+        && request.resource.data.ekleyen == kullaniciAdim()
+        && request.resource.data.tarih == request.time
+        && request.resource.data.sayim == {}
+        && request.resource.data.toplam == 0;
+      allow update: if hesapli()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sayim', 'toplam'])
+        && request.resource.data.toplam == resource.data.toplam + 1
+        && !exists(oyYolu())
+        && existsAfter(oyYolu())
+        && request.resource.data.sayim.diff(resource.data.sayim).affectedKeys().hasOnly([getAfter(oyYolu()).data.secim])
+        && request.resource.data.sayim[getAfter(oyYolu()).data.secim] == resource.data.sayim.get(getAfter(oyYolu()).data.secim, 0) + 1;
+      allow delete: if isAdmin() || (hesapli() && resource.data.ekleyenUid == request.auth.uid);
+    }
+    match /olasi_oy/{id} {
+      allow read: if request.auth != null;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['soruId', 'uid', 'secim', 'tarih'])
+        && request.resource.data.uid == request.auth.uid
+        && id == request.resource.data.soruId + '_' + request.auth.uid
+        && request.resource.data.secim is string
+        && request.resource.data.secim.size() >= 1 && request.resource.data.secim.size() <= 20
+        && request.resource.data.tarih == request.time
+        && exists(/databases/$(database)/documents/olasi_soru/$(request.resource.data.soruId));
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ===== EFSANELER HARİTASI =====
+    match /harita/{id} {
+      allow read: if true;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['baslik', 'ne', 'hikaye', 'emoji', 'lat', 'lng', 'ekleyen', 'ekleyenUid', 'tarih', 'resimVar'])
+        && request.resource.data.baslik is string && request.resource.data.baslik.size() >= 2 && request.resource.data.baslik.size() <= 60
+        && request.resource.data.ne is string && request.resource.data.ne.size() <= 40
+        && request.resource.data.hikaye is string && request.resource.data.hikaye.size() <= 600
+        && request.resource.data.emoji is string && request.resource.data.emoji.size() <= 8
+        && request.resource.data.lat is number && request.resource.data.lat >= -90 && request.resource.data.lat <= 90
+        && request.resource.data.lng is number && request.resource.data.lng >= -180 && request.resource.data.lng <= 180
+        && request.resource.data.resimVar is bool
+        && request.resource.data.ekleyenUid == request.auth.uid
+        && request.resource.data.ekleyen == kullaniciAdim()
+        && request.resource.data.tarih == request.time;
+      allow update: if false;
+      allow delete: if isAdmin() || (hesapli() && resource.data.ekleyenUid == request.auth.uid);
+    }
+    match /harita_resim/{id} {
+      allow read: if true;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['resim', 'yukleyenUid'])
+        && request.resource.data.resim is string
+        && request.resource.data.resim.size() < 400000
+        && request.resource.data.yukleyenUid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/harita/$(id)).data.ekleyenUid == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin() || (hesapli() && resource.data.yukleyenUid == request.auth.uid);
+    }
   }
 }

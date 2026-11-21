@@ -158,6 +158,48 @@
     ctx.fillStyle = g; ctx.fill();
     for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.fillStyle = "#e8c77a"; ctx.fillRect(-R * 0.02, -R * 0.5, R * 0.04, R * 0.32); }
     ctx.restore();
+    topCiz(R);
+  }
+
+  // --- Top ---
+  // Beklerken son çıkan sayının cebinde çarkla birlikte döner; çark dönünce ters yöne fırlar,
+  // yavaşlar, iç kenara sekip kazanan cebe düşer (o cep o an tam okun altındadır).
+  const DIL = (Math.PI * 2) / CARK.length;
+  const PIST = 0.955, CEP = 0.865;
+  let topSayi = null, topDonus = null;
+  const cepAcisi = (n) => aci - Math.PI / 2 + CARK.indexOf(n) * DIL; // cebin ekrandaki açısı
+  function topKonum() {
+    if (topDonus) {
+      const p = Math.min(1, (performance.now() - donusBas) / (AYAR.DONUS_MS - 600));
+      const e = 1 - Math.pow(1 - p, 2.4);
+      let a = topDonus.bas + (topDonus.son - topDonus.bas) * e;
+      // yarıçap: pistte döner → iç kenara sekerek iner → cepte durur
+      let r = PIST;
+      if (p > 0.6) {
+        const q = Math.min(1, (p - 0.6) / 0.3);
+        r = PIST - (PIST - CEP) * q + Math.abs(Math.sin(q * Math.PI * 3)) * (1 - q) * 0.05;
+      }
+      if (p > 0.78) { // son kısımda cebin içine otur
+        let cep = cepAcisi(turSonuc);
+        cep += 2 * Math.PI * Math.round((a - cep) / (2 * Math.PI));
+        const t = Math.min(1, (p - 0.78) / 0.22), y = t * t * (3 - 2 * t);
+        a += (cep - a) * y;
+      }
+      return { a, r };
+    }
+    if (topSayi == null) return null;
+    return { a: cepAcisi(topSayi), r: CEP };
+  }
+  function topCiz(R) {
+    const k = topKonum();
+    if (!k) return;
+    const x = R + Math.cos(k.a) * k.r * R, y = R + Math.sin(k.a) * k.r * R, rr = R * 0.042;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(x + rr * 0.25, y + rr * 0.35, rr, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fill();
+    const g = ctx.createRadialGradient(x - rr * 0.35, y - rr * 0.35, rr * 0.1, x, y, rr);
+    g.addColorStop(0, "#ffffff"); g.addColorStop(0.6, "#e9e9ef"); g.addColorStop(1, "#9a9aa6");
+    ctx.beginPath(); ctx.arc(x, y, rr, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+    ctx.restore();
   }
   // sayı n'nin cebi üstteki oka gelecek açı
   const sayiAcisi = (n) => -CARK.indexOf(n) * ((Math.PI * 2) / CARK.length);
@@ -167,6 +209,10 @@
     let h = hedef - 2 * Math.PI * 6; // en az 6 tur (saat yönünün tersine)
     while (h > aci - 2 * Math.PI * 5) h -= 2 * Math.PI;
     hedefAci = h; donusBas = performance.now(); donusBasAci = aci;
+    // top: şu anki yerinden saat yönünde ~7 tur atıp okun altına (−90°) gelir
+    const simdiki = topSayi != null ? cepAcisi(topSayi) : -Math.PI / 2;
+    const son = -Math.PI / 2 + 2 * Math.PI * Math.ceil((simdiki + 2 * Math.PI * 7 + Math.PI / 2) / (2 * Math.PI));
+    topDonus = { bas: simdiki, son };
   }
 
   // --- Döngü ---
@@ -180,6 +226,7 @@
       fark = r.sunucu + rtt / 2 - Date.now();
       AYAR = Object.assign(AYAR, r.ayar || {});
       gecmis = r.gecmis || [];
+      if (topSayi == null && gecmis[0]) topSayi = gecmis[0].sonuc; // top son çıkan sayının cebinde başlar
       gecmisCiz();
       return r;
     } catch { return null; }
@@ -217,7 +264,7 @@
         setTimeout(async () => {
           const r = await durumCek();
           if (istek !== ruIstek || !r || r.sonuc == null) return;
-          if (a.faz === "donus" && !yavas) donusBaslat(r.sonuc); else { turSonuc = r.sonuc; aci = sayiAcisi(r.sonuc); sonucGoster(); }
+          if (a.faz === "donus" && !yavas) donusBaslat(r.sonuc); else { turSonuc = r.sonuc; topSayi = r.sonuc; aci = sayiAcisi(r.sonuc); sonucGoster(); }
         }, 350);
       }
       if (a.faz === "sonuc" && once === "donus" && turSonuc != null) sonucGoster();
@@ -227,7 +274,7 @@
       const p = Math.min(1, (performance.now() - donusBas) / (AYAR.DONUS_MS - 600));
       const e = 1 - Math.pow(1 - p, 4);
       aci = donusBasAci + (hedefAci - donusBasAci) * e;
-      if (p >= 1) { hedefAci = null; aci = sayiAcisi(turSonuc); if (an().faz !== "bahis") sonucGoster(); }
+      if (p >= 1) { hedefAci = null; topDonus = null; topSayi = turSonuc; aci = sayiAcisi(turSonuc); if (an().faz !== "bahis") sonucGoster(); }
     } else if (a.faz === "bahis" && !yavas) aci -= 0.0025;
     carkCiz();
     // sayaç

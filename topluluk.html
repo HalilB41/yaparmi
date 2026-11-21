@@ -22,11 +22,14 @@
     <header class="page-head">
       <span class="eyebrow"><i>📊</i> Topluluk</span>
       <h1>Grup <em>Merkezi</em></h1>
-      <p class="lead">Anketler, tahminler, verilen sözler ve anonim itiraflar. Grubun bütün dedikodusu tek yerde.</p>
+      <p class="lead">Berkaypedia, efsaneler haritası, "kim daha olası", anketler, tahminler, sözler ve itiraflar. Grubun bütün dedikodusu tek yerde.</p>
     </header>
 
     <nav class="km-sekmeler mk-sekmeler" role="tablist" aria-label="Bölümler">
       <button type="button" role="tab" data-bolum="topluluk">📊 Anket &amp; Vardiya</button>
+      <button type="button" role="tab" data-bolum="wiki">📖 Berkaypedia</button>
+      <button type="button" role="tab" data-bolum="olasi">🤔 Kim daha olası?</button>
+      <button type="button" role="tab" data-bolum="harita">🗺️ Harita</button>
       <button type="button" role="tab" data-bolum="tahmin">🎲 Tahmin</button>
       <button type="button" role="tab" data-bolum="soz">🤝 Sözler <span class="adm-say" id="mkSozSay" hidden></span></button>
       <button type="button" role="tab" data-bolum="itiraf">🤫 İtiraflar</button>
@@ -92,6 +95,59 @@
         <div class="tpl-sayaclar" id="sayacKutu"><p class="muted">Yükleniyor…</p></div>
       </section>
   
+    </section>
+
+    <!-- BERKAYPEDIA -->
+    <section class="mk-bolum wk-bolum" data-bolum="wiki" id="wikiBolum" hidden>
+      <div class="wk-ust">
+        <a class="wk-logo" href="#wiki"><span class="wk-logo-top">🌐</span><span><b>Berkaypedia</b><small>Özgür ansiklopedi (özgür değil)</small></span></a>
+        <div class="wk-ara"><input type="search" id="wkAra" placeholder="Berkaypedia'da ara…" autocomplete="off" aria-label="Makale ara" /><div class="wk-oneri" id="wkOneri" hidden></div></div>
+        <div class="wk-ust-btn">
+          <button type="button" class="link-btn" id="wkRastgele">🎲 Rastgele</button>
+          <a class="link-btn" href="#wiki/~son">🕓 Son değişiklikler</a>
+          <a class="btn wk-yeni" href="#wiki/~yeni">✍️ Yeni makale</a>
+        </div>
+      </div>
+      <div id="wkIcerik" class="wk-icerik"><p class="muted">Yükleniyor…</p></div>
+    </section>
+
+    <!-- KİM DAHA OLASI -->
+    <section class="mk-bolum" data-bolum="olasi" id="olasiBolum" hidden>
+      <p class="mk-giris">Soruyu oku, aklına gelen ilk kişiye bas, kimin ne dediğini gör. Herkes soru ekleyebilir.</p>
+      <div class="card ol-kart" id="olKart"><p class="muted">Yükleniyor…</p></div>
+      <div class="ol-alt">
+        <form class="card ol-ekle" id="olForm" autocomplete="off" hidden>
+          <h3>➕ Soru ekle</h3>
+          <input id="olSoru" maxlength="140" placeholder="Kimin 30 yaşında hâlâ ehliyetsiz olma ihtimali daha yüksek?" required />
+          <button type="submit" class="btn">Ekle</button>
+          <p class="suggest-status" id="olDurum"></p>
+        </form>
+        <div class="card ol-tablo"><h3>👑 Grubun unvanları</h3><div id="olUnvan"><p class="muted">Yükleniyor…</p></div></div>
+      </div>
+    </section>
+
+    <!-- HARİTA -->
+    <section class="mk-bolum" data-bolum="harita" id="haritaBolum" hidden>
+      <p class="mk-giris">Grubun efsanelerinin geçtiği yerler. Pine tıkla, hikâyesini oku. <b>📍 Pin ekle</b>'ye basıp haritada yere dokunarak sen de ekle.</p>
+      <div class="hr-sahne">
+        <div id="hrHarita" class="hr-harita" aria-label="Efsaneler haritası"></div>
+        <div class="hr-arac">
+          <button type="button" class="btn" id="hrEkleBtn">📍 Pin ekle</button>
+          <button type="button" class="btn ghost" id="hrKonum">🎯 Konumum</button>
+        </div>
+        <div class="hr-ipucu" id="hrIpucu" hidden>Haritada efsanenin geçtiği yere dokun <button type="button" class="link-btn" id="hrIptal">vazgeç</button></div>
+      </div>
+      <form class="card hr-form" id="hrForm" autocomplete="off" hidden>
+        <h3>📍 Yeni efsane</h3>
+        <div class="hr-emojiler" id="hrEmojiler" role="radiogroup" aria-label="Simge"></div>
+        <input id="hrBaslik" maxlength="60" placeholder="Kasksız 85 burada devrildi" required />
+        <input id="hrNe" maxlength="40" placeholder="Ne zaman? (2023 yazı, Kurban Bayramı…)" />
+        <textarea id="hrHikaye" maxlength="600" rows="4" placeholder="Ne oldu? Kim vardı? Kim kaçtı?"></textarea>
+        <label class="hr-foto">📷 Fotoğraf (isteğe bağlı) <input type="file" id="hrFoto" accept="image/*" /></label>
+        <div class="hr-form-alt"><button type="submit" class="btn">Kaydet</button><button type="button" class="link-btn" id="hrFormIptal">Vazgeç</button></div>
+        <p class="suggest-status" id="hrDurum"></p>
+      </form>
+      <div class="hr-liste" id="hrListe"></div>
     </section>
 
     <!-- TAHMİN -->
@@ -195,5 +251,8 @@
   <script src="js/tahmin.js"></script>
   <script src="js/soz.js"></script>
   <script src="js/itiraf.js"></script>
+  <script src="js/wiki.js"></script>
+  <script src="js/olasi.js"></script>
+  <script src="js/harita.js"></script>
 </body>
 </html>
