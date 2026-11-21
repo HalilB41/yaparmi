@@ -20,7 +20,7 @@
   let basladi = false, d = null, cuzdanlar = [], grafik = null, eskiMumlar = new Map(), cizilen = null, cizimAcik = false, gizli = null;
   let coinler = BC.liste(null), secili = "BERKAY", kapatDurum = null, kapatGizli = null, kumarBekleyen = 0;
   // Bu işlemler seçili coin için yapılır (sunucuya coin gönderilir)
-  const COINLI = new Set(["adminOlay", "adminAyar", "adminGrafikSifirla", "adminRota", "adminFiyat", "adminMM", "adminTransfer", "adminArz", "adminPozKapat"]);
+  const COINLI = new Set(["adminOlay", "adminAyar", "adminGrafikSifirla", "adminRota", "adminFiyat", "adminMM", "adminTransfer", "adminArz", "adminPozKapat", "adminCoinSifirla"]);
 
 
   async function islem(btn, durumEl, ad, veri) {
@@ -296,10 +296,19 @@
     if (r) { $("bxaBkc").value = ""; $("bxaBtl").value = ""; }
   });
   $("bxaArzBtn").addEventListener("click", () => {
-    const deg = Number($("bxaArz").value);
-    if (!deg) { $("bxaParaDurum").textContent = "Değişim yaz."; return; }
-    if (!confirm(deg > 0 ? `${deg} ${secili} basılıp kasaya eklenecek.` : `${-deg} ${secili} kasadan yakılacak.`)) return;
-    islem($("bxaArzBtn"), $("bxaParaDurum"), "adminArz", { degisim: deg }).then((r) => { if (r) $("bxaArz").value = ""; });
+    const ham = $("bxaArz").value.trim(), hedef = Number(ham);
+    if (ham === "" || !(hedef >= 0)) { $("bxaParaDurum").textContent = "Yeni toplam arzı yaz."; return; }
+    const simdi = d ? d.toplamArz : null;
+    const ne = simdi == null ? "" : hedef < simdi ? `\n${para(simdi - hedef, 4)} ${secili} yakılacak: önce kasadan, kasa yetmezse kullanıcılardan.` : hedef > simdi ? `\n${para(hedef - simdi, 4)} ${secili} basılıp kasaya eklenecek.` : "";
+    if (!confirm(`${secili} toplam arzı ${para(hedef, 4)} olacak.${ne}`)) return;
+    islem($("bxaArzBtn"), $("bxaParaDurum"), "adminArz", { hedef }).then((r) => { if (r) $("bxaArz").value = ""; });
+  });
+  $("bxaCoinSifirla").addEventListener("click", () => {
+    const yaz = prompt(`☢️ ${secili} KOMPLE SIFIRLANACAK.\nHerkesin ${secili} bakiyesi silinir, açık pozisyonlar kapanır, fiyat ve grafik sıfırlanır. Geri alınamaz.\n\nOnaylamak için coin adını yaz: ${secili}`);
+    if (yaz == null) return;
+    if (yaz.trim().toUpperCase() !== secili) { $("bxaParaDurum").textContent = "Onay yazısı tutmadı, iptal."; return; }
+    const f = $("bxaCoinSifirFiyat").value.trim();
+    islem($("bxaCoinSifirla"), $("bxaParaDurum"), "adminCoinSifirla", { onay: secili, fiyat: f === "" ? null : Number(f) }).then((r) => { if (r) { $("bxaCoinSifirFiyat").value = ""; kisiler = []; } });
   });
 
   // ---------------- Cüzdanlar ----------------

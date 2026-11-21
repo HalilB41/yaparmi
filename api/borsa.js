@@ -1868,13 +1868,81 @@ async function adminIslem(db, kim, govde, now) {
       return { ok: true, mesaj: `Grafik sıfırlandı, fiyat ${yeni} USDT. Bakiyeler ve pozisyonlar korundu.` };
     }
     if (tur === "adminArz") {
-      const deg = r6(sayi(govde.degisim));
-      if (!deg) throw new Hata("Değişim miktarı yaz.");
-      if (d.kasaBKC + deg < 0) throw new Hata(`Kasada yakılacak kadar ${sym} yok.`);
-      d.toplamArz = r6(d.toplamArz + deg);
-      d.kasaBKC = r6(d.kasaBKC + deg);
-      log(k, `Arz ${deg > 0 ? "artırıldı" : "yakıldı"}: ${deg > 0 ? "+" : ""}${deg} ${sym} → toplam ${d.toplamArz}`);
-      return { ok: true, mesaj: `Toplam arz: ${d.toplamArz} ${sym}` };
+      // Hedef arz: yazılan sayı yeni toplam arz olur. Fazlası önce kasadan, kasa yetmezse
+      // kullanıcılardan (ellerindekiyle orantılı) yakılır. Hedef büyükse fark basılıp kasaya eklenir.
+      const cuzSnap = await tx.get(db.collection("borsa_cuzdan"));
+      const cuz = cuzSnap.docs.map((x) => ({ ref: x.ref, c: x.data() })).filter((x) => bakiye(x.c, sym) > 1e-9);
+      const kullanicilarda = r6(cuz.reduce((t, x) => t + bakiye(x.c, sym), 0));
+      const gercekArz = r6(d.kasaBKC + kullanicilarda);
+      let hedef;
+      if (govde.hedef != null && govde.hedef !== "") hedef = r6(sayi(govde.hedef));
+      else if (govde.degisim != null) hedef = r6(gercekArz + sayi(govde.degisim)); // eski +/− kutusu
+      if (!(hedef >= 0) || !isFinite(hedef)) throw new Hata("Hedef arzı yaz (0 ya da daha büyük).");
+      const fark = r6(hedef - gercekArz);
+      let kasadan = 0, kullanicidan = 0;
+      if (fark > 0) {
+        d.kasaBKC = r6(d.kasaBKC + fark);
+      } else if (fark < 0) {
+        const yak = -fark;
+        kasadan = r6(Math.min(Math.max(0, d.kasaBKC), yak));
+        d.kasaBKC = r6(d.kasaBKC - kasadan);
+        kullanicidan = r6(yak - kasadan);
+        if (kullanicidan > 0) {
+          if (kullanicidan > kullanicilarda + 1e-6) throw new Hata("Yakılacak kadar coin yok.");
+          const oran = kullanicilarda > 0 ? kullanicidan / kullanicilarda : 0;
+          let kalan = kullanicidan;
+          cuz.sort((a, b) => bakiye(b.c, sym) - bakiye(a.c, sym));
+          cuz.forEach((x, i) => {
+            const elde = bakiye(x.c, sym);
+            const kes = i === cuz.length - 1 ? Math.min(elde, r6(kalan)) : Math.min(elde, r6(elde * oran));
+            if (kes <= 0) return;
+            kalan = r6(kalan - kes);
+            bakiyeYaz(x.c, sym, elde - kes);
+            tx.set(x.ref, x.c);
+            k.loglar.push({ uid: x.c.uid || x.ref.id, ad: x.c.ad || "?", tur: "admin-yakim", detay: `Arz yakımı: −${r6(kes)} ${sym}`, bkc: sym === ANA ? -r6(kes) : 0, btl: 0 });
+          });
+        }
+      }
+      d.toplamArz = hedef;
+      log(k, `Arz ${gercekArz} → ${hedef} ${sym}` + (kasadan ? ` · kasadan yakılan ${kasadan}` : "") + (kullanicidan ? ` · kullanıcılardan yakılan ${kullanicidan}` : "") + (fark > 0 ? ` · basılan ${fark}` : ""));
+      return { ok: true, mesaj: fark === 0 ? `Arz zaten ${hedef} ${sym}.` : fark > 0 ? `${fark} ${sym} basıldı, toplam arz ${hedef}.` : `${-fark} ${sym} yakıldı (kasadan ${kasadan}${kullanicidan ? ", kullanıcılardan " + kullanicidan : ""}). Toplam arz ${hedef}.` };
+    }
+    if (tur === "adminCoinSifirla") {
+      // Coini komple sıfırla: herkesin elindeki adet 0, açık pozisyonlar kapanır (teminat + K/Z sahibine
+      // USDT olarak döner), fiyat başlangıca, arz varsayılana, kasa = arz, grafik silinir.
+      if (String(govde.onay || "") !== sym) throw new Hata(`Onay için coin adını (${sym}) yaz.`);
+      const cuzSnap = await tx.get(db.collection("borsa_cuzdan"));
+      const cuz = new Map(cuzSnap.docs.map((x) => [x.id, { ref: x.ref, c: x.data(), degisti: false }]));
+      let kapanan = 0, silinen = 0, kisi = 0;
+      for (const poz of Object.values(d.poz)) {
+        const kayit = pozKapatIc(d, poz, now, "kapat", k);
+        const x = cuz.get(poz.uid);
+        if (x) { x.c.btl = r6((x.c.btl || 0) + kayit.iade); x.c.gerceklesen = r2((x.c.gerceklesen || 0) + kayit.pnl); x.degisti = true; }
+        kapanan++;
+      }
+      d.poz = {};
+      for (const x of cuz.values()) {
+        const elde = bakiye(x.c, sym);
+        if (elde > 1e-9) { silinen = r6(silinen + elde); kisi++; bakiyeYaz(x.c, sym, 0); x.degisti = true; }
+        if (x.degisti) tx.set(x.ref, x.c);
+      }
+      const yeni = yeniDurum(now, def);
+      const fiyat = govde.fiyat != null && govde.fiyat !== "" ? sayi(govde.fiyat) : yeni.fiyat;
+      if (!(fiyat > 0 && fiyat < 1e9)) throw new Hata("Başlangıç fiyatı geçersiz.");
+      if (!d.gercek) {
+        d.fiyat = fiyat;
+        d.son = [{ t: Math.floor(now / MUM_MS) * MUM_MS, o: fiyat, h: fiyat, l: fiyat, c: fiyat, v: 0 }];
+        d.saat = [];
+        k.tasanlar.length = 0;
+        k.grafikSil = true;
+        gizli.rota = null; gizli.mm = null; k.gizliDegisti = true;
+      }
+      d.akis = [];
+      d.toplamArz = yeni.toplamArz;
+      d.kasaBKC = yeni.toplamArz;
+      d.sifirlama = now;
+      log(k, `COIN SIFIRLANDI: ${kisi} kişiden ${silinen} ${sym} silindi, ${kapanan} pozisyon kapatıldı, arz ${d.toplamArz}, fiyat ${d.fiyat}`);
+      return { ok: true, mesaj: `${sym} sıfırlandı: ${kisi} kişinin ${silinen} ${sym}'ı silindi, ${kapanan} pozisyon kapatıldı. Arz ${d.toplamArz}, fiyat ${d.fiyat}.` };
     }
     if (tur === "adminAyar") {
       if (govde.derinlik != null) {

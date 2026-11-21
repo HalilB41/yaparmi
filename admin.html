@@ -196,9 +196,15 @@
             <button type="button" class="admin-btn publish" id="bxaGonder">💸 Uygula</button>
           </div>
           <div class="tpl-form adm-form" style="margin-top:14px">
-            <label>Toplam arzı değiştir (+ bas / − yak) <input type="number" id="bxaArz" step="1" placeholder="ör. 100000" /></label>
-            <button type="button" class="admin-btn reject" id="bxaArzBtn">🪙 Arzı güncelle</button>
+            <label>Yeni toplam arz (yazdığın sayı arz olur) <input type="number" id="bxaArz" step="any" min="0" placeholder="ör. 1000" /></label>
+            <button type="button" class="admin-btn reject" id="bxaArzBtn">🪙 Arzı bu yap</button>
           </div>
+          <p class="muted" style="font-size:.8rem">Küçültürsen fark önce kasadan yakılır, kasa yetmezse kullanıcılardan (ellerindekiyle orantılı) yakılır. Büyütürsen fark basılıp kasaya eklenir.</p>
+          <div class="tpl-form adm-form" style="margin-top:14px">
+            <label>Başlangıç fiyatı (boş = varsayılan) <input type="number" id="bxaCoinSifirFiyat" step="any" min="0" placeholder="ör. 1" /></label>
+            <button type="button" class="admin-btn reject" id="bxaCoinSifirla">☢️ <span class="bxa-sym">BERKAY</span> coinini komple sıfırla</button>
+          </div>
+          <p class="muted" style="font-size:.8rem">Herkesin elindeki adet silinir, açık pozisyonlar kapanıp teminat + K/Z USDT olarak sahibine döner, fiyat başlangıca, arz varsayılana döner, grafik silinir. USDT bakiyeleri ve diğer coinler etkilenmez. Geri alınamaz.</p>
           <p class="suggest-status" id="bxaParaDurum"></p>
         </div>
 
