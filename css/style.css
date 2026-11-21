@@ -2711,6 +2711,13 @@ a.hero-stat:hover { box-shadow: 0 0 0 2px var(--accent-soft); }
 .mc-bolum[data-tema="yol"] { background: linear-gradient(150deg, #c2410c, #ffb070); }
 .mc-bolum[data-tema="sinav"] { background: linear-gradient(150deg, #0369a1, #65a30d); }
 .mc-bolum[data-tema="kutuphane"] { background: linear-gradient(150deg, #2e1a47, #7c3f1d); }
+.mc-bolum[data-tema="gece"] { background: linear-gradient(150deg, #0b1026, #b45309); }
+.mc-bolum[data-tema="borsa"] { background: linear-gradient(150deg, #020617, #15803d); }
+.mc-bolum[data-tema="otobus"] { background: linear-gradient(150deg, #16a34a, #fb923c); }
+.mc-bolum[data-tema="mutfak"] { background: linear-gradient(150deg, #475569, #cbd5e1); }
+.mc-bolum[data-tema="sanayi"] { background: linear-gradient(150deg, #292524, #b91c1c); }
+.mc-bolum[data-tema="zula"] { background: linear-gradient(150deg, #3b0764, #0891b2); }
+.mc-bolum[data-tema="sabah"] { background: linear-gradient(150deg, #1e1b4b, #f472b6); }
 .mc-bolum.kilit { filter: grayscale(.85) brightness(.75); cursor: not-allowed; }
 .mc-bolum-ikon { font-size: 2.4rem; line-height: 1; margin-bottom: 6px; }
 .mc-bolum small { font-weight: 800; letter-spacing: .1em; font-size: .68rem; opacity: .85; }

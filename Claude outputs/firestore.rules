@@ -580,7 +580,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['uid', 'ad', 'bolum', 'sure', 'olum', 'burger', 'tarih'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.ad == kullaniciAdim()
-        && request.resource.data.bolum is int && request.resource.data.bolum >= 1 && request.resource.data.bolum <= 4
+        && request.resource.data.bolum is int && request.resource.data.bolum >= 1 && request.resource.data.bolum <= 11
         && id == request.auth.uid + '_' + string(request.resource.data.bolum)
         && request.resource.data.sure is int && request.resource.data.sure >= 5000 && request.resource.data.sure <= 3600000
         && request.resource.data.olum is int && request.resource.data.burger is int
