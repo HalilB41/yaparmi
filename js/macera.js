@@ -9,7 +9,7 @@
   const $ = (id) => document.getElementById(id);
   const SEV = window.MACERA_SEVIYELER || [];
   const T = 40, VW = 960, VH = 560;
-  const G = 2300, ZIPLA = 830, KOS = 270, KOS_OTO = 330, MAX_DUS = 1100;
+  const G = 2300, ZIPLA = 900, KOS = 270, KOS_OTO = 330, MAX_DUS = 1100;
   const cv = $("mcTuval"), ctx = cv.getContext("2d");
   const DPR = Math.min(2, window.devicePixelRatio || 1);
   cv.width = VW * DPR; cv.height = VH * DPR; ctx.scale(DPR, DPR);
@@ -227,6 +227,7 @@
     const s = S, p = s.p;
     if (s.bitti) return;
     if (s.olu > 0) { s.olu -= dt; parcaGuncelle(dt); if (s.olu <= 0) yenidenDog(); return; }
+    if (S.p.koruma > 0) S.p.koruma -= dt;
     s.sure += dt * 1000;
     // yatay
     const hedef = s.oto ? KOS_OTO : ((tus.sag ? 1 : 0) - (tus.sol ? 1 : 0)) * KOS;
@@ -285,7 +286,7 @@
           p.vy = -560; p.y = d.y - p.h;
           if (d.tip !== "araba") { d.canli = false; SES.ez(); parcaPatla(d.x + d.w / 2, d.y + d.h / 2, "#a855f7", 14); s.sallanma = 0.12; }
           else bip(500, 700, 0.08, "square", 0.1);
-        } else return ol(d.tip === "araba" ? "Arabaya çarptın" : "Yakalandın");
+        } else if (!(p.koruma > 0)) return ol(d.tip === "araba" ? "Arabaya çarptın" : "Yakalandın");
       }
     }
     // tavandan kitap
@@ -320,7 +321,7 @@
     for (const m of s.mermi) {
       m.vy = Math.min(MAX_DUS, m.vy + G * (m.yercekim || 1) * dt); m.x += m.vx * dt; m.y += m.vy * dt; m.aci += (m.don || 0) * dt;
       if (katiVar(m.x + 4, m.y + 4, m.w - 8, m.h - 8) || m.y > s.H * T) { m.bitti = true; parcaPatla(m.x + m.w / 2, m.y + m.h / 2, "#94a3b8", 6); continue; }
-      if (kesisir({ x: p.x + 4, y: p.y + 6, w: p.w - 8, h: p.h - 8 }, m)) return ol(m.olum || "Vuruldun");
+      if (!(p.koruma > 0) && kesisir({ x: p.x + 4, y: p.y + 6, w: p.w - 8, h: p.h - 8 }, m)) return ol(m.olum || "Vuruldun");
     }
     s.mermi = s.mermi.filter((m) => !m.bitti);
     parcaGuncelle(dt);
@@ -382,7 +383,7 @@
       if (p.vy > 0 && p.y + p.h - b.y < z.ezmePayi) {
         p.vy = -650; p.y = b.y - p.h;
         bossHasar(b, 1);
-      } else if (b.dokunulmaz <= 0) return ol(`${b.ad} yakaladı`);
+      } else if (b.dokunulmaz <= 0 && !(p.koruma > 0)) return ol(`${b.ad} yakaladı`);
     }
   }
   // ezme 1 can, burger yarım can götürür
@@ -419,6 +420,12 @@
   function yenidenDog() {
     const s = S;
     s.p = oyuncuYeni(s.kontrolNokta);
+    s.p.koruma = 1.6; // doğar doğmaz tekrar ölmesin
+    // doğma noktasına yakın düşmanları ilk yerlerine geri koy, ilk yerleri de yakınsa uzağa it
+    s.dusman.forEach((d, i) => {
+      if (d.tip === "araba" || !d.canli) return;
+      if (Math.abs(d.x - s.p.x) < 6 * T) { const o = s.ilkDusman[i]; d.x = o.x; d.y = o.y; d.vy = 0; if (Math.abs(d.x - s.p.x) < 4 * T) d.canli = false; }
+    });
     s.mermi = []; s.bizim = [];
     if (s.boss && !s.arena.bitti) { s.atilan = s.atilanBoss || 0; s.boss = null; s.arena.aktif = false; muzikCal(s.sv.muzik || s.tema); }
     if (s.polis) s.polis.x = s.p.x - 460;
@@ -621,7 +628,7 @@
       if (po.emoji === "🚓") { ctx.fillStyle = yan ? "rgba(239,68,68,.35)" : "rgba(59,130,246,.35)"; ctx.beginPath(); ctx.arc(po.x + 40, po.y - 8, 36, 0, 7); ctx.fill(); }
       else { ctx.fillStyle = "rgba(148,163,184,.35)"; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(po.x + 10 - i * 30, po.y + 10 + Math.sin((po.siren || 0) * 3 + i) * 8, 30 - i * 6, 0, 7); ctx.fill(); } emoji("💤", po.x + 70, po.y - 20 - (Math.floor((po.siren || 0) * 2) % 2) * 6, 26); }
     }
-    if (s.olu <= 0 && !s.bitti) kahramanCiz(s, s.p);
+    if (s.olu <= 0 && !s.bitti && !(s.p.koruma > 0 && Math.floor(s.p.koruma * 10) % 2)) kahramanCiz(s, s.p);
     for (const q of s.parca) { ctx.globalAlpha = Math.min(1, q.t * 2); ctx.fillStyle = q.renk; ctx.fillRect(q.x - 3, q.y - 3, 6, 6); }
     ctx.globalAlpha = 1;
     ctx.restore();
