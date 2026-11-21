@@ -132,7 +132,7 @@
   let sonCizim = 0, sonFaz = "";
   function dongu() {
     requestAnimationFrame(dongu);
-    if (document.hidden) return;
+    if (document.hidden || $("crash").hidden) return; // başka sekmedeyken çizme, sunucuya sorma
     const now = performance.now();
     if (now - sonCizim < 33) return; // ~30 fps
     sonCizim = now;

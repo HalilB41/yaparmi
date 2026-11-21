@@ -92,10 +92,21 @@
     isimKutu.append(h);
     const rozetler = el("div", "pf-etiketler");
     rozetler.append(el("span", null, `🏅 ${sira}. zengin`), el("span", null, `🔥 ${c.seri || 0} gün seri`), el("span", null, "📅 " + new Date(c.olusturma || Date.now()).toLocaleDateString("tr-TR")));
-    if (profile && c.uid === profile.uid) rozetler.append(Object.assign(el("a", "link-btn", "🏆 Başarımlarım"), { href: "/basarimlar" }));
+    if (profile && c.uid === profile.uid) rozetler.append(Object.assign(el("a", "link-btn", "🏆 Başarımlarım"), { href: "/basarimlar" }), Object.assign(el("a", "link-btn", "🎁 Yıl özetim"), { href: "/wrapped" }));
     isimKutu.append(rozetler);
     baslik.append(avatar, isimKutu);
     ust.append(baslik);
+    // Seviye + lig kupaları
+    if (window.Oyuncu) {
+      ust.append(Oyuncu.seviyeKarti(c));
+      const kupalar = c.ligKupa || [];
+      if (kupalar.length) {
+        const k = el("div", "pf-kupalar");
+        kupalar.slice(0, 12).forEach((x) => { const s = el("span", "pf-kupa", ["", "🥇", "🥈", "🥉"][x.sira] || "🏆"); s.title = `${x.hafta} haftası ${x.sira}.si · ${x.xp} XP · +${x.odul} BERKAY`; k.append(s); });
+        k.append(el("small", "muted", `${kupalar.length} lig kupası`));
+        ust.append(k);
+      }
+    }
 
     // Cüzdan
     const toplam = deger(c);

@@ -22,7 +22,7 @@
     <header class="page-head">
       <span class="eyebrow"><i>🎰</i> Kumarhane</span>
       <h1>Berkay <em>Kumarhanesi</em></h1>
-      <p class="lead">BERKAY ile <b>Crash</b> oyna: roket uçarken zamanında çek, patlamadan kaç. Ya da arkadaşına <b>düello</b> at: yazı-tura ya da zar, kazanan alır.</p>
+      <p class="lead">Crash, Mines, Plinko, Blackjack ve düello. Oynadıkça XP kazan, seviye atla, günlük görevleri bitir, haftalık ligde zirveye oyna.</p>
     </header>
     <div class="card cark-kapi" id="ekKapi">
       <div class="cark-kapi-ico">🔐</div>
@@ -31,9 +31,86 @@
     </div>
     <div id="ekIcerik" hidden>
       <div class="card ek-cuzdan-serit"><span>🪙 Bakiyen</span><b id="kmBakiye">—</b><a href="/borsa" class="link-btn">Borsa</a></div>
+      <div class="card km-seviye" id="kmSeviye"></div>
+
+      <nav class="km-sekmeler" role="tablist" aria-label="Oyunlar">
+        <button type="button" role="tab" data-oyun="crash">🚀 Crash</button>
+        <button type="button" role="tab" data-oyun="mines">💣 Mines</button>
+        <button type="button" role="tab" data-oyun="plinko">🔻 Plinko</button>
+        <button type="button" role="tab" data-oyun="blackjack">🃏 Blackjack</button>
+        <button type="button" role="tab" data-oyun="duello">⚔️ Düello</button>
+        <button type="button" role="tab" data-oyun="lig">🎯 Görevler &amp; Lig <span class="adm-say" id="kmGorevSay" hidden></span></button>
+      </nav>
+
+      <!-- GÖREVLER + LİG -->
+      <section class="km-oyun km-lig-alani" data-oyun="lig" id="lig" hidden>
+        <div class="card km-kart"><h2>🎯 Bugünün görevleri</h2><div id="kmGorevler"><p class="muted">Yükleniyor…</p></div></div>
+        <div class="card km-kart"><h2>🏆 Haftalık lig</h2><p class="muted km-not">Bu hafta en çok XP kazanan şampiyon olur, adının yanında bütün sitede 👑 görünür.</p><div id="kmLig"><p class="muted">Yükleniyor…</p></div></div>
+      </section>
+
+      <!-- MINES -->
+      <section class="card km-oyun km-mines" data-oyun="mines" id="mines" hidden>
+        <h2>💣 Mines</h2>
+        <div class="km-mines-yerlesim">
+          <div class="km-mines-izgara" id="mnIzgara" aria-label="Mines alanı"></div>
+          <div class="km-mines-panel">
+            <div class="km-mines-carpan"><small>Şu anki</small><b id="mnCarpan">1.00x</b><small id="mnSonraki">Sonraki: —</small></div>
+            <label class="bx-alan">Bahis
+              <div class="bx-girdi"><input type="number" id="mnMiktar" min="1" max="500" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
+            </label>
+            <label class="bx-alan">Bomba sayısı: <b id="mnBombaYazi">3</b>
+              <input type="range" id="mnBomba" min="1" max="24" value="3" />
+            </label>
+            <button type="button" class="bx-gonder al km-buyuk" id="mnBtn">💣 Başla</button>
+            <p class="bx-durum" id="mnDurum" aria-live="polite"></p>
+            <p class="muted km-not">Kutuları aç, her güvenli kutuda çarpan artar. Bombaya basarsan bahis yanar; istediğin an <b>Çek</b>. Bomba ne kadar çoksa çarpan o kadar hızlı büyür.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLINKO -->
+      <section class="card km-oyun km-plinko" data-oyun="plinko" id="plinko" hidden>
+        <h2>🔻 Plinko</h2>
+        <div class="km-plinko-yerlesim">
+          <canvas id="plTuval" aria-label="Plinko tahtası"></canvas>
+          <div class="km-plinko-panel">
+            <div class="bx-segment" id="plRisk">
+              <button type="button" data-risk="dusuk">Düşük</button>
+              <button type="button" data-risk="orta" class="on">Orta</button>
+              <button type="button" data-risk="yuksek">Yüksek</button>
+            </div>
+            <label class="bx-alan">Bahis
+              <div class="bx-girdi"><input type="number" id="plMiktar" min="1" max="500" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
+            </label>
+            <button type="button" class="bx-gonder al km-buyuk" id="plBtn">🔻 Top at</button>
+            <p class="bx-durum" id="plDurum" aria-live="polite"></p>
+            <div class="km-gecmis" id="plSon"></div>
+            <p class="muted km-not">Top 12 sıra çiviye çarparak düşer, düştüğü kutunun çarpanını alırsın. Yüksek riskte kenarlar 100x ama ortası 0.2x.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLACKJACK -->
+      <section class="card km-oyun km-bj" data-oyun="blackjack" id="blackjack" hidden>
+        <h2>🃏 Blackjack</h2>
+        <div class="km-masa">
+          <div class="km-el"><small>Kasa <b id="bjKasaT"></b></small><div class="km-kartlar" id="bjKasa"></div></div>
+          <div class="km-masa-orta" id="bjSonuc">Bahsini yaz, eli başlat.</div>
+          <div class="km-el"><small>Sen <b id="bjSenT"></b></small><div class="km-kartlar" id="bjSen"></div></div>
+        </div>
+        <div class="km-bj-kontrol">
+          <div class="bx-girdi km-bj-bahis"><input type="number" id="bjMiktar" min="1" max="500" step="1" inputmode="numeric" placeholder="10" aria-label="Bahis" /><em>BERKAY</em></div>
+          <button type="button" class="bx-gonder al" id="bjBasla">🃏 Dağıt</button>
+          <button type="button" class="bx-gonder al" id="bjKart" hidden>➕ Kart çek</button>
+          <button type="button" class="bx-gonder sat" id="bjDur" hidden>✋ Dur</button>
+          <button type="button" class="bx-gonder" id="bjIkiye" hidden>✖2 İkiye katla</button>
+        </div>
+        <p class="bx-durum" id="bjDurum" aria-live="polite"></p>
+        <p class="muted km-not">21'e en yakın olan kazanır, 21'i geçen yanar. Kasa 17'ye kadar çeker. Blackjack (As + 10) 2.5 kat öder, beraberlikte bahis iade edilir. İkiye katlarsan bahis iki katına çıkar, tek kart çekersin.</p>
+      </section>
 
       <!-- CRASH -->
-      <section class="card km-crash" id="crash">
+      <section class="card km-crash km-oyun" data-oyun="crash" id="crash" hidden>
         <div class="km-crash-ust">
           <h2>🚀 Crash</h2>
           <div class="km-gecmis" id="crGecmis" aria-label="Son turların çöküş noktaları"></div>
@@ -63,7 +140,7 @@
       </section>
 
       <!-- DÜELLO -->
-      <section class="card km-duello" id="duello">
+      <section class="card km-duello km-oyun" data-oyun="duello" id="duello" hidden>
         <h2>⚔️ Düello</h2>
         <div class="km-duello-form">
           <div class="bx-segment" id="duOyun">
@@ -109,6 +186,8 @@
   <script src="js/ekonomi.js"></script>
   <script src="js/basarim.js"></script>
   <script src="js/bildirim.js"></script>
+  <script src="js/oyuncu.js"></script>
   <script src="js/kumarhane.js"></script>
+  <script src="js/kumarhane-oyunlar.js"></script>
 </body>
 </html>

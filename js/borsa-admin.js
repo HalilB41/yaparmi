@@ -18,7 +18,7 @@
   const tarih = (ms) => (ms ? new Date(ms).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "-");
 
   let basladi = false, d = null, cuzdanlar = [], grafik = null, eskiMumlar = new Map(), cizilen = null, cizimAcik = false, gizli = null;
-  let coinler = BC.liste(null), secili = "BERKAY", kapatDurum = null, kapatGizli = null;
+  let coinler = BC.liste(null), secili = "BERKAY", kapatDurum = null, kapatGizli = null, kumarBekleyen = 0;
   // Bu işlemler seçili coin için yapılır (sunucuya coin gönderilir)
   const COINLI = new Set(["adminOlay", "adminAyar", "adminGrafikSifirla", "adminRota", "adminFiyat", "adminMM", "adminTransfer", "adminArz", "adminPozKapat"]);
 
@@ -39,6 +39,7 @@
     // Sadece seçili coin, o da bayatladıysa (sonTick dinlenen belgede var): okuma kotası boşa gitmesin
     setInterval(() => { if (gorunur() && (!d || Date.now() - (d.sonTick || 0) >= 30000)) api("tick", { coin: secili }).catch(() => {}); }, 15000);
 
+    db.collection("borsa").doc("kumar").onSnapshot((s) => { kumarBekleyen = s.exists ? Number(s.data().bekleyen) || 0 : 0; if (d) ozetCiz(); }, () => {});
     db.collection("borsa").doc("coinler").onSnapshot((s) => {
       coinler = BC.liste(s.exists ? s.data() : null);
       if (!coinler.some((c) => c.sym === secili)) coinSec("BERKAY"); else coinlerCiz();
@@ -131,7 +132,8 @@
       ["Toplam arz", para(d.toplamArz, 0) + " " + secili],
       ["Kasada (admin)", para(d.kasaBKC, 2) + " " + secili],
       ["Kullanıcılarda", para(kullanicilarda, 2) + " " + secili],
-      ["Arz kontrolü", Math.abs(kullanicilarda + d.kasaBKC - d.toplamArz) < 0.01 ? "✅ Tutuyor" : "⚠️ " + para(kullanicilarda + d.kasaBKC - d.toplamArz)],
+      // Kumarhane kasa farkı (borsa/kumar) bir sonraki BERKAY güncellemesinde kasaya aktarılır; kontrolde say
+      ["Arz kontrolü", Math.abs(kullanicilarda + d.kasaBKC + (secili === "BERKAY" ? kumarBekleyen : 0) - d.toplamArz) < 0.01 ? "✅ Tutuyor" : "⚠️ " + para(kullanicilarda + d.kasaBKC + (secili === "BERKAY" ? kumarBekleyen : 0) - d.toplamArz)],
       ["Kullanıcılardaki USDT", para(btlToplam) + " USDT"],
       ["Cüzdan sayısı", String(cuzdanlar.length)],
       ["Açık pozisyon", poz.length + " · " + para(poz.reduce((t, p) => t + p.notional, 0), 0) + " USDT"],

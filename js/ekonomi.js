@@ -107,6 +107,7 @@
         ozetVeri = s.exists ? s.data() : { zengin: [], kisi: {}, kozmetik: {}, hafta: [] };
         ozetAbone.forEach((f) => f(ozetVeri));
         olayGoster(ozetVeri.olay);
+        sampiyonGoster(ozetVeri.ligGecen);
         // Özet yoksa ya da 15 dk'dan eskiyse sunucudan yenilemesini iste (sayfa başına en fazla bir kez)
         if (!ozetIstendi && (!s.exists || Date.now() - (ozetVeri.t || 0) > 15 * 60000)) {
           ozetIstendi = true;
@@ -145,6 +146,46 @@
     return (ozetVeri && ozetVeri.kozmetik && ozetVeri.kozmetik[ad]) || null;
   }
 
+  // ---------------- Ana sayfada haftanın şampiyonu ----------------
+  function sampiyonGoster(lg) {
+    if (!/^\/(index\.html)?$/.test(location.pathname)) return;
+    const k = lg && lg.kazananlar && lg.kazananlar[0];
+    if (!k) return;
+    let s = document.getElementById("ekSampiyon");
+    if (!s) {
+      const hedef = document.querySelector("main .page-head, main header, main");
+      if (!hedef) return;
+      s = document.createElement("a"); s.id = "ekSampiyon"; s.className = "ek-sampiyon"; s.href = "/kumarhane#lig";
+      if (hedef.tagName === "MAIN") hedef.prepend(s); else hedef.after(s);
+    }
+    s.textContent = "";
+    const tac = document.createElement("span"); tac.className = "ek-sampiyon-tac"; tac.textContent = "👑";
+    const yazi = document.createElement("span");
+    const b = document.createElement("b"); b.textContent = k.ad;
+    yazi.append("Haftanın şampiyonu ", b, ` · ${Math.round(k.xp).toLocaleString("tr-TR")} XP`);
+    const ok = document.createElement("small"); ok.textContent = "Lige bak →";
+    s.append(tac, yazi, ok);
+  }
+
+  // ---------------- Wrapped duyurusu (15 Aralık – 15 Ocak, ana sayfa) ----------------
+  (function wrappedDuyuru() {
+    if (!/^\/(index\.html)?$/.test(location.pathname)) return;
+    const d = new Date(Date.now() + 3 * 3600000), ay = d.getUTCMonth(), gun = d.getUTCDate();
+    if (!((ay === 11 && gun >= 15) || (ay === 0 && gun <= 15))) return;
+    const yil = ay === 0 ? d.getUTCFullYear() - 1 : d.getUTCFullYear();
+    const koy = () => {
+      const hedef = document.querySelector("main .page-head, main header, main");
+      if (!hedef || document.getElementById("ekWrapped")) return;
+      const a = document.createElement("a"); a.id = "ekWrapped"; a.className = "ek-sampiyon ek-wrapped"; a.href = "/wrapped";
+      const t = document.createElement("span"); t.className = "ek-sampiyon-tac"; t.textContent = "🎁";
+      const y = document.createElement("span"); const b = document.createElement("b"); b.textContent = `Berkay Wrapped ${yil}`; y.append(b, " çıktı! Yılın nasıl geçti?");
+      const ok = document.createElement("small"); ok.textContent = "Gör →";
+      a.append(t, y, ok);
+      if (hedef.tagName === "MAIN") hedef.prepend(a); else hedef.after(a);
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", koy); else koy();
+  })();
+
   // ---------------- Son dakika bandı (admin "olay" yayınlayınca, her sayfada) ----------------
   function olayGoster(o) {
     if (!o || !o.t || Date.now() - o.t > 30 * 60000) return;
@@ -181,6 +222,9 @@
     if (k && /^#[0-9a-fA-F]{6}$/.test(k.renk || "")) yazi.style.color = k.renk;
     el.appendChild(yazi);
     if (k && k.rozet) { const r = document.createElement("span"); r.className = "ek-rozet"; r.textContent = k.rozet; el.appendChild(r); }
+    // Geçen haftanın lig şampiyonu: her yerde taç
+    const sampiyon = ozetVeri && ozetVeri.ligGecen && ozetVeri.ligGecen.kazananlar && ozetVeri.ligGecen.kazananlar[0];
+    if (sampiyon && sampiyon.ad === ad) { const t = document.createElement("span"); t.className = "ek-tac"; t.textContent = "👑"; t.title = "Haftanın şampiyonu"; el.appendChild(t); }
     if (secenek.unvan !== false && k && k.unvan && (!k.unvanBitis || k.unvanBitis > Date.now())) {
       const u = document.createElement("small"); u.className = "ek-unvan"; u.textContent = k.unvan; el.appendChild(u);
     }
