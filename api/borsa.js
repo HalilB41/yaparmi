@@ -58,7 +58,7 @@
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHmac, randomInt } from "node:crypto";
 
 const BASLANGIC_ARZ = 1_000_000;
 const KAYIT_BONUSU = 200; // BERKAY
@@ -586,6 +586,63 @@ async function coinBul(db, sym) {
 }
 function pozOzet(p) { return { ...p }; }
 
+// ---------------- Özet: zenginler, bu hafta, isim süsleri (borsa/ozet) ----------------
+// Tarayıcılar bütün cüzdanları ve 7 günlük işlem geçmişini OKUMASIN diye (Firestore okuma kotası)
+// sunucu en fazla 10 dakikada bir tek bir özet belgesi hazırlar; herkes sadece onu okur (1 okuma).
+const OZET_MS = 10 * 60_000;
+let ozetKontrol = 0; // bu sunucu örneğinde son kontrol (aynı dakikada tekrar okumasın)
+async function ozetBelki(db, now, zorla) {
+  if (!zorla && now - ozetKontrol < 60_000) return null;
+  ozetKontrol = now;
+  const ref = db.collection("borsa").doc("ozet");
+  const s = await ref.get();
+  const eski = s.exists ? s.data() : null;
+  if (!zorla && eski && now - (eski.t || 0) < OZET_MS) return null;
+  return ozetHesapla(db, now, eski);
+}
+async function ozetHesapla(db, now, eski) {
+  const liste = await coinListesiOku(db);
+  const [cs, ...ds] = await Promise.all([db.collection("borsa_cuzdan").get(), ...liste.map((c) => db.collection("borsa").doc(durumId(c.sym)).get())]);
+  const dur = {};
+  liste.forEach((c, i) => { if (ds[i].exists) dur[c.sym] = ds[i].data(); });
+  // Bu hafta: sadece son özetten beri kapanan pozisyonlar okunur, eskiler özette birikir
+  const haftaBasi = now - 7 * 86400_000;
+  const sonG = eski && eski.gecmisT > haftaBasi ? eski.gecmisT : haftaBasi;
+  const gs = await db.collection("borsa_gecmis").where("kapanis", ">", sonG).get();
+  const hafta = new Map(((eski && eski.hafta) || []).filter((x) => x.t >= haftaBasi).map((x) => [x.id, x]));
+  let gecmisT = sonG;
+  gs.docs.forEach((x) => {
+    const g = x.data();
+    if (g.kapanis > gecmisT) gecmisT = g.kapanis;
+    if (g.sebep === "yenileme") return;
+    hafta.set(g.id || x.id, { id: g.id || x.id, ad: g.ad, coin: g.coin || ANA, x: g.kaldirac, yon: g.yon, pnl: g.pnl, yuzde: g.yuzde, teminat: g.teminat, sebep: g.sebep, t: g.kapanis });
+  });
+  const haftaListe = [...hafta.values()].sort((a, b) => b.t - a.t).slice(0, 1500);
+  // Değerler: USDT + bütün coinler + açık pozisyonların "şimdi kapatsan" değeri
+  const kisiler = cs.docs.map((x) => {
+    const c = x.data();
+    let deger = c.btl || 0;
+    for (const [sym, dd] of Object.entries(dur)) {
+      const m = bakiye(c, sym);
+      if (m) deger += m * dd.fiyat;
+      for (const p of Object.values(dd.poz || {})) if (p.uid === c.uid) deger += Math.max(0, p.teminat + pozPnl(p, dd.fiyat, dd.derinlik));
+    }
+    return { uid: c.uid || x.id, ad: c.ad || "?", deger: r2(deger), kozmetik: c.kozmetik && Object.keys(c.kozmetik).length ? c.kozmetik : null, seri: c.seri || 0, olusturma: c.olusturma || 0 };
+  }).sort((a, b) => b.deger - a.deger);
+  const kisi = {}, kozmetik = {};
+  kisiler.forEach((k, i) => {
+    kisi[k.uid] = { ad: k.ad, deger: k.deger, sira: i + 1, seri: k.seri, olusturma: k.olusturma };
+    if (k.kozmetik) kozmetik[k.ad] = k.kozmetik;
+  });
+  const ozet = {
+    t: now, gecmisT, hafta: haftaListe, kozmetik, kisi,
+    zengin: kisiler.slice(0, 20).map((k) => ({ uid: k.uid, ad: k.ad, deger: k.deger, kozmetik: k.kozmetik })),
+    olay: (eski && eski.olay) || null,
+  };
+  await db.collection("borsa").doc("ozet").set(ozet);
+  return ozet;
+}
+
 // ---------------- Kullanıcı işlemleri ----------------
 async function kullaniciIslem(db, kim, govde, now) {
   const tur = govde.islem;
@@ -605,7 +662,14 @@ async function kullaniciIslem(db, kim, govde, now) {
       if (snap.exists && now - (snap.data().sonTick || 0) < aralik) continue;
       await islem(db, now, {}, async () => null, def.sym, def).catch((e) => { hatalar.push(def.sym + ": " + (e && e.message)); console.error("tick " + def.sym, e); });
     }
+    await ozetBelki(db, now).catch((e) => console.error("özet", e));
     return hatalar.length ? { ok: true, hatalar } : { ok: true };
+  }
+
+  // Özet eskiyse/yoksa yenile (herhangi bir sayfa isteyebilir; sunucu 10 dk sınırını kendi uygular)
+  if (tur === "ozet") {
+    await ozetBelki(db, now);
+    return { ok: true };
   }
 
   if (tur === "baslat") {
@@ -739,6 +803,180 @@ async function kullaniciIslem(db, kim, govde, now) {
     return { ok: true, mesaj, cuzdan: cuzdanCevap(c), ...ekCevap };
   }, sym, def);
 }
+
+// ---------------- Kumarhane: Crash + Düello ----------------
+// Para her zaman KASA ile kullanıcı arasında gider gelir (arz korunur). Kasa BERKAY durum belgesinde
+// (kasaBKC); bunlar borsa transaction'ını kilitlemesin diye kasaya FieldValue.increment ile yazılır.
+//
+// CRASH: 30 sn'lik turlar. İlk 7 sn bahis, sonra çarpan e^(0.15·sn) ile yükselir. Çöküş noktası
+// sunucunun gizli anahtarıyla (HMAC) turdan hesaplanır: önceden kimse bilemez, veritabanı gerekmez.
+// Dağılım: P(çöküş ≥ x) = 0,97 / x → hangi hedefi seçersen seç beklenen getiri %97 (kasa %3 kazanır).
+// Bahis cüzdanda tutulur (c.crash); "çek" sunucu saatine göre değerlendirilir.
+const CRASH = { TUR_MS: 30_000, BAHIS_MS: 7_000, HIZ: 0.15, EV: 0.97, MIN: 1, MAX: 500 };
+const CRASH_UST = Math.floor(Math.exp((CRASH.HIZ * (CRASH.TUR_MS - CRASH.BAHIS_MS)) / 1000) * 100) / 100;
+function crashGizli() { return process.env.CRASH_SECRET || process.env.FIREBASE_SERVICE_ACCOUNT || "yerel-test-anahtari"; }
+function crashNoktasi(tur) {
+  const h = createHmac("sha256", crashGizli()).update("crash:" + tur).digest();
+  const x = h.readUIntBE(0, 6) / 2 ** 48; // [0,1)
+  return Math.min(CRASH_UST, Math.max(1, Math.floor((CRASH.EV / (1 - x)) * 100) / 100));
+}
+function crashCarpan(ucusMs) { return ucusMs <= 0 ? 1 : Math.floor(Math.exp((CRASH.HIZ * ucusMs) / 1000) * 100) / 100; }
+function crashAn(now) {
+  const tur = Math.floor(now / CRASH.TUR_MS);
+  const bas = tur * CRASH.TUR_MS;
+  const ucus = now - bas - CRASH.BAHIS_MS;
+  const nokta = crashNoktasi(tur);
+  const dusus = (Math.log(nokta) / CRASH.HIZ) * 1000; // kalkıştan kaç ms sonra düşer
+  const carpan = crashCarpan(ucus);
+  const faz = ucus < 0 ? "bahis" : ucus >= dusus || carpan >= nokta ? "dustu" : "ucus";
+  return { tur, bas, ucus, nokta, dusus, carpan: faz === "dustu" ? nokta : carpan, faz };
+}
+// Eski (biten) turdaki bahsi sonuçlandır: hedef koyduysa ve uçak hedefe ulaştıysa hedeften öder
+function crashKapat(c, now, kasaDegis) {
+  const b = c.crash;
+  if (!b || b.durum !== "acik") return null;
+  const an = crashAn(now);
+  if (b.tur === an.tur && an.faz !== "dustu") return null; // tur sürüyor
+  const nokta = crashNoktasi(b.tur);
+  const kazandi = b.hedef && nokta >= b.hedef;
+  const odeme = kazandi ? r2(b.miktar * b.hedef) : 0;
+  if (odeme) { c.bkc = r6((c.bkc || 0) + odeme); kasaDegis.v -= odeme; }
+  const sonuc = { tur: b.tur, miktar: b.miktar, carpan: kazandi ? b.hedef : 0, nokta, odeme, t: now };
+  c.crash = { ...b, durum: kazandi ? "kazandi" : "kaybetti", odeme, nokta };
+  c.crashGecmis = [sonuc, ...(c.crashGecmis || [])].slice(0, 10);
+  return sonuc;
+}
+async function kumarIslem(db, kim, govde, now) {
+  const tur = govde.islem;
+
+  if (tur === "crashDurum") {
+    // Veritabanına dokunmaz: sadece saat + gizli anahtar
+    const an = crashAn(now);
+    const gecmis = [];
+    for (let i = 1; i <= 15; i++) gecmis.push({ tur: an.tur - i, nokta: crashNoktasi(an.tur - i) });
+    return { ok: true, sunucu: now, tur: an.tur, bas: an.bas, faz: an.faz, carpan: an.carpan, nokta: an.faz === "dustu" ? an.nokta : null, gecmis, ayar: { ...CRASH, UST: CRASH_UST } };
+  }
+
+  const cuzRef = db.collection("borsa_cuzdan").doc(kim.uid);
+  const kasaRef = db.collection("borsa").doc(durumId(ANA));
+  if (tur === "crashBahis" || tur === "crashCek") {
+    return db.runTransaction(async (tx) => {
+      const s = await tx.get(cuzRef);
+      if (!s.exists) throw new Hata("Önce borsaya bir kez gir (cüzdanın açılsın).");
+      const c = s.data();
+      const kasa = { v: 0 };
+      const an = crashAn(now);
+      let cevap;
+      if (tur === "crashBahis") {
+        crashKapat(c, now, kasa);
+        if (an.faz !== "bahis") throw new Hata("Bahisler kapandı, bir sonraki turu bekle.");
+        if (c.crash && c.crash.tur === an.tur) throw new Hata("Bu tura zaten girdin.");
+        const m = Math.round(sayi(govde.miktar) * 100) / 100;
+        if (!(m >= CRASH.MIN && m <= CRASH.MAX)) throw new Hata(`Bahis ${CRASH.MIN}–${CRASH.MAX} BERKAY arası olmalı.`);
+        if (m > (c.bkc || 0) + 1e-9) throw new Hata("Yeterli BERKAY'ın yok.");
+        let hedef = sayi(govde.hedef);
+        hedef = hedef >= 1.01 ? Math.min(CRASH_UST, Math.floor(hedef * 100) / 100) : null;
+        c.bkc = r6(c.bkc - m); kasa.v += m;
+        c.crash = { tur: an.tur, miktar: m, hedef, durum: "acik", t: now };
+        cevap = { ok: true, mesaj: `${m} BERKAY ile tura girdin${hedef ? ` (otomatik çek: ${hedef}x)` : ""}.` };
+      } else {
+        const b = c.crash;
+        if (!b || b.durum !== "acik") throw new Hata("Açık bahsin yok.");
+        if (b.tur !== an.tur || an.faz === "dustu") {
+          const son = crashKapat(c, now, kasa);
+          tx.set(cuzRef, c);
+          if (kasa.v) tx.update(kasaRef, { kasaBKC: FieldValue.increment(r6(kasa.v)) });
+          return { ok: true, gec: true, sonuc: son, mesaj: son && son.odeme ? `Otomatik çekildi: +${son.odeme} BERKAY` : `💥 Geç kaldın, ${son ? son.nokta : ""}x'te düştü.`, cuzdan: cuzdanCevap(c) };
+        }
+        if (an.faz === "bahis") throw new Hata("Uçak daha kalkmadı.");
+        const carpan = b.hedef && an.carpan > b.hedef ? b.hedef : an.carpan;
+        const odeme = r2(b.miktar * carpan);
+        c.bkc = r6((c.bkc || 0) + odeme); kasa.v -= odeme;
+        c.crash = { ...b, durum: "kazandi", odeme, carpan };
+        c.crashGecmis = [{ tur: b.tur, miktar: b.miktar, carpan, nokta: null, odeme, t: now }, ...(c.crashGecmis || [])].slice(0, 10);
+        cevap = { ok: true, carpan, odeme, mesaj: `${carpan}x'te çektin: +${odeme} BERKAY 🤑` };
+      }
+      tx.set(cuzRef, c);
+      if (kasa.v) tx.update(kasaRef, { kasaBKC: FieldValue.increment(r6(kasa.v)) });
+      tx.set(db.collection("borsa_log").doc(), { coin: ANA, uid: kim.uid, ad: kim.ad, tur: "kumar", detay: tur === "crashBahis" ? `Crash: ${c.crash.miktar} BERKAY bahis${c.crash.hedef ? " (oto " + c.crash.hedef + "x)" : ""}` : `Crash: ${cevap.carpan}x çekti +${cevap.odeme}`, bkc: r6(-kasa.v), btl: 0, ms: now, tarih: FieldValue.serverTimestamp() });
+      cevap.cuzdan = cuzdanCevap(c);
+      return cevap;
+    });
+  }
+
+  // DÜELLO: biri meydan okur (BERKAY kasaya emanet), diğeri kabul eder, sunucu zar atar. Kazanan 2×miktarın %98'ini alır.
+  if (tur === "duelloAc") {
+    const ref = db.collection("duello").doc();
+    return db.runTransaction(async (tx) => {
+      const s = await tx.get(cuzRef);
+      if (!s.exists) throw new Hata("Önce borsaya bir kez gir (cüzdanın açılsın).");
+      const c = s.data();
+      const oyun = govde.oyun === "zar" ? "zar" : "yazitura";
+      const m = Math.round(sayi(govde.miktar));
+      if (!(m >= 1 && m <= 1000)) throw new Hata("Miktar 1–1000 BERKAY arası olmalı.");
+      if (m > (c.bkc || 0) + 1e-9) throw new Hata("Yeterli BERKAY'ın yok.");
+      if ((c.duelloAcik || 0) >= 3) throw new Hata("En fazla 3 açık düellon olabilir. Birini iptal et.");
+      const rakip = String(govde.rakip || "").trim().slice(0, 20);
+      if (rakip && rakip.toLowerCase() === String(kim.ad).toLowerCase()) throw new Hata("Kendine meydan okuyamazsın 😅");
+      let secim = null;
+      if (oyun === "yazitura") secim = govde.secim === "tura" ? "tura" : "yazi";
+      c.bkc = r6(c.bkc - m); c.duelloAcik = (c.duelloAcik || 0) + 1;
+      tx.set(cuzRef, c);
+      tx.update(kasaRef, { kasaBKC: FieldValue.increment(m) });
+      tx.set(ref, { id: ref.id, oyun, miktar: m, secim, acan: kim.ad, acanUid: kim.uid, rakip: rakip || null, durum: "acik", t: now });
+      tx.set(db.collection("borsa_log").doc(), { coin: ANA, uid: kim.uid, ad: kim.ad, tur: "kumar", detay: `Düello açtı: ${oyun === "zar" ? "🎲 zar" : "🪙 yazı-tura"} ${m} BERKAY${rakip ? " → " + rakip : ""}`, bkc: -m, btl: 0, ms: now, tarih: FieldValue.serverTimestamp() });
+      return { ok: true, id: ref.id, mesaj: "Düello açıldı! Linki paylaş, biri kabul edince sonuç çıkar.", cuzdan: cuzdanCevap(c) };
+    });
+  }
+  if (tur === "duelloKabul" || tur === "duelloIptal") {
+    const ref = db.collection("duello").doc(String(govde.id || "-"));
+    return db.runTransaction(async (tx) => {
+      const ds = await tx.get(ref);
+      if (!ds.exists) throw new Hata("Düello bulunamadı.");
+      const du = ds.data();
+      if (du.durum !== "acik") throw new Hata(du.durum === "bitti" ? "Bu düello çoktan bitti." : "Bu düello iptal edilmiş.");
+      const acanRef = db.collection("borsa_cuzdan").doc(du.acanUid);
+      if (tur === "duelloIptal") {
+        if (du.acanUid !== kim.uid && !kim.admin) throw new Hata("Sadece açan kişi iptal edebilir.");
+        const as = await tx.get(acanRef);
+        const a = as.exists ? as.data() : null;
+        if (a) { a.bkc = r6((a.bkc || 0) + du.miktar); a.duelloAcik = Math.max(0, (a.duelloAcik || 1) - 1); tx.set(acanRef, a); tx.update(kasaRef, { kasaBKC: FieldValue.increment(-du.miktar) }); }
+        tx.update(ref, { durum: "iptal", bitis: now });
+        return { ok: true, mesaj: `İptal edildi, ${du.miktar} BERKAY iade.` };
+      }
+      if (du.acanUid === kim.uid) throw new Hata("Kendi düellonu kabul edemezsin.");
+      if (du.rakip && du.rakip.toLowerCase() !== String(kim.ad).toLowerCase()) throw new Hata(`Bu düello sadece ${du.rakip} için.`);
+      const [as, bs] = await Promise.all([tx.get(acanRef), tx.get(cuzRef)]);
+      if (!bs.exists) throw new Hata("Önce borsaya bir kez gir (cüzdanın açılsın).");
+      const a = as.exists ? as.data() : null, b = bs.data();
+      if (du.miktar > (b.bkc || 0) + 1e-9) throw new Hata(`Kabul etmek için ${du.miktar} BERKAY lazım.`);
+      b.bkc = r6(b.bkc - du.miktar);
+      // Sonuç (kriptografik rastgele)
+      let kazananAcan, detay;
+      if (du.oyun === "zar") {
+        let za, zb;
+        do { za = randomInt(1, 7); zb = randomInt(1, 7); } while (za === zb);
+        kazananAcan = za > zb; detay = { zarAcan: za, zarKabul: zb };
+      } else {
+        const atis = randomInt(0, 2) === 0 ? "yazi" : "tura";
+        kazananAcan = atis === du.secim; detay = { atis };
+      }
+      const odul = Math.floor(du.miktar * 2 * 0.98 * 100) / 100;
+      const kazanan = kazananAcan ? { ad: du.acan, uid: du.acanUid } : { ad: kim.ad, uid: kim.uid };
+      if (kazananAcan && a) a.bkc = r6((a.bkc || 0) + odul);
+      if (!kazananAcan) b.bkc = r6(b.bkc + odul);
+      if (a) a.duelloAcik = Math.max(0, (a.duelloAcik || 1) - 1);
+      if (a) tx.set(acanRef, a);
+      tx.set(cuzRef, b);
+      tx.update(kasaRef, { kasaBKC: FieldValue.increment(r6(du.miktar - odul)) }); // kabul edenin parası kasaya girdi, ödül kasadan çıktı
+      tx.update(ref, { durum: "bitti", kabul: kim.ad, kabulUid: kim.uid, kazanan: kazanan.ad, kazananUid: kazanan.uid, odul, ...detay, bitis: now });
+      tx.set(db.collection("borsa_log").doc(), { coin: ANA, uid: kim.uid, ad: kim.ad, tur: "kumar", detay: `Düello: ${du.acan} vs ${kim.ad} (${du.miktar}) → kazanan ${kazanan.ad} +${odul}`, bkc: 0, btl: 0, ms: now, tarih: FieldValue.serverTimestamp() });
+      return { ok: true, kazandin: !kazananAcan, kazanan: kazanan.ad, odul, ...detay, mesaj: !kazananAcan ? `Kazandın! +${odul} BERKAY 🏆` : `Kaybettin, ${du.acan} kazandı 😬` };
+    });
+  }
+  return null;
+}
+const KUMAR_ISLEMLERI = ["crashDurum", "crashBahis", "crashCek", "duelloAc", "duelloKabul", "duelloIptal"];
 
 // ---------------- Ekonomi: kullanıcı işlemleri ----------------
 const EKONOMI_ISLEMLERI = ["gunluk", "oyunSkor", "carkCevir", "tahminBahis"];
@@ -1025,6 +1263,25 @@ async function adminIslem(db, kim, govde, now) {
     if (d.gercek && ["adminGrafikSifirla", "adminFiyat", "adminRota", "adminMM"].includes(tur)) {
       throw new Hata(`${sym} gerçek piyasa fiyatını izliyor: fiyat verme, rota, MM ve grafik sıfırlama bu coinde kapalı.`);
     }
+    if (tur === "adminOlay") {
+      // Son dakika: başlık + yüzde etki. Fiyat anında değişir, kaldıraçtakiler etkilenir, herkese bant çıkar.
+      if (d.gercek) throw new Hata(`${sym} gerçek fiyatlı, olayla oynatılamaz.`);
+      const baslik = String(govde.baslik || "").replace(/[<>]/g, "").trim().slice(0, 120);
+      const etki = sayi(govde.etki);
+      if (baslik.length < 3) throw new Hata("Haberin başlığını yaz.");
+      if (!(etki >= -90 && etki <= 500) || !etki) throw new Hata("Etki −90 ile +500 arası (0 olmaz) bir yüzde olmalı.");
+      const p0 = d.fiyat;
+      d.fiyat = Math.max(1e-6, p0 * (1 + etki / 100));
+      mumYaz(d, now, d.fiyat, 0, k.tasanlar);
+      if (gizli.mm) { gizli.mm.ort = r6(d.fiyat); k.gizliDegisti = true; } // serbest MM yeni seviyeyi kabul etsin, geri çekmesin
+      const olay = { t: now, baslik, etki: r2(etki), sym, f0: r6(p0), f1: r6(d.fiyat) };
+      d.olay = olay;
+      d.olaylar = [olay, ...(d.olaylar || [])].slice(0, 10);
+      akisEkle(d, { t: now, ad: "📰 SON DAKİKA", tur: "olay", m: 0, f: r6(d.fiyat), baslik, etki: r2(etki) });
+      tx.set(db.collection("borsa").doc("ozet"), { olay }, { merge: true });
+      log(k, `Son dakika: "${baslik}" → ${sym} ${etki > 0 ? "+" : ""}${etki}% (${r6(p0)} → ${r6(d.fiyat)})`);
+      return { ok: true, mesaj: `Yayınlandı: ${sym} ${etki > 0 ? "+" : ""}${etki}%` };
+    }
     if (tur === "adminGrafikSifirla") {
       // Grafik geçmişini siler, fiyatı başlangıca (varsayılan 1 USDT) çeker.
       // Bakiyeler (BERKAY/USDT adetleri) aynen kalır. Açık pozisyonlar da kalır ama giriş ve
@@ -1205,28 +1462,45 @@ async function adminIslem(db, kim, govde, now) {
 }
 
 // ---------------- Giriş noktası ----------------
+const profilOnbellek = new Map();
 export default async function handler(req, res) {
+  // Crash durumu: GET + Vercel CDN'de 1 sn önbellek → kaç kişi bakarsa baksın saniyede en fazla 1 çalışma.
+  // Cevap sadece o anki durumu söyler (düşmeden çöküş noktasını vermez), 1 sn bayat olması bir şey sızdırmaz.
+  if (req.method === "GET" && String((req.query && req.query.islem) || "") === "crashDurum") {
+    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=1");
+    return res.status(200).json(await kumarIslem(null, null, { islem: "crashDurum" }, Date.now()));
+  }
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ ok: false, hata: "Sadece POST." });
   try {
+    let govde = req.body;
+    if (typeof govde === "string") { try { govde = JSON.parse(govde); } catch { govde = {}; } }
+    govde = govde || {};
+    const now = Date.now();
+    const tur = String(govde.islem || "");
+    // Crash durumu herkese açık ve veritabanına dokunmaz (sık sorulur, kota harcamasın)
+    if (tur === "crashDurum") return res.status(200).json(await kumarIslem(null, null, govde, now));
+
     const { db, auth } = firebase();
     const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     if (!token) throw new Hata("Giriş yapmalısın.", 401);
     let karar;
     try { karar = await auth.verifyIdToken(token); } catch { throw new Hata("Oturum süresi dolmuş, sayfayı yenile.", 401); }
     if (karar.firebase && karar.firebase.sign_in_provider === "anonymous") throw new Hata("Borsa için kayıt olman gerekiyor.", 403);
-    const prof = await db.collection("kullanicilar").doc(karar.uid).get();
-    if (!prof.exists) throw new Hata("Borsa için kayıt olman gerekiyor.", 403);
-    const kim = { uid: karar.uid, ad: prof.data().kullaniciAdi || "?", admin: prof.data().rol === "admin" };
-
-    let govde = req.body;
-    if (typeof govde === "string") { try { govde = JSON.parse(govde); } catch { govde = {}; } }
-    govde = govde || {};
-    const now = Date.now();
-    const tur = String(govde.islem || "");
+    // Profil (kullanıcı adı + rol) 5 dk önbellekte: her istekte 1 okuma harcanmasın
+    let p = profilOnbellek.get(karar.uid);
+    if (!p || now - p.t > 300_000) {
+      const prof = await db.collection("kullanicilar").doc(karar.uid).get();
+      if (!prof.exists) throw new Hata("Borsa için kayıt olman gerekiyor.", 403);
+      p = { t: now, ad: prof.data().kullaniciAdi || "?", admin: prof.data().rol === "admin" };
+      profilOnbellek.set(karar.uid, p);
+    }
+    const kim = { uid: karar.uid, ad: p.ad, admin: p.admin };
 
     let sonuc;
-    if (EKONOMI_ISLEMLERI.includes(tur)) {
+    if (KUMAR_ISLEMLERI.includes(tur)) {
+      sonuc = await kumarIslem(db, kim, govde, now);
+    } else if (EKONOMI_ISLEMLERI.includes(tur)) {
       sonuc = await ekonomiIslem(db, kim, govde, now);
     } else if (["adminEkonomi", "adminKozmetik", "adminTahmin"].includes(tur)) {
       if (!kim.admin) throw new Hata("Bu işlem sadece admin içindir.", 403);
@@ -1241,6 +1515,9 @@ export default async function handler(req, res) {
     return res.status(200).json(sonuc);
   } catch (err) {
     if (err instanceof Hata) return res.status(err.kod).json({ ok: false, hata: err.message });
+    if (err && (err.code === 8 || /RESOURCE_EXHAUSTED|quota/i.test(String(err.message || err.details || "")))) {
+      return res.status(503).json({ ok: false, kota: true, hata: "😴 Site bugünlük ücretsiz veri sınırına ulaştı. Türkiye saatiyle sabah 10:00–11:00 arası geri gelir." });
+    }
     console.error("borsa hatası:", err);
     // Gerçek sebebi de göster (hata ayıklamak için; gizli bilgi içermez)
     const neden = String((err && (err.details || err.message)) || err).slice(0, 180);
@@ -1249,4 +1526,4 @@ export default async function handler(req, res) {
 }
 
 // Testler için dışa açık matematik
-export const _ic = { coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
+export const _ic = { kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };

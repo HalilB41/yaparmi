@@ -434,7 +434,7 @@
       });
     } catch { throw new Error("Sunucuya ulaşılamadı."); }
     const j = await r.json().catch(() => ({ ok: false, hata: "Sunucu cevap vermedi (" + r.status + ")." }));
-    if (!j.ok) throw new Error(j.hata || "Bir şeyler ters gitti.");
+    if (!j.ok) { if (j.kota && window.YaparmiKota) YaparmiKota.bildir(); throw new Error(j.hata || "Bir şeyler ters gitti."); }
     return j;
   };
   const LIK = 0.9;

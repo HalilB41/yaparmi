@@ -73,6 +73,24 @@
           </details>
         </div>
 
+        <div class="panel card admin-section wide bxa-olay-kart">
+          <h2>📰 Son dakika (olay)</h2>
+          <p class="muted">Bir haber yaz ve etkisini seç: <b>seçili coinin</b> fiyatı anında o kadar değişir, kaldıraçtakiler etkilenir ve sitenin her sayfasında 30 dakika "SON DAKİKA" bandı çıkar. Gerçek fiyatlı coinlerde (BTC/ETH/SOL) çalışmaz.</p>
+          <div class="tpl-form adm-form">
+            <label class="bxa-olay-baslik">Haber <input type="text" id="bxaOlayBaslik" maxlength="120" placeholder="ör. Berkay yine spora gitmedi" /></label>
+            <label>Etki (%) <input type="number" id="bxaOlayEtki" min="-90" max="500" step="1" placeholder="ör. -25 ya da 40" /></label>
+            <div class="sayac-butonlar bxa-olay-hazir">
+              <button type="button" class="admin-btn" data-etki="-50">💀 −50%</button>
+              <button type="button" class="admin-btn" data-etki="-20">📉 −20%</button>
+              <button type="button" class="admin-btn" data-etki="20">📈 +20%</button>
+              <button type="button" class="admin-btn" data-etki="100">🚀 +100%</button>
+            </div>
+            <button type="button" class="admin-btn publish" id="bxaOlayBtn">📢 Yayınla</button>
+          </div>
+          <p class="suggest-status" id="bxaOlayDurum"></p>
+          <div class="bx-liste" id="bxaOlaylar"></div>
+        </div>
+
         <div class="panel card admin-section wide">
           <div class="se-top">
             <h2>📊 Özet</h2>

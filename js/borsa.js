@@ -111,7 +111,7 @@
         dexCizGecikmeli();
         pozlarimCiz(); cuzdanCiz();
         if (c.sym === secili) seciliGuncelle();
-        else if (tumCuzdanlar.length) zenginCiz();
+        else zenginCiz();
       }, (err) => console.warn(c.sym + ":", err.message));
     });
   }
@@ -121,7 +121,7 @@
     gecmisMumlar = mumDepo[secili] || (mumDepo[secili] = new Map());
     grafikGuncelle();
     seritCiz(); arenaCiz(); akisCiz(); tahminleriCiz(); cuzdanCiz();
-    if (tumCuzdanlar.length) zenginCiz();
+    zenginCiz();
     $("bxX").max = String(d.maxKaldirac || 20);
   }
   function dinle() {
@@ -531,6 +531,11 @@
     const a = $("bxAkis"); a.textContent = "";
     if (!d.akis.length) { a.append(el("p", "muted", "Henüz işlem yok.")); return; }
     d.akis.slice(0, 15).forEach((k) => {
+      if (k.tur === "olay") {
+        const row = el("div", "bx-satir bx-olay-satir");
+        row.append(el("b", null, "📰 SON DAKİKA"), el("span", null, k.baslik), el("span", k.etki > 0 ? "yukari" : "asagi", (k.etki > 0 ? "+" : "") + k.etki + "%"), el("span", "bx-sag muted", kacOnce(k.t)));
+        a.append(row); return;
+      }
       const row = el("div", "bx-satir" + (k.tur === "lik" ? " bx-lik" : ""));
       let ne = AKIS[k.tur] || k.tur;
       if (k.x && (k.tur === "long" || k.tur === "short" || k.tur === "kapat" || k.tur === "lik")) ne = `${k.x}x ` + ne;
@@ -699,26 +704,31 @@
   });
 
   // ---------------- Zenginler + bu hafta ----------------
-  let tumCuzdanlar = [], haftaGecmis = [];
   function degerHesap(c) {
     let t = c.btl || 0;
     coinler.forEach((k) => { const dd = durumlar[k.sym]; const m = BC.bakiye(c, k.sym); if (m) t += m * (dd ? dd.fiyat : k.sym === "BERKAY" ? 1 : 0); });
     benimPozlar(c.uid).forEach(({ p, dd }) => { t += Math.max(0, p.teminat + E.pnl(p, dd.fiyat, dd.derinlik)); });
     return t;
   }
+  // Zenginler: sunucunun 10 dk'da bir hazırladığı özetten (herkesin cüzdanını okumamak için)
+  let ozetVeri = null;
   function zenginCiz() {
     const z = $("bxZengin"); z.textContent = "";
-    const l = [...tumCuzdanlar].sort((a, b) => degerHesap(b) - degerHesap(a)).slice(0, 10);
-    if (!l.length) { z.append(el("p", "muted", "Henüz kimse yok.")); return; }
+    const l = ((ozetVeri && ozetVeri.zengin) || []).slice(0, 10);
+    if (!l.length) { z.append(el("p", "muted", ozetVeri ? "Henüz kimse yok." : "Yükleniyor…")); return; }
     l.forEach((c, i) => {
-      const r = el("div", "bx-satir" + (profile && c.uid === profile.uid ? " pf-vurgu" : ""));
-      r.append(el("span", "rk-sira", ["🥇", "🥈", "🥉"][i] || String(i + 1)), Ekonomi.isim(c.ad, c.kozmetik || null), el("span", "bx-sag", para(degerHesap(c), 0) + " USDT"));
+      const benim = profile && c.uid === profile.uid;
+      const r = el("div", "bx-satir" + (benim ? " pf-vurgu" : ""));
+      r.append(el("span", "rk-sira", ["🥇", "🥈", "🥉"][i] || String(i + 1)), Ekonomi.isim(c.ad, c.kozmetik || null), el("span", "bx-sag", para(benim && cuzdan ? degerHesap(cuzdan) : c.deger, 0) + " USDT"));
       z.append(r);
     });
+    const ben = profile && ozetVeri && ozetVeri.kisi && ozetVeri.kisi[profile.uid];
+    if (ben && ben.sira > 10) { const r = el("div", "bx-satir pf-vurgu"); r.append(el("span", "rk-sira", String(ben.sira)), Ekonomi.isim(ben.ad), el("span", "bx-sag", para(cuzdan ? degerHesap(cuzdan) : ben.deger, 0) + " USDT")); z.append(r); }
+    if (ozetVeri && ozetVeri.t) z.append(el("p", "muted bx-ozet-not", `${kacOnce(ozetVeri.t)} önce güncellendi · 10 dakikada bir yenilenir`));
   }
   function haftaCiz() {
     const h = $("bxHafta"); h.textContent = "";
-    const liste = haftaGecmis.filter((g) => g.sebep !== "yenileme");
+    const liste = ((ozetVeri && ozetVeri.hafta) || []).map((g) => ({ ...g, kaldirac: g.x })).filter((g) => g.sebep !== "yenileme");
     const lik = liste.filter((g) => g.sebep === "likide").sort((a, b) => b.teminat - a.teminat)[0];
     const kar = liste.filter((g) => g.pnl > 0).sort((a, b) => b.pnl - a.pnl)[0];
     const yuzde = liste.filter((g) => g.pnl > 0).sort((a, b) => b.yuzde - a.yuzde)[0];
@@ -736,8 +746,7 @@
     satirlar.forEach((x) => h.append(x));
   }
   function haftaDinle() {
-    db.collection("borsa_gecmis").where("kapanis", ">=", Date.now() - 7 * 86400000).onSnapshot((s) => { haftaGecmis = s.docs.map((x) => x.data()); haftaCiz(); }, (err) => { $("bxHafta").innerHTML = '<p class="muted">Okunamadı (' + err.message + ').</p>'; });
-    Ekonomi.cuzdanlar((l) => { tumCuzdanlar = l; zenginCiz(); if (d) { arenaCiz(); akisCiz(); } });
+    Ekonomi.ozet((o) => { ozetVeri = o; zenginCiz(); haftaCiz(); if (d) { arenaCiz(); akisCiz(); } });
   }
 
   // ---------------- Bildirim ----------------

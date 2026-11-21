@@ -11,13 +11,137 @@
 // kullanıyoruz, hiçbir yere gerçek mail atılmıyor.
 // ============================================================
 
+// ---------------- Kota koruması (tüm sayfalarda, diğer her şeyden önce) ----------------
+// Firebase ücretsiz planı günlük okuma kotası dolunca ("resource-exhausted") sayfalar boş kalmasın:
+//   1) Üstte "site dinleniyor, şu saatte döner" bandı çıkar (bir kez).
+//   2) Daha önce görülen bazı belgeler (borsa fiyatları, coin listesi, özet, sayaçlar, ayarlar)
+//      tarayıcıda saklanır; kota doluyken onlar "son görülen" olarak gösterilir.
+// Firestore'un kendi sınıflarına sarmalayıcı eklenir; bir şey ters giderse orijinal çağrı aynen çalışır.
+(function () {
+  "use strict";
+  const ONEK = "yaparmi_on:";
+  const IZINLI = /^(borsa\/(durum|durum_[A-Z0-9]+|coinler|ozet|ekonomi)|sayaclar\/[^/]+|ayarlar\/[^/]+|spor\/[^/]+|cark\/ayarlar)$/;
+  const kotaHatasi = (e) => !!e && (e.code === "resource-exhausted" || /quota|resource.exhausted/i.test(String(e.message || "")));
+  // Kota Pasifik saatiyle gece yarısı sıfırlanır: Türkiye'de kışın 11:00, yazın 10:00
+  function donusSaati() {
+    try { return /PDT/.test(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles", timeZoneName: "short" })) ? "10:00" : "11:00"; } catch { return "11:00"; }
+  }
+  let bildirildi = false;
+  function bildir() {
+    if (bildirildi) return;
+    bildirildi = true;
+    const goster = () => {
+      if (document.getElementById("kotaBant")) return;
+      const b = document.createElement("div");
+      b.id = "kotaBant"; b.className = "kota-bant"; b.setAttribute("role", "status");
+      b.innerHTML = "<b>😴 Site bugünlük dinleniyor</b><span>Ücretsiz veri sınırı doldu. Borsa, galeri, profil gibi kısımlar Türkiye saatiyle <b>" + donusSaati() + "</b>'de geri gelir (şimdilik son görülen bilgiler gösteriliyor). Kâhin ve oyunlar çalışıyor.</span>";
+      const x = document.createElement("button"); x.type = "button"; x.textContent = "✕"; x.setAttribute("aria-label", "Kapat");
+      x.addEventListener("click", () => b.remove());
+      b.appendChild(x);
+      document.body.appendChild(b);
+    };
+    if (document.body) goster(); else document.addEventListener("DOMContentLoaded", goster);
+  }
+  window.YaparmiKota = { bildir, kotaHatasi, donusSaati };
+
+  try {
+    const fs = window.firebase && firebase.firestore;
+    if (!fs || !fs.DocumentReference || !fs.Query) return;
+    // JSON'a çevrilebilir kopya (Timestamp → {__ts}) ve geri çevirme
+    const duz = (v) => {
+      if (v && typeof v === "object") {
+        if (typeof v.toMillis === "function") return { __ts: v.toMillis() };
+        if (Array.isArray(v)) return v.map(duz);
+        const o = {}; for (const k in v) o[k] = duz(v[k]); return o;
+      }
+      return v;
+    };
+    const canlandir = (v) => {
+      if (v && typeof v === "object") {
+        if (typeof v.__ts === "number" && Object.keys(v).length === 1) return fs.Timestamp && fs.Timestamp.fromMillis ? fs.Timestamp.fromMillis(v.__ts) : new Date(v.__ts);
+        if (Array.isArray(v)) return v.map(canlandir);
+        const o = {}; for (const k in v) o[k] = canlandir(v[k]); return o;
+      }
+      return v;
+    };
+    const yolu = (ref) => { try { return ref instanceof fs.DocumentReference ? ref.path : null; } catch { return null; } };
+    function sakla(yol, snap) {
+      if (!yol || !IZINLI.test(yol) || !snap || !snap.exists) return;
+      try { const j = JSON.stringify({ t: Date.now(), v: duz(snap.data()) }); if (j.length < 300000) localStorage.setItem(ONEK + yol, j); } catch { /* yer yok */ }
+    }
+    function sahte(ref, yol) {
+      if (!yol || !IZINLI.test(yol)) return null;
+      let k = null;
+      try { k = JSON.parse(localStorage.getItem(ONEK + yol) || "null"); } catch { k = null; }
+      if (!k) return null;
+      const veri = canlandir(k.v);
+      return { exists: true, id: ref.id, ref, metadata: { fromCache: true, hasPendingWrites: false }, data: () => canlandir(k.v), get: (alan) => veri[alan], _yedek: true };
+    }
+    const D = fs.DocumentReference.prototype, Q = fs.Query.prototype;
+    // onSnapshot(sarmal): başarıda sakla, kota hatasında bant + son görülen
+    function onSnapshotSar(asil, belgeMi) {
+      return function (...args) {
+        try {
+          let i = 0;
+          if (args[0] && typeof args[0] === "object" && typeof args[0].next !== "function" && typeof args[1] === "function") i = 1; // seçenekler
+          let next, error, complete;
+          if (args[i] && typeof args[i] === "object") { const o = args[i]; next = o.next && o.next.bind(o); error = o.error && o.error.bind(o); complete = o.complete && o.complete.bind(o); }
+          else { next = args[i]; error = args[i + 1]; complete = args[i + 2]; }
+          if (typeof next !== "function") return asil.apply(this, args);
+          const ref = this, yol = belgeMi ? yolu(this) : null;
+          const yeniNext = (snap) => { if (belgeMi) sakla(yol, snap); return next(snap); };
+          const yeniError = (err) => {
+            if (kotaHatasi(err)) {
+              bildir();
+              const y = belgeMi ? sahte(ref, yol) : null;
+              if (y) { try { next(y); } catch (e) { console.warn(e); } return; }
+            }
+            if (typeof error === "function") return error(err);
+            console.warn("Firestore:", err && err.message);
+          };
+          const yeni = args.slice(0, i);
+          yeni.push(yeniNext, yeniError);
+          if (complete) yeni.push(complete);
+          return asil.apply(this, yeni);
+        } catch (e) {
+          return asil.apply(this, args);
+        }
+      };
+    }
+    function getSar(asil, belgeMi) {
+      return function (...args) {
+        const ref = this, yol = belgeMi ? yolu(this) : null;
+        let p;
+        try { p = asil.apply(this, args); } catch (e) { throw e; }
+        if (!p || typeof p.then !== "function") return p;
+        return p.then((snap) => { if (belgeMi) sakla(yol, snap); return snap; }, (err) => {
+          if (kotaHatasi(err)) { bildir(); const y = belgeMi ? sahte(ref, yol) : null; if (y) return y; }
+          throw err;
+        });
+      };
+    }
+    D.onSnapshot = onSnapshotSar(D.onSnapshot, true);
+    D.get = getSar(D.get, true);
+    Q.onSnapshot = onSnapshotSar(Q.onSnapshot, false);
+    Q.get = getSar(Q.get, false);
+    // Yazma işlemleri de kota hatası verirse bandı göster
+    ["set", "update", "delete"].forEach((ad) => {
+      const asil = D[ad];
+      if (typeof asil !== "function") return;
+      D[ad] = function (...a) { const p = asil.apply(this, a); return p && p.catch ? p.catch((e) => { if (kotaHatasi(e)) bildir(); throw e; }) : p; };
+    });
+  } catch (e) {
+    console.warn("Kota koruması kurulamadı:", e && e.message);
+  }
+})();
+
 (function () {
   // ---------------- Üst bar + alt bilgi (tüm sayfalarda ortak) ----------------
   // Menü, logo, tema düğmesi ve Giriş Yap butonu buradan eklenir; sayfaların
   // HTML'inde sadece kendi içerikleri var.
   const NAV = [
     ["/", "Kâhin"], ["/spor", "Spor"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
-    ["/borsa", "Borsa"], ["/tahmin", "Tahmin"], ["/cark", "Çark"],
+    ["/borsa", "Borsa"], ["/kumarhane", "Kumarhane"], ["/tahmin", "Tahmin"], ["/cark", "Çark"],
     ["/topluluk", "Topluluk"], ["/soz", "Sözler"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
@@ -70,8 +194,8 @@
 
   // ---------------- Telefon: alt menü çubuğu + "Menü" sayfası ----------------
   // Sadece dar ekranda görünür (CSS: .alt-bar). Üstteki yatay menü telefonda gizlenir.
-  const ALT = [["/", "🔮", "Kâhin"], ["/borsa", "📈", "Borsa"], ["/tahmin", "🎲", "Tahmin"], ["/cark", "🎡", "Çark"]];
-  const IKON = { "/": "🔮", "/spor": "🥊", "/sosyal": "🎭", "/galeri": "🖼️", "/borsa": "📈", "/tahmin": "🎲", "/cark": "🎡", "/topluluk": "📊", "/soz": "🤝" };
+  const ALT = [["/", "🔮", "Kâhin"], ["/borsa", "📈", "Borsa"], ["/kumarhane", "🎰", "Kumar"], ["/cark", "🎡", "Çark"]];
+  const IKON = { "/": "🔮", "/spor": "🥊", "/sosyal": "🎭", "/galeri": "🖼️", "/borsa": "📈", "/kumarhane": "🎰", "/tahmin": "🎲", "/cark": "🎡", "/topluluk": "📊", "/soz": "🤝" };
   const altBar = document.createElement("nav");
   altBar.className = "alt-bar";
   altBar.setAttribute("aria-label", "Hızlı menü");

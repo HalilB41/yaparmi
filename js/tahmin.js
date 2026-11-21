@@ -27,7 +27,7 @@
     db.collection("tahmin").onSnapshot((s) => { tahminler = s.docs.map((d) => Object.assign({ id: d.id }, d.data())); ciz(); },
       (err) => { $("tmAcik").innerHTML = '<p class="muted">Tahminler okunamadı (' + err.message + ').</p>'; });
     db.collection("tahmin_bahis").onSnapshot((s) => { bahisler = s.docs.map((d) => d.data()); ciz(); }, () => {});
-    Ekonomi.cuzdanlar((l) => { benim = l.find((c) => c.uid === profile.uid) || null; $("tmBakiye").textContent = benim ? para(benim.bkc, 2) + " BERKAY" : "0 BERKAY"; ciz(); });
+    Ekonomi.cuzdanim((c) => { benim = c; $("tmBakiye").textContent = benim ? para(benim.bkc, 2) + " BERKAY" : "0 BERKAY"; ciz(); });
     setInterval(() => { if (!document.hidden) ciz(); }, 30000); // geri sayımlar
   }
 

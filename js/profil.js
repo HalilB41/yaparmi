@@ -13,7 +13,8 @@
   const E = window.BorsaEgri;
   const OYUN = { boks: ["🥊", "Boks makinesi", ""], penalti: ["⚽", "Gol serisi", " gol"], motor: ["🏍️", "Kasksız 85", " m"], g2048: ["🔢", "2048 en büyük kare", ""], yilan: ["🐍", "Yılan", " yem"] };
 
-  let profile = null, basladi = false, cuzdanlar = [], d = null, gecmis = [], bahisler = [], hedefUid = null;
+  // ozet: sunucunun hazırladığı özet (sıralama, zenginler); hedef: bakılan kişinin cüzdanı (tek belge)
+  let profile = null, basladi = false, ozetVeri = null, hedef = null, d = null, gecmis = [], bahisler = [], hedefUid = null;
   const istenen = new URLSearchParams(location.search).get("k");
 
   $("ekGirisBtn").addEventListener("click", (e) => { e.stopPropagation(); window.scrollTo({ top: 0, behavior: "smooth" }); const t = $("authToggle"), p = $("authPanel"); if (t && p && p.hidden) t.click(); });
@@ -50,13 +51,16 @@
       db.collection("borsa").doc(BC.durumId(k.sym)).onSnapshot((s) => { if (s.exists) durumlar[k.sym] = s.data(); if (k.sym === "BERKAY") d = durumlar.BERKAY || null; ciz(); }, () => {});
     });
     db.collection("borsa").doc("coinler").onSnapshot((s) => { coinler = BC.liste(s.exists ? s.data() : null); coinDinle(); }, () => coinDinle());
-    Ekonomi.cuzdanlar((l) => {
-      cuzdanlar = l;
-      const c = l.find((x) => x.ad === hedefAd());
-      if (c && c.uid !== hedefUid) {
-        hedefUid = c.uid;
-        db.collection("borsa_gecmis").where("uid", "==", c.uid).onSnapshot((s) => { gecmis = s.docs.map((x) => x.data()); ciz(); }, () => {});
-        db.collection("tahmin_bahis").where("uid", "==", c.uid).onSnapshot((s) => { bahisler = s.docs.map((x) => x.data()); ciz(); }, () => {});
+    Ekonomi.ozet((o) => {
+      ozetVeri = o;
+      // Kullanıcı adından uid'yi özetten bul, sonra sadece o kişinin cüzdanını dinle
+      const ad = hedefAd();
+      const uid = Object.keys(o.kisi || {}).find((u) => o.kisi[u].ad === ad) || (profile && profile.kullaniciAdi === ad ? profile.uid : null);
+      if (uid && uid !== hedefUid) {
+        hedefUid = uid;
+        db.collection("borsa_cuzdan").doc(uid).onSnapshot((s) => { hedef = s.exists ? s.data() : null; ciz(); }, () => {});
+        db.collection("borsa_gecmis").where("uid", "==", uid).onSnapshot((s) => { gecmis = s.docs.map((x) => x.data()); ciz(); }, () => {});
+        db.collection("tahmin_bahis").where("uid", "==", uid).onSnapshot((s) => { bahisler = s.docs.map((x) => x.data()); ciz(); }, () => {});
       }
       ciz();
     });
@@ -72,15 +76,15 @@
   function ciz() {
     const ad = hedefAd();
     document.title = (ad || "Profil") + " · yaparmi.com";
-    const c = cuzdanlar.find((x) => x.ad === ad);
+    const c = hedef && hedef.ad === ad ? hedef : null;
     const ust = $("pfUst"); ust.textContent = "";
     if (!c) {
-      ust.append(el("h1", null, ad || "?"), el("p", "muted", cuzdanlar.length ? "Bu kişinin henüz BERKAY cüzdanı yok (siteye kayıtlı girince açılır)." : "Yükleniyor…"));
+      ust.append(el("h1", null, ad || "?"), el("p", "muted", ozetVeri && !hedefUid ? "Bu kişinin henüz BERKAY cüzdanı yok (siteye kayıtlı girince açılır)." : "Yükleniyor…"));
       ["pfCuzdan", "pfRekor", "pfBorsa", "pfTahmin"].forEach((id) => { $(id).textContent = ""; });
       zenginler(); return;
     }
-    const siralama = [...cuzdanlar].sort((a, b) => deger(b) - deger(a));
-    const sira = siralama.findIndex((x) => x.uid === c.uid) + 1;
+    const ozKisi = ozetVeri && ozetVeri.kisi && ozetVeri.kisi[c.uid];
+    const sira = ozKisi ? ozKisi.sira : "?";
     const baslik = el("div", "pf-baslik");
     const avatar = el("div", "pf-avatar", (c.kozmetik && c.kozmetik.rozet) || (c.ad || "?").slice(0, 1).toUpperCase());
     const isimKutu = el("div");
@@ -134,10 +138,10 @@
   }
 
   function zenginler(vurgu) {
-    const l = [...cuzdanlar].sort((a, b) => deger(b) - deger(a)).slice(0, 15);
+    const l = ((ozetVeri && ozetVeri.zengin) || []).slice(0, 15);
     kutu("pfZengin", l.map((c, i) => {
       const r = el("div", "bx-satir" + (c.uid === vurgu ? " pf-vurgu" : ""));
-      r.append(el("span", "rk-sira", ["🥇", "🥈", "🥉"][i] || String(i + 1)), Ekonomi.isim(c.ad, c.kozmetik || null), el("span", "bx-sag", para(deger(c)) + " USDT"));
+      r.append(el("span", "rk-sira", ["🥇", "🥈", "🥉"][i] || String(i + 1)), Ekonomi.isim(c.ad, c.kozmetik || null), el("span", "bx-sag", para(c.deger) + " USDT"));
       return r;
     }));
   }

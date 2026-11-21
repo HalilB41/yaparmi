@@ -20,7 +20,7 @@
   let basladi = false, d = null, cuzdanlar = [], grafik = null, eskiMumlar = new Map(), cizilen = null, cizimAcik = false, gizli = null;
   let coinler = BC.liste(null), secili = "BERKAY", kapatDurum = null, kapatGizli = null;
   // Bu işlemler seçili coin için yapılır (sunucuya coin gönderilir)
-  const COINLI = new Set(["adminAyar", "adminGrafikSifirla", "adminRota", "adminFiyat", "adminMM", "adminTransfer", "adminArz", "adminPozKapat"]);
+  const COINLI = new Set(["adminOlay", "adminAyar", "adminGrafikSifirla", "adminRota", "adminFiyat", "adminMM", "adminTransfer", "adminArz", "adminPozKapat"]);
 
 
   async function islem(btn, durumEl, ad, veri) {
@@ -86,7 +86,7 @@
       d = s.data(); d.poz = d.poz || {}; d.son = d.son || [];
       const c = coinler.find((x) => x.sym === sym);
       $("bxaCoinBilgi").textContent = (c ? `Seçili: ${c.ad} (${c.sym})` : sym) + (d.gercek ? " · 🌐 Gerçek fiyat (Binance): fiyat verme, rota, MM ve grafik sıfırlama bu coinde kapalı; derinlik sadece en büyük pozisyon sınırını belirler." : "");
-      ozetCiz(); pozlarCiz(); cuzdanlarCiz(); grafikCiz(); ayarDoldur(); kisilerDoldur();
+      ozetCiz(); pozlarCiz(); cuzdanlarCiz(); grafikCiz(); ayarDoldur(); kisilerDoldur(); olaylarCiz();
     }, (err) => { $("bxaGenelDurum").textContent = "⚠️ " + err.message + " (Firestore kurallarını güncelledin mi?)"; });
     kapatGizli = db.collection("borsa").doc(sym === "BERKAY" ? "gizli" : "gizli_" + sym).onSnapshot((s) => {
       gizli = s.exists ? s.data() : null;
@@ -146,6 +146,28 @@
   }
   $("bxaAcBtn").addEventListener("click", () => islem($("bxaAcBtn"), $("bxaGenelDurum"), "adminAyar", { acik: true }));
   $("bxaKapatBtn").addEventListener("click", () => { if (confirm("Piyasa kapanınca kimse alım-satım/kaldıraç yapamaz ve fiyat donar. Kapatılsın mı?")) islem($("bxaKapatBtn"), $("bxaGenelDurum"), "adminAyar", { acik: false }); });
+
+  // ---------------- Son dakika (olay) ----------------
+  function olaylarCiz() {
+    const k = $("bxaOlaylar"); if (!k) return;
+    k.textContent = "";
+    $("bxaOlayBtn").disabled = !!(d && d.gercek);
+    const l = (d && d.olaylar) || [];
+    if (!l.length) { k.append(el("p", "muted", `${secili} için henüz olay yok.`)); return; }
+    l.forEach((o) => {
+      const r = el("div", "bx-satir");
+      r.append(el("span", "muted", tarih(o.t)), el("b", null, o.baslik), el("span", o.etki > 0 ? "yukari" : "asagi", (o.etki > 0 ? "+" : "") + o.etki + "%"), el("span", "bx-sag muted", `${sayi(o.f0)} → ${sayi(o.f1)}`));
+      k.append(r);
+    });
+  }
+  document.querySelectorAll(".bxa-olay-hazir button").forEach((b) => b.addEventListener("click", () => { $("bxaOlayEtki").value = b.dataset.etki; }));
+  $("bxaOlayBtn").addEventListener("click", () => {
+    const baslik = $("bxaOlayBaslik").value.trim(), etki = Number($("bxaOlayEtki").value);
+    if (baslik.length < 3) { $("bxaOlayDurum").textContent = "Haberi yaz."; return; }
+    if (!etki) { $("bxaOlayDurum").textContent = "Etkiyi yaz (ör. -25 ya da 40)."; return; }
+    if (!confirm(`"${baslik}"\n\n${secili} fiyatı anında ${etki > 0 ? "+" : ""}${etki}% değişecek ve herkese SON DAKİKA bandı çıkacak. Yayınlansın mı?`)) return;
+    islem($("bxaOlayBtn"), $("bxaOlayDurum"), "adminOlay", { baslik, etki }).then((r) => { if (r) { $("bxaOlayBaslik").value = ""; $("bxaOlayEtki").value = ""; } });
+  });
 
   // ---------------- Grafik + çizim ----------------
   function grafikCiz() {

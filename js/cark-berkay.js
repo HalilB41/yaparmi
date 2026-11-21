@@ -32,7 +32,7 @@
     if (!p || basladi || typeof db === "undefined" || !db) return;
     basladi = true;
     db.collection("borsa").doc("ekonomi").onSnapshot((s) => { e = Object.assign({}, VARSAYILAN, s.exists ? s.data() : {}); ciz(); bilgi(); }, () => { ciz(); bilgi(); });
-    Ekonomi.cuzdanlar((l) => { benim = l.find((c) => c.uid === profile.uid) || null; bilgi(); });
+    Ekonomi.cuzdanim((c) => { benim = c; bilgi(); });
     ciz(); bilgi();
   });
 

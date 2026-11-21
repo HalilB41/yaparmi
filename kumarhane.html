@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Kumarhane · Crash ve Düello · yaparmi.com</title>
+  <meta name="description" content="BERKAY ile Crash oyna, arkadaşına düello at." />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#eceefa" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0a0c1b" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%235a3fd4%22/%3E%3Cg transform=%22translate(4 4) scale(1) rotate(-6 12 12)%22%3E%3Cpath d=%22M8 3h8a5 5 0 0 1 5 5v4a5 5 0 0 1-5 5h-6.3l-3.7 3.3c-.5.45-1.3.1-1.3-.57v-3.1A5 5 0 0 1 3 12V8a5 5 0 0 1 5-5z%22 fill=%22%23fff%22/%3E%3Cpath d=%22M9.7 8.2a2.4 2.4 0 1 1 3.5 2.15c-.75.38-1.2.95-1.2 1.75v.25%22 fill=%22none%22 stroke=%22%235a3fd4%22 stroke-width=%222.4%22 stroke-linecap=%22round%22/%3E%3Ccircle cx=%2212%22 cy=%2214.9%22 r=%221.4%22 fill=%22%235a3fd4%22/%3E%3C/g%3E%3C/svg%3E" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema"),r=localStorage.getItem("yaparmi_renk");if(t)document.documentElement.dataset.theme=t;if(r)document.documentElement.dataset.renk=r}catch(e){}</script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/images/ikon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page ek-page km-page">
+    <header class="page-head">
+      <span class="eyebrow"><i>🎰</i> Kumarhane</span>
+      <h1>Berkay <em>Kumarhanesi</em></h1>
+      <p class="lead">BERKAY ile <b>Crash</b> oyna: roket uçarken zamanında çek, patlamadan kaç. Ya da arkadaşına <b>düello</b> at: yazı-tura ya da zar, kazanan alır.</p>
+    </header>
+    <div class="card cark-kapi" id="ekKapi">
+      <div class="cark-kapi-ico">🔐</div>
+      <p id="ekKapiYazi">Yükleniyor…</p>
+      <button type="button" class="btn" id="ekGirisBtn" hidden>Kayıt ol / giriş yap</button>
+    </div>
+    <div id="ekIcerik" hidden>
+      <div class="card ek-cuzdan-serit"><span>🪙 Bakiyen</span><b id="kmBakiye">—</b><a href="/borsa" class="link-btn">Borsa</a></div>
+
+      <!-- CRASH -->
+      <section class="card km-crash" id="crash">
+        <div class="km-crash-ust">
+          <h2>🚀 Crash</h2>
+          <div class="km-gecmis" id="crGecmis" aria-label="Son turların çöküş noktaları"></div>
+        </div>
+        <div class="km-ekran">
+          <canvas id="crTuval" aria-hidden="true"></canvas>
+          <div class="km-carpan" id="crCarpan" aria-live="polite">1.00x</div>
+          <div class="km-faz" id="crFaz">Bağlanıyor…</div>
+        </div>
+        <div class="km-kontrol">
+          <label class="bx-alan">Bahis
+            <div class="bx-girdi"><input type="number" id="crMiktar" min="1" max="500" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
+          </label>
+          <div class="bx-yuzde" id="crHizli"><button type="button" data-m="10">10</button><button type="button" data-m="50">50</button><button type="button" data-m="100">100</button><button type="button" data-m="500">500</button></div>
+          <label class="bx-alan">Otomatik çek (isteğe bağlı)
+            <div class="bx-girdi"><input type="number" id="crHedef" min="1.01" step="0.01" inputmode="decimal" placeholder="ör. 2" /><em>x</em></div>
+          </label>
+          <button type="button" class="bx-gonder al km-buyuk" id="crBtn">Tura gir</button>
+          <p class="bx-durum" id="crDurum" aria-live="polite"></p>
+        </div>
+        <details class="km-kural">
+          <summary>Nasıl oynanır?</summary>
+          <p>Her tur 30 saniye. İlk 7 saniye bahis zamanı; sonra roket kalkar ve çarpan yükselir. Patlamadan <b>Çek</b>'e basarsan bahsin × o anki çarpanı alırsın, geç kalırsan bahis yanar. "Otomatik çek" yazarsan o çarpana gelince senin yerine çekilir (sayfayı kapatsan bile). Patlama noktasını sunucu önceden belirler, kimse bilemez; uzun vadede kasa %3 önde.</p>
+        </details>
+        <h3 class="bx-alt-baslik">📜 Son Crash'lerim</h3>
+        <div class="bx-liste" id="crBenim"><p class="muted">Henüz oynamadın.</p></div>
+      </section>
+
+      <!-- DÜELLO -->
+      <section class="card km-duello" id="duello">
+        <h2>⚔️ Düello</h2>
+        <div class="km-duello-form">
+          <div class="bx-segment" id="duOyun">
+            <button type="button" data-oyun="yazitura" class="on">🪙 Yazı-tura</button>
+            <button type="button" data-oyun="zar">🎲 Zar</button>
+          </div>
+          <div class="bx-segment" id="duSecim">
+            <button type="button" data-secim="yazi" class="on">Yazı</button>
+            <button type="button" data-secim="tura">Tura</button>
+          </div>
+          <label class="bx-alan">Miktar
+            <div class="bx-girdi"><input type="number" id="duMiktar" min="1" max="1000" step="1" inputmode="numeric" placeholder="50" /><em>BERKAY</em></div>
+          </label>
+          <label class="bx-alan">Rakip (boş bırakırsan herkese açık)
+            <div class="bx-girdi"><input type="text" id="duRakip" maxlength="20" placeholder="ör. burger" autocomplete="off" /></div>
+          </label>
+          <button type="button" class="bx-gonder sat km-buyuk" id="duBtn">⚔️ Meydan oku</button>
+          <p class="bx-durum" id="duDurum" aria-live="polite"></p>
+        </div>
+        <p class="muted km-not">Açtığın miktar emanete alınır. Biri kabul edince sunucu atar, kazanan iki tarafın toplamının %98'ini alır. Kabul edilmezse istediğin zaman iptal edip geri alırsın.</p>
+        <h3 class="bx-alt-baslik">🔥 Açık düellolar</h3>
+        <div class="bx-liste" id="duAcik"><p class="muted">Yükleniyor…</p></div>
+        <h3 class="bx-alt-baslik">🏁 Son sonuçlar</h3>
+        <div class="bx-liste" id="duBiten"><p class="muted">Henüz yok.</p></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="cark-modal" id="duModal" role="dialog" aria-modal="true" aria-labelledby="duModalBaslik" hidden>
+    <div class="card cark-modal-kart km-modal">
+      <h2 id="duModalBaslik">⚔️ Düello</h2>
+      <div class="km-atis" id="duAtis"></div>
+      <p id="duSonuc" class="km-sonuc"></p>
+      <div class="cark-modal-butonlar"><button type="button" class="btn" id="duModalKapat">Tamam</button></div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/ekonomi.js"></script>
+  <script src="js/basarim.js"></script>
+  <script src="js/bildirim.js"></script>
+  <script src="js/kumarhane.js"></script>
+</body>
+</html>

@@ -461,7 +461,8 @@ service cloud.firestore {
       // "durum" / "durum_KURBAN" vb. (her coinin fiyatı, mumları, açık pozisyonları), "coinler" (coin listesi)
       // ve "ekonomi" (ödül ayarları, çark dilimleri) giriş yapan herkese açık;
       // "gizli" / "gizli_KURBAN" vb. (adminin çizdiği rota + MM ayarları) sadece admine.
-      allow read: if ((docId in ['durum', 'ekonomi', 'coinler'] || docId.matches('durum_[A-Z0-9]+')) && request.auth != null) || isAdmin();
+      // "ozet" (zenginler, bu hafta, isim süsleri, son dakika — sunucu 10 dk'da bir hazırlar) herkese açık.
+      allow read: if docId == 'ozet' || ((docId in ['durum', 'ekonomi', 'coinler'] || docId.matches('durum_[A-Z0-9]+')) && request.auth != null) || isAdmin();
       allow write: if false;
     }
     match /borsa_grafik/{gun} {
@@ -496,6 +497,11 @@ service cloud.firestore {
     }
     match /borsa_log/{id} {
       allow read: if isAdmin();
+      allow write: if false;
+    }
+    // ===== KUMARHANE: Düellolar (yazan sadece sunucu) =====
+    match /duello/{id} {
+      allow read: if request.auth != null;
       allow write: if false;
     }
   }

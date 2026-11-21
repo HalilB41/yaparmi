@@ -5,7 +5,8 @@
 //   - Oyun ödülü:  Ekonomi.skor("boks", 812)  → kişisel rekor kırılınca sunucu ödül verir
 //                  (çağrılar biriktirilir, birkaç saniye sessizlik olunca en yüksek skor gider)
 //   - İsim süsleri: Ekonomi.isim(ad, kozmetik) → renkli ad + rozet + unvan, profil linkli
-//   - Cüzdanlar:   Ekonomi.cuzdanlar(cb) → herkesin cüzdanı (zenginler listesi, isim süsleri)
+//   - Özet:        Ekonomi.ozet(cb) → zenginler, bu hafta, isim süsleri, son dakika (sunucunun hazırladığı tek belge)
+//   - Cüzdanım:    Ekonomi.cuzdanim(cb) → sadece kendi cüzdanım
 // Bütün coin hareketleri sunucuda (api/borsa.js) yapılır; burası sadece ister ve gösterir.
 // ============================================================
 (function () {
@@ -26,7 +27,7 @@
       });
     } catch { throw new Error("Sunucuya ulaşılamadı."); }
     const j = await r.json().catch(() => ({ ok: false, hata: "Sunucu cevap vermedi (" + r.status + ")." }));
-    if (!j.ok) throw new Error(j.hata || "Bir şeyler ters gitti.");
+    if (!j.ok) { if (j.kota && window.YaparmiKota) YaparmiKota.bildir(); throw new Error(j.hata || "Bir şeyler ters gitti."); }
     return j;
   }
 
@@ -93,28 +94,81 @@
   // Sayfadan çıkarken bekleyenleri hemen gönder
   addEventListener("pagehide", () => Object.keys(bekleyen).forEach(gonder));
 
-  // ---------------- Cüzdanlar + isim süsleri ----------------
-  let cuzdanListe = null, dinliyor = false;
-  const abone = new Set();
-  function cuzdanlar(cb) {
-    abone.add(cb);
-    if (cuzdanListe) cb(cuzdanListe);
-    if (!dinliyor && hazir()) {
-      dinliyor = true;
-      const basla = () => db.collection("borsa_cuzdan").onSnapshot(
-        (s) => { cuzdanListe = s.docs.map((d) => d.data()); abone.forEach((f) => f(cuzdanListe)); },
-        (err) => console.warn("Cüzdanlar okunamadı:", err.message)
-      );
-      // giriş yapılmadan okunamaz: auth çözülünce başla
-      if (auth.currentUser) basla(); else { const kapat = auth.onAuthStateChanged((u) => { if (u) { kapat(); basla(); } }); }
+  // ---------------- Özet + kendi cüzdanım + isim süsleri ----------------
+  // Firestore okuma kotası için: herkesin cüzdanı OKUNMAZ. Sunucu 10 dk'da bir borsa/ozet belgesi
+  // hazırlar (zenginler, bu hafta, isim süsleri, son dakika); sayfalar sadece onu (1 okuma) dinler.
+  let ozetVeri = null, ozetDinliyor = false, ozetIstendi = false;
+  const ozetAbone = new Set();
+  function ozet(cb) {
+    if (cb) { ozetAbone.add(cb); if (ozetVeri) cb(ozetVeri); }
+    if (!ozetDinliyor && hazir()) {
+      ozetDinliyor = true;
+      db.collection("borsa").doc("ozet").onSnapshot((s) => {
+        ozetVeri = s.exists ? s.data() : { zengin: [], kisi: {}, kozmetik: {}, hafta: [] };
+        ozetAbone.forEach((f) => f(ozetVeri));
+        olayGoster(ozetVeri.olay);
+        // Özet yoksa ya da 15 dk'dan eskiyse sunucudan yenilemesini iste (sayfa başına en fazla bir kez)
+        if (!ozetIstendi && (!s.exists || Date.now() - (ozetVeri.t || 0) > 15 * 60000)) {
+          ozetIstendi = true;
+          const iste = () => { if (kayitli()) api("ozet").catch(() => {}); };
+          if (kayitli()) iste(); else if (window.YaparmiAuth) YaparmiAuth.onChange((p) => { if (p) iste(); });
+        }
+      }, (err) => console.warn("Özet okunamadı:", err.message));
     }
-    return () => abone.delete(cb);
+    return () => ozetAbone.delete(cb);
+  }
+  // Kendi cüzdanım (tek belge)
+  let benimVeri = null, benimUid = null;
+  const benimAbone = new Set();
+  function cuzdanim(cb) {
+    benimAbone.add(cb);
+    if (benimVeri) cb(benimVeri);
+    const p = kayitli();
+    if (p && benimUid !== p.uid) {
+      benimUid = p.uid;
+      db.collection("borsa_cuzdan").doc(p.uid).onSnapshot((s) => {
+        benimVeri = s.exists ? s.data() : null;
+        benimAbone.forEach((f) => f(benimVeri));
+      }, (err) => console.warn("Cüzdan okunamadı:", err.message));
+    } else if (!p && window.YaparmiAuth) {
+      YaparmiAuth.onChange((pp) => { if (pp && !benimUid) cuzdanim(() => {}); });
+    }
+    return () => benimAbone.delete(cb);
+  }
+  // Eski arayüz: bütün cüzdanlar. ARTIK KULLANILMIYOR (çok okuma yapıyordu); sadece admin kendi okur.
+  function cuzdanlar(cb) {
+    console.warn("Ekonomi.cuzdanlar yerine Ekonomi.ozet / Ekonomi.cuzdanim kullan.");
+    return cuzdanim((c) => cb(c ? [c] : []));
   }
   function kozmetikBul(ad) {
-    if (!cuzdanListe) return null;
-    const c = cuzdanListe.find((x) => x.ad === ad);
-    return c ? c.kozmetik || null : null;
+    if (benimVeri && benimVeri.ad === ad) return benimVeri.kozmetik || null; // kendi süsüm anında görünsün
+    return (ozetVeri && ozetVeri.kozmetik && ozetVeri.kozmetik[ad]) || null;
   }
+
+  // ---------------- Son dakika bandı (admin "olay" yayınlayınca, her sayfada) ----------------
+  function olayGoster(o) {
+    if (!o || !o.t || Date.now() - o.t > 30 * 60000) return;
+    try { if (localStorage.getItem("yaparmi_olay_kapandi") === String(o.t)) return; } catch { /* yok */ }
+    let bant = document.getElementById("ekOlay");
+    if (!bant) {
+      bant = document.createElement("div");
+      bant.id = "ekOlay"; bant.className = "ek-olay"; bant.setAttribute("role", "status");
+      document.body.appendChild(bant);
+    }
+    bant.textContent = "";
+    const etiket = document.createElement("b"); etiket.textContent = "📰 SON DAKİKA";
+    const link = document.createElement("a");
+    link.href = "/borsa#" + encodeURIComponent(o.sym || "BERKAY");
+    link.textContent = `${o.baslik} · ${o.sym} ${o.etki > 0 ? "▲ +" : "▼ "}${o.etki}%`;
+    link.className = "ek-olay-link";
+    const kapat = document.createElement("button"); kapat.type = "button"; kapat.textContent = "✕"; kapat.setAttribute("aria-label", "Kapat");
+    kapat.addEventListener("click", () => { bant.hidden = true; try { localStorage.setItem("yaparmi_olay_kapandi", String(o.t)); } catch { /* yok */ } });
+    bant.append(etiket, link, kapat);
+    bant.hidden = false;
+  }
+  // Her sayfada özeti dinle (isim süsleri + son dakika): sayfa başına 1 okuma
+  if (hazir()) setTimeout(() => ozet(), 300);
+
   // Renkli ad + rozet (+ istenirse unvan). Profil sayfasına link verir.
   function isim(ad, kozmetik, secenek) {
     secenek = secenek || {};
@@ -134,5 +188,5 @@
   }
 
   window.EkonomiApi = api;
-  window.Ekonomi = { api, toast, skor, cuzdanlar, isim, kozmetikBul, bugun };
+  window.Ekonomi = { api, toast, skor, cuzdanlar, cuzdanim, ozet, isim, kozmetikBul, bugun };
 })();
