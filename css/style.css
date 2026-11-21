@@ -2760,6 +2760,7 @@ a.hero-stat:hover { box-shadow: 0 0 0 2px var(--accent-soft); }
 .mc-kontrol button { pointer-events: auto; width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); background: rgba(0,0,0,.35); color: #fff; font-size: 1.5rem; touch-action: none; }
 .mc-kontrol button.on { background: rgba(255,255,255,.35); }
 .mc-kontrol .mc-zipla { width: 78px; height: 78px; font-size: 1.8rem; }
+.mc-kontrol-sag { display: flex; gap: 10px; align-items: flex-end; }
 @media (pointer: coarse) { .mc-kontrol { display: flex; } }
 @media (max-width: 900px) { .mc-bolumler, .mc-siralama { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) {
