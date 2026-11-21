@@ -823,7 +823,7 @@ window.MACERA_SEVIYELER = [
 "ikon": "🌀",
 "mini": "simon",
 "hikaye": "Sakarya Aquapark çağrılarına Kurban hep aynı cevabı verir: 'Labanzubu.' Bazen 'Lababazubu.' Gece sohbetinde bu akımın adı 'Kubizm' kondu. Kubi sırayı söylüyor, sen tekrarla. 9 tur dayanırsan Kubizm'e kabul edilirsin.",
-"ipucu": "Hafıza sırası: yanan sırayı tekrarla. ← LA · Boşluk BAN · → ZU · Z BU (ya da dokun, 1-4). 9 tur.",
+"ipucu": "Hafıza sırası: yanan sırayı tekrarla. ← LA · Boşluk BAN · → ZU · Z BU (ya da dokun, 1-4). 9 tur, 3 hata hakkın var: yanlışta aynı sıra tekrar gösterilir.",
 "sozler": [
 "Lababazubu",
 "Kubizm akımı",

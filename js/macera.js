@@ -1110,7 +1110,7 @@
 
     // ---- 15) Labanzubu: sırayı tekrar et ----
     simon: {
-      kur: () => ({ sira: [Math.floor(Math.random() * 4)], faz: "goster", i: 0, t: 0, yanan: -1, girdi: 0 }),
+      kur: () => ({ sira: [Math.floor(Math.random() * 4)], faz: "goster", i: 0, t: 0, yanan: -1, girdi: 0, can: 3, hata: 0 }),
       guncelle(s, o, dt) {
         o.t += dt;
         const SES4 = [392, 494, 587, 698];
@@ -1128,7 +1128,13 @@
         if (o.yanan >= 0 && o.t > 0.2) o.yanan = -1;
         if (p == null) return;
         o.yanan = p; o.t = 0; bip(SES4[p], SES4[p], 0.18, "triangle", 0.1);
-        if (p !== o.sira[o.girdi]) return ol(`Labanzubu bozuldu (${o.sira.length - 1} tur)`);
+        if (p !== o.sira[o.girdi]) {
+          // yanlış: can gider, aynı sıra baştan tekrar gösterilir
+          o.can--; o.hata = 0.5; s.sallanma = 0.2; bip(220, 90, 0.35, "sawtooth", 0.12);
+          if (o.can <= 0) return ol(`Labanzubu bozuldu (${o.sira.length - 1} tur)`);
+          s.mesaj = { yazi: `Yanlış! ${o.can} hakkın kaldı, tekrar izle`, t: 1.4 }; soyle(rastgele(["Lababazubu mu neydi", "Kubi yavaş söyle", "Kubizm zor aq"]), 1.4);
+          o.faz = "bekle"; o.t = -0.6; o.girdi = 0; return;
+        }
         o.girdi++;
         if (o.girdi >= o.sira.length) {
           if (o.sira.length >= 9) { s.mesaj = { yazi: "🌀 LABANZUBU! Kubizm akımı onaylandı", t: 2.5 }; return bitir(); }
@@ -1147,10 +1153,11 @@
         }
         yazi(o.faz === "gir" ? "Sıra sende!" : "İzle…", 480, 110, "900 30px sans-serif", o.faz === "gir" ? "#4ade80" : "#fff");
         emoji("😳", 860, 200, 70); yazi("Kubi: Labanzubu", 860, 260, "800 14px sans-serif");
+        for (let i = 0; i < 3; i++) emoji(i < o.can ? "❤️" : "🖤", 826 + i * 34, 310, 26);
         berkayCiz(110, 540, 120);
       },
       skor: (o) => `🌀 ${o.sira.length - 1}/9`,
-      gorev: () => "Yanan sırayı tekrarla: ← / Boşluk / → / Z (ya da dokun) · 9 tur",
+      gorev: (o) => `Yanan sırayı tekrarla: ← / Boşluk / → / Z (ya da dokun) · 9 tur · ${o.can} hak`,
     },
 
     // ---- 16) Kayalıklardan atlama: suya düş ----
