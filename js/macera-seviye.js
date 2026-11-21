@@ -38,12 +38,26 @@ window.MACERA_SEVIYELER = [
 "isabet": 0.55,
 "ezmePayi": 44,
 "ilkAtis": 2.5
-}
+},
+"berkay": [
+"Müdür mü kaldı aq",
+"Feleğim sikildi ama yendim"
+]
 },
 "hikaye": "Vardiya 22.00'de başlıyordu. Saat 22.47. Berkay Mez4'e koşarak giriyor ama Vardiya Müdürü kapıda bekliyor. Kolilerin arasından geç, forkliftlere ezilme, müdürün kafasına zıpla.",
 "kim": "Berkay",
 "ikon": "📦",
-"muzik": "depo"
+"muzik": "depo",
+"sozler": [
+"Götüm delinene kadar çalışıcam",
+"70k alıp kaçıcam bi anda",
+"Ücretsiz izindeyim ben aq",
+"Has amele"
+],
+"bitisSoz": [
+"Ücretsiz izne çıkıyom",
+"70k alıp kaçtım bi anda"
+]
 },
 {
 "ad": "Kasksız 85",
@@ -69,13 +83,27 @@ window.MACERA_SEVIYELER = [
 "tip": "polis",
 "ad": "Trafik Polisi",
 "emoji": "🚓",
-"olum": "Polis yakaladı 🚓"
+"olum": "Polis yakaladı 🚓",
+"berkay": [
+"Trafiği kapatın!",
+"Polis mi aq, 85 yapıyom"
+]
 },
 "hikaye": "Kasksız 85 yine kasksız. Arkada siren sesi. Durursan Trafik Polisi seni yakalar: arabaların üstünden atla, çukurlara düşme, kolilere takılma. Gaz sende, sen sadece zıpla.",
 "kim": "Berkay",
 "motor": true,
 "ikon": "🏍️",
-"muzik": "yol"
+"muzik": "yol",
+"sozler": [
+"kubiiii 85'i gördüm 85!",
+"Araba hızlı evet, gövde etten",
+"Kask mı? Gerek yok",
+"Düşer kalkarım sanki yapboz"
+],
+"bitisSoz": [
+"kubiiii 85'i gördüm 85!",
+"Tek kollu ama eve vardım"
+]
 },
 {
 "ad": "Ehliyet Sınavı",
@@ -103,12 +131,26 @@ window.MACERA_SEVIYELER = [
 "emoji": "👨‍🏫",
 "can": 4,
 "mermi": "📄",
-"yazi": "KALDIN"
+"yazi": "KALDIN",
+"berkay": [
+"Hocam sinyal neydi aq",
+"Bi daha anlat hocam"
+]
 },
 "hikaye": "Direksiyon sınavı, 4. deneme. Hoca 'KALDIN' kâğıtlarını şimdiden hazırlamış. Dubaları devirme, hocanın kafasına 4 kez zıpla, ehliyeti al.",
 "kim": "Berkay",
 "ikon": "🚗",
-"muzik": "sinav"
+"muzik": "sinav",
+"sozler": [
+"Trafiği kapatın",
+"İbo yazılıdan kaldı, ben geçtim",
+"Direksiyon bende",
+"Salon Burger iddiası var"
+],
+"bitisSoz": [
+"Allahım geçtim",
+"İbo patates ve kola borçlusun"
+]
 },
 {
 "ad": "KPSS",
@@ -143,13 +185,27 @@ window.MACERA_SEVIYELER = [
 "ofke": 0.15,
 "ciftAtis": false,
 "isabet": 0.7
-}
+},
+"berkay": [
+"Kubiii bükemediğin eli öp",
+"Hedef Berkay leveli"
+]
 },
 "hikaye": "Final: KPSS. Kütüphanede kitaplar tavandan yağıyor. Son boss Kurban, elinde soru bankalarıyla bekliyor. 5 kez kafasına zıpla, Berkay'ı memur yap.",
 "kim": "Berkay",
 "ikon": "📚",
 "muzik": "kutuphane",
-"bossBurger": 5
+"bossBurger": 5,
+"sozler": [
+"Optik değil QR çektim",
+"93 aldım Kubi geçemedin",
+"Kubi 6 ay çalıştı ben geçtim",
+"Atanıcam göreceksiniz"
+],
+"bitisSoz": [
+"Bükemediğin eli öpeceksin Kubi",
+"Memur Berkay geliyor"
+]
 },
 {
 "ad": "Kurye Gecesi",
@@ -177,7 +233,11 @@ window.MACERA_SEVIYELER = [
 "ciftAtis": false,
 "isabet": 0.7,
 "ezmePayi": 36
-}
+},
+"berkay": [
+"1 yıldız mı aq, yedim mi ben?",
+"Müşteri abi köfte ekmeği yedik pardon"
+]
 },
 "harita": [
 ".........................................................................................A.............................=.............",
@@ -196,7 +256,17 @@ window.MACERA_SEVIYELER = [
 "########..###########################..##########..#####..##################....#####################################################"
 ],
 "ikon": "🛵",
-"muzik": "gece"
+"muzik": "gece",
+"sozler": [
+"Alihan 8 bin TL ceket mi olur aq",
+"Köfte ekmek bana mı geldi",
+"Ali manitasına çiçek almış ıslandık",
+"Sipariş yolda abi"
+],
+"bitisSoz": [
+"5 yıldız ver abi",
+"Alihan ceketi sat"
+]
 },
 {
 "ad": "Çorbacı Borsası",
@@ -222,7 +292,11 @@ window.MACERA_SEVIYELER = [
 "atisAra": 2.0,
 "ofke": 0.2,
 "isabet": 0.8
-}
+},
+"berkay": [
+"Ayı mı aq, kubi sat!",
+"Çorba parası kurtar"
+]
 },
 "harita": [
 "...........................................................................................................A.............................=.............",
@@ -241,7 +315,17 @@ window.MACERA_SEVIYELER = [
 "###########################.........################################.........#####...####.........#####################################################"
 ],
 "ikon": "📈",
-"muzik": "borsa"
+"muzik": "borsa",
+"sozler": [
+"12 TL nedir aq Kubi",
+"Çorbacı Kubi",
+"Kubi parayı sakla sakla",
+"Ben bankayım zaten"
+],
+"bitisSoz": [
+"Kubi 30 bin nerde",
+"Çorba parası çıktı"
+]
 },
 {
 "ad": "Boklu 201",
@@ -257,7 +341,11 @@ window.MACERA_SEVIYELER = [
 "tip": "polis",
 "ad": "Uyku",
 "emoji": "😴",
-"olum": "Uyku bastırdı 😴"
+"olum": "Uyku bastırdı 😴",
+"berkay": [
+"Uyku bastırıyo aq",
+"Koş Burger koş"
+]
 },
 "harita": [
 "..............................................................................................................................................................................................",
@@ -277,7 +365,17 @@ window.MACERA_SEVIYELER = [
 ],
 "ikon": "🚌",
 "muzik": "yol",
-"otomatik": true
+"otomatik": true,
+"sozler": [
+"a.burger uyan",
+"Burger 3,5 saat uyudu yine",
+"201 kaçıyo aq koş",
+"Kütüp sefası iptal"
+],
+"bitisSoz": [
+"201'e yetiştik",
+"a.burger kütüphaneye vardık"
+]
 },
 {
 "ad": "Belediye Mutfağı",
@@ -306,7 +404,11 @@ window.MACERA_SEVIYELER = [
 "her": 4.5,
 "sure": 2.6
 }
-}
+},
+"berkay": [
+"Salih uyandı kaç!",
+"Mola bitti mi Salih?"
+]
 },
 "harita": [
 "...........................k....k......k....k...................k....k...............................A.............................=.............",
@@ -325,7 +427,17 @@ window.MACERA_SEVIYELER = [
 "##########....####...###################################################################....#####################################################"
 ],
 "ikon": "🍞",
-"muzik": "mutfak"
+"muzik": "mutfak",
+"sozler": [
+"Salih 1 ekmek mi sattın",
+"6 saat mola mı aq",
+"Ekmek kadayıfı bol kaymaklı",
+"Kes lan Salih'e laf atma"
+],
+"bitisSoz": [
+"Salih mola veriyo yine",
+"Köfteci kevaşeye gidek"
+]
 },
 {
 "ad": "Sanayi",
@@ -350,7 +462,11 @@ window.MACERA_SEVIYELER = [
 "yuru": 120,
 "atisAra": 1.7,
 "ofke": 0.22
-}
+},
+"berkay": [
+"Cem abi anahtarı atma!",
+"Zanaat öğrendim abi"
+]
 },
 "harita": [
 "....................k....k......k....k......................k....k.........................................k....k..........A.............................=.............",
@@ -369,7 +485,17 @@ window.MACERA_SEVIYELER = [
 "#######################################################################.........####.........##########################################################################"
 ],
 "ikon": "🔧",
-"muzik": "depo"
+"muzik": "depo",
+"sozler": [
+"Cem abi zanaat öğret",
+"Vay aq nakarat çok iyi",
+"Cem gelir belki Aquapark'a",
+"Getir kurye mi olcaz"
+],
+"bitisSoz": [
+"Sanayiden usta çıktım",
+"Cem abi beat yap"
+]
 },
 {
 "ad": "Zula Arenası",
@@ -395,7 +521,11 @@ window.MACERA_SEVIYELER = [
 "yuru": 130,
 "atisAra": 1.6,
 "ofke": 0.25
-}
+},
+"berkay": [
+"IBAN mı aq, para yok",
+"Oyunun allahı kim"
+]
 },
 "harita": [
 ".....................................................k....k....................................................................A.............................=.............",
@@ -414,7 +544,17 @@ window.MACERA_SEVIYELER = [
 "#####################################################################.........####################################...######################################################"
 ],
 "ikon": "🎮",
-"muzik": "neon"
+"muzik": "neon",
+"sozler": [
+"Zula mı aq vizyonsuz",
+"600 TL yatırmış oyuna",
+"Alpaslan da övdü adamı",
+"Harçlık yollayın bana"
+],
+"bitisSoz": [
+"Zulayı kapattım",
+"Alpaslan harçlık yok"
+]
 },
 {
 "ad": "FİNAL: 05:17",
@@ -449,7 +589,11 @@ window.MACERA_SEVIYELER = [
 "yuru": 135,
 "atisAra": 1.45,
 "ofke": 0.25
-}
+},
+"berkay": [
+"İbo 100 madde mi yazdın aq!",
+"Ben de 101. maddeyim"
+]
 },
 "harita": [
 ".............................................................................................................................................A.............................=.............",
@@ -470,6 +614,17 @@ window.MACERA_SEVIYELER = [
 "ikon": "⏰",
 "muzik": "final",
 "bossBurger": 20,
-"atisHiz": 1800
+"atisHiz": 1800,
+"sozler": [
+"05:17 alarmı mı aq",
+"İbo 100 madde mi yazdın",
+"Özele giriyor aq",
+"Adam değilsin sen aq",
+"Benim saf bir kalbim var"
+],
+"bitisSoz": [
+"İbo'nun listesi çöpe",
+"26k napiyim aq, kazandım"
+]
 }
 ];
