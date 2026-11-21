@@ -723,7 +723,7 @@ window.MACERA_SEVIYELER = [
 "ikon": "🍗",
 "mini": "yilan",
 "hikaye": "Berkay'ın bütçesi belli: maaş gelir, Popeyes'e gider, kalanı alkole. Bu sefer de Popeyes'e daldı. Kovaları ye, uzadıkça kendine dolanma. 15 kova bitirince maaş da biter.",
-"ipucu": "Yılan: ← sola dön, → sağa dön. Duvara ve kendi kuyruğuna çarpma. 15 kova ye.",
+"ipucu": "Yılan: ↑ ↓ ← → (ya da WASD) ile yönlendir. Telefonda gitmek istediğin yere dokun. Duvara ve kuyruğuna çarpma. 15 kova ye.",
 "sozler": [
 "Popeyes'e parayı gömdüm",
 "Bir kova daha",

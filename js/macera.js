@@ -146,13 +146,14 @@
     const k = TUSLAR[e.code];
     if (k) { e.preventDefault(); if (k === "zipla" && !tus.zipla) ziplaBasildi = true; if (k === "at" && !tus.at) atBasildi = true; if (k === "sol" && !tus.sol) solBasildi = true; if (k === "sag" && !tus.sag) sagBasildi = true; tus[k] = true; }
     const rakam = /^(Digit|Numpad)([1-9])$/.exec(e.code); if (rakam && S && S.mini) { e.preventDefault(); sayiBasildi = Number(rakam[2]); }
+    if (S && S.mini && YON_TUS[e.code] && !e.repeat) { e.preventDefault(); if (yonKuyruk.length < 3) yonKuyruk.push(YON_TUS[e.code]); }
     if (e.code === "Escape" || e.code === "KeyP") duraklat();
     if ((e.code === "Enter" || e.code === "Space") && ekran) { e.preventDefault(); ekranTamam(); }
   });
   addEventListener("keyup", (e) => { const k = TUSLAR[e.code]; if (k) tus[k] = false; });
   document.querySelectorAll("[data-mc-tus]").forEach((b) => {
     const k = b.dataset.mcTus;
-    const bas = (e) => { e.preventDefault(); if (k === "zipla" && !tus.zipla) ziplaBasildi = true; if (k === "at") atBasildi = true; if (k === "sol") solBasildi = true; if (k === "sag") sagBasildi = true; tus[k] = true; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch { /* yok */ } if (ekran && k === "zipla") ekranTamam(); };
+    const bas = (e) => { e.preventDefault(); if (k === "zipla" && !tus.zipla) ziplaBasildi = true; if (k === "at") atBasildi = true; if (k === "sol") solBasildi = true; if (k === "sag") sagBasildi = true; if (S && S.mini && yonKuyruk.length < 3) yonKuyruk.push({ sol: [-1, 0], sag: [1, 0], zipla: [0, -1], at: [0, 1] }[k]); tus[k] = true; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch { /* yok */ } if (ekran && k === "zipla") ekranTamam(); };
     const birak = (e) => { e.preventDefault(); tus[k] = false; b.classList.remove("on"); };
     b.addEventListener("pointerdown", bas); b.addEventListener("pointerup", birak); b.addEventListener("pointercancel", birak); b.addEventListener("lostpointercapture", () => { tus[k] = false; b.classList.remove("on"); });
   });
@@ -472,7 +473,8 @@
   const yuvarlak = (x, y, w, h, r, renk) => { ctx.fillStyle = renk; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); };
   const yazi = (t, x, y, font, renk = "#fff", hiza = "center") => { ctx.font = font; ctx.fillStyle = renk; ctx.textAlign = hiza; ctx.fillText(t, x, y); ctx.textAlign = "left"; };
   const karistir = (l) => { const a = [...l]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  let solBasildi = false, sagBasildi = false, sayiBasildi = 0, tik = null;
+  let solBasildi = false, sagBasildi = false, sayiBasildi = 0, tik = null, yonKuyruk = [];
+  const YON_TUS = { ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0] };
 
   const MINI = {
     // ---- 1) Trafik: 3 şerit, kasksız motor, 85'i gör ----
@@ -883,17 +885,25 @@
 
     // ---- 10) Yılan: Popeyes peşinde ----
     yilan: {
-      kur: () => ({ govde: [[8, 7], [7, 7], [6, 7]], yon: [1, 0], adim: 0, yem: [16, 7], yenen: 0, buyu: 0 }),
+      kur: () => ({ govde: [[8, 7], [7, 7], [6, 7]], yon: [1, 0], adim: 0, yem: [16, 7], yenen: 0, buyu: 0, basladi: false }),
       guncelle(s, o, dt) {
-        if (solBasildi) o.yon = [o.yon[1], -o.yon[0]];
-        if (sagBasildi) o.yon = [-o.yon[1], o.yon[0]];
+        // yön tuşları (↑ ↓ ← →, WASD), ekrandaki tuşlar (⬆ yukarı, 🍔 aşağı) ya da yılanın başına göre dokunulan yer
+        if (tik) {
+          const hx = 72 + o.govde[0][0] * 34 + 17, hy = 70 + o.govde[0][1] * 34 + 17, dx = tik.x - hx, dy = tik.y - hy;
+          if (yonKuyruk.length < 3) yonKuyruk.push(Math.abs(dx) > Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)]);
+          tik = null;
+        }
+        if (!o.basladi) { if (yonKuyruk.length) o.basladi = true; else return; }
         o.adim += dt;
-        const ara = Math.max(0.075, 0.15 - o.yenen * 0.004);
+        const ara = Math.max(0.12, 0.22 - o.yenen * 0.005);
         if (o.adim < ara) return;
         o.adim = 0;
+        // kuyruktan geçerli ilk yönü al (tam ters yöne dönülmez)
+        while (yonKuyruk.length) { const d = yonKuyruk.shift(); if (d[0] !== -o.yon[0] || d[1] !== -o.yon[1]) { o.yon = d; break; } }
         const bas = [o.govde[0][0] + o.yon[0], o.govde[0][1] + o.yon[1]];
         if (bas[0] < 0 || bas[0] >= 24 || bas[1] < 0 || bas[1] >= 13) return ol("Duvara çarptın");
-        if (o.govde.some((p) => p[0] === bas[0] && p[1] === bas[1])) return ol("Kendini ısırdın");
+        const kuyrukKalkar = o.buyu === 0;
+        if (o.govde.some((p, i) => p[0] === bas[0] && p[1] === bas[1] && !(kuyrukKalkar && i === o.govde.length - 1))) return ol("Kendini ısırdın");
         o.govde.unshift(bas);
         if (bas[0] === o.yem[0] && bas[1] === o.yem[1]) {
           o.yenen++; o.buyu += 2; SES.burger();
@@ -912,9 +922,10 @@
         const b = o.govde[0];
         if (KAHRAMAN.complete) ctx.drawImage(KAHRAMAN, 72 + b[0] * 34 - 4, 70 + b[1] * 34 - 6, 42, 42);
         yazi("POPEYES", 480, 520, "900 26px sans-serif", "#fde68a");
+        if (!o.basladi) yazi("Başlamak için bir yön tuşuna bas", 480, 300, "900 28px sans-serif", "#7c2d12");
       },
       skor: (o) => `🍗 ${o.yenen}/15`,
-      gorev: () => "← sola dön, → sağa dön · 15 kova Popeyes ye, duvara ve kendine çarpma",
+      gorev: () => "↑ ↓ ← → ile yönlendir (telefonda gideceğin yere dokun) · 15 kova ye",
     },
 
     // ---- 11) Uyan: 04:50 servisi ----
@@ -1254,7 +1265,7 @@
   function kpssKutu(k) { return { x: 140 + (k % 2) * 350, y: 290 + Math.floor(k / 2) * 80, w: 330, h: 62 }; }
   function baskinKutu(i) { return { x: 270 + (i % 3) * 145, y: 80 + Math.floor(i / 3) * 150, w: 130, h: 130 }; }
 
-  function miniKur(s) { s.oyun = MINI[s.sv.mini].kur(s); s.konus = { x: 120, y: 400 }; }
+  function miniKur(s) { yonKuyruk = []; s.oyun = MINI[s.sv.mini].kur(s); s.konus = { x: 120, y: 400 }; }
   function miniGuncelle(dt) {
     const s = S;
     if (s.bitti) { solBasildi = sagBasildi = false; sayiBasildi = 0; tik = null; return; }
@@ -1264,7 +1275,7 @@
     if (s.sozSaat <= 0) { s.sozSaat = 8 + Math.random() * 6; if (!s.balon) soyle(rastgele(s.sv.sozler || SOZ.genel)); }
     s.sure += dt * 1000;
     MINI[s.sv.mini].guncelle(s, s.oyun, dt);
-    solBasildi = sagBasildi = ziplaBasildi = atBasildi = false; sayiBasildi = 0; tik = null;
+    solBasildi = sagBasildi = ziplaBasildi = atBasildi = false; sayiBasildi = 0; tik = null; if (s.sv.mini !== "yilan") yonKuyruk = [];
     parcaGuncelle(dt);
     s.sallanma = Math.max(0, s.sallanma - dt);
     if (s.mesaj) { s.mesaj.t -= dt; if (s.mesaj.t <= 0) s.mesaj = null; }
