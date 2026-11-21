@@ -210,7 +210,7 @@
   }
   // Boks sahnesi: tavandan zincirle sarkan deri torba + gardda duran çöp adam Berkay
   const BOKS_SAHNE = `
-<svg class="bx-svg" viewBox="0 0 380 270" role="img" aria-label="Berkay boks torbasına vuruyor">
+<svg class="bx-svg" viewBox="0 0 380 270" role="img" aria-label="Boks torbasına vuruyor">
   <defs>
     <linearGradient id="bxDeri" x1="0" x2="1">
       <stop offset="0" stop-color="#5e1414"/><stop offset=".28" stop-color="#b3261e"/>
@@ -222,6 +222,7 @@
     <radialGradient id="bxEldiven" cx=".35" cy=".35" r=".7">
       <stop offset="0" stop-color="#ff7466"/><stop offset=".6" stop-color="#d42a1f"/><stop offset="1" stop-color="#8e140d"/>
     </radialGradient>
+    <clipPath id="bxYuzKlip"><ellipse cx="120" cy="97" rx="21" ry="25.5"/></clipPath>
     <radialGradient id="bxGolge" cx=".5" cy=".5" r=".5">
       <stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
     </radialGradient>
@@ -266,30 +267,37 @@
   <g class="bx-adam" id="bxAdam" stroke-linecap="round" stroke-linejoin="round">
     <g class="bx-govde">
       <path class="bx-cizgi" d="M112 176l-20 58M112 176l26 30l-4 28" fill="none"/>
-      <path d="M100 168h26l-2 18h-24z" fill="#5a3fd4"/>
-      <path class="bx-cizgi" d="M116 122L112 172" fill="none"/>
+      <path d="M99 168h27l-2 18h-25z" fill="#2c2e36" stroke="#1b1726" stroke-width="2"/>
+      <!-- gövde: siyah tişört + neon şeritli gri iş yeleği -->
+      <path d="M115 116v9" stroke="#e2ae8a" stroke-width="7"/>
+      <path d="M100 129q16-8 31 0l-3 43h-26z" fill="#15151a" stroke="#1b1726" stroke-width="2.5"/>
+      <path d="M101 130q6-4 12-5l-1 47h-10z" fill="#8f959c" stroke="#1b1726" stroke-width="1.6"/>
+      <path d="M119 125q6 1 11 5l-3 42h-9z" fill="#8f959c" stroke="#1b1726" stroke-width="1.6"/>
+      <g stroke="#c8f025" stroke-width="2.6" fill="none">
+        <path d="M110 127l-1 45M121 126l-1 46"/>
+        <path d="M102 160h10M119 160h9"/>
+      </g>
       <g class="bx-kafa">
-        <circle cx="120" cy="100" r="17" class="bx-kafa-yuz"/>
-        <path d="M104 94c4-11 22-15 31-4" stroke="#5a3fd4" stroke-width="6" fill="none"/>
-        <g class="bx-goz-acik"><circle cx="126" cy="100" r="2.2"/><circle cx="133" cy="100" r="2.2"/></g>
-        <g class="bx-goz-x" stroke-width="2.2" fill="none"><path d="M123 97l5 5M128 97l-5 5M130 97l5 5M135 97l-5 5"/></g>
-        <path class="bx-agiz" d="M127 109q4 2 7 0" stroke-width="2" fill="none"/>
+        <ellipse cx="120" cy="97" rx="23" ry="27.5" fill="#2a1d17"/>
+        <image href="/images/boksor-yuz.jpg" x="98" y="70" width="44" height="54" preserveAspectRatio="xMidYMid slice" clip-path="url(#bxYuzKlip)"/>
+        <ellipse cx="120" cy="97" rx="21" ry="25.5" fill="none" stroke="#1b1726" stroke-width="2.5"/>
+        <g class="bx-goz-x" stroke-width="2.6" fill="none"><path d="M109 96l6 6M115 96l-6 6M126 96l6 6M132 96l-6 6"/></g>
       </g>
       <g class="bx-kol-arka">
-        <path class="bx-cizgi" d="M116 130l14 16l6-24" fill="none"/>
+        <path class="bx-kol-ten" d="M116 130l14 16l6-24" fill="none"/><path class="bx-kol-kol" d="M116 130l14 16l6-24" pathLength="1" fill="none"/>
         <circle cx="137" cy="117" r="10" fill="url(#bxEldiven)"/>
       </g>
       <g class="bx-kol-gard">
-        <path class="bx-cizgi" d="M116 128l24 10l8-20" fill="none"/>
+        <path class="bx-kol-ten" d="M116 128l24 10l8-20" fill="none"/><path class="bx-kol-kol" d="M116 128l24 10l8-20" pathLength="1" fill="none"/>
         <circle cx="150" cy="113" r="11" fill="url(#bxEldiven)"/>
       </g>
       <g class="bx-kol-yumruk">
-        <path class="bx-cizgi" d="M116 128l40 0l42-6" fill="none"/>
+        <path class="bx-kol-ten" d="M116 128l40 0l42-6" fill="none"/><path class="bx-kol-kol" d="M116 128l40 0l42-6" pathLength="1" fill="none"/>
         <circle cx="205" cy="121" r="12" fill="url(#bxEldiven)"/>
         <path d="M193 116h-14M195 126h-18M197 121h-26" stroke="#d42a1f" stroke-opacity=".45" stroke-width="2.5"/>
       </g>
       <g class="bx-kol-aci">
-        <path class="bx-cizgi" d="M116 128l20 16l2 14" fill="none"/>
+        <path class="bx-kol-ten" d="M116 128l20 16l2 14" fill="none"/><path class="bx-kol-kol" d="M116 128l20 16l2 14" pathLength="1" fill="none"/>
         <circle cx="138" cy="162" r="11" fill="url(#bxEldiven)"/>
         <text x="160" y="150" font-size="13" font-weight="900" fill="#c8412c" font-family="Bricolage Grotesque, Manrope, sans-serif">ÇIT!</text>
         <path d="M150 168l4-4M156 172l6-2M146 176l2 6" stroke="#c8412c" stroke-width="2.4"/>

@@ -2526,3 +2526,11 @@ a.hero-stat:hover { box-shadow: 0 0 0 2px var(--accent-soft); }
 .it-admin p { margin: 0; }
 .it-admin-alt { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .it-admin-alt small { margin-right: auto; }
+/* Boks makinesi: fotoğraflı karakter */
+.bx-kol-ten { stroke: #e2ae8a; stroke-width: 7; }
+.bx-kol-kol { stroke: #15151a; stroke-width: 8.5; stroke-dasharray: .32 1; }
+.bx-kafa { transform-origin: 120px 120px; transition: transform .12s ease-out; }
+.bx-goz-x { stroke: #fff; filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000); }
+.bx-svg.is-aci .bx-kafa { transform: rotate(-10deg); }
+.bx-svg.is-aci .bx-kafa image { filter: saturate(1.4) hue-rotate(-12deg) brightness(.95); }
+.bx-svg.is-vur .bx-kafa { transform: rotate(4deg); }
