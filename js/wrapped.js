@@ -80,7 +80,7 @@
     // Kumarhane
     if (y.kumarOyun) {
       const net = (y.kumarKazanc || 0) - (y.kumarBahis || 0);
-      const enCok = [["Crash", y.crashOyun], ["Mines", y.minesOyun], ["Plinko", y.plinkoOyun], ["Blackjack", y.bjOyun]].filter((x) => x[1]).sort((a, b) => b[1] - a[1])[0];
+      const enCok = [["Crash", y.crashOyun], ["Mines", y.minesOyun], ["Plinko", y.plinkoOyun], ["Blackjack", y.bjOyun], ["Rulet", y.ruletOyun], ["Slot", y.slotOyun]].filter((x) => x[1]).sort((a, b) => b[1] - a[1])[0];
       kart("pembe", "🎰", "KUMARHANE", `${sayi(y.kumarOyun)} el oynadın`, `${sayi(y.kumarBahis || 0)} BERKAY yatırdın, net ${isaretli(net)}. ${net >= 0 ? "Kasayı soydun!" : "Kasa her zaman kazanır."}`,
         enCok ? `En çok oynadığın: ${enCok[0]} (${sayi(enCok[1])} kez)` : null);
       const rekorlar = [];
@@ -88,6 +88,8 @@
       if (y.plinkoEnYuksek > 1) rekorlar.push(`🔻 Plinko'da en iyi topun ${sayi(y.plinkoEnYuksek, 1)}x`);
       if (y.minesEnCok) rekorlar.push(`💣 Mines'ta bir oyunda ${y.minesEnCok} elmas`);
       if (y.bjBlackjack) rekorlar.push(`🃏 ${y.bjBlackjack} kez blackjack yaptın`);
+      if (y.slotJackpot) rekorlar.unshift(`💰 Slotta ${y.slotJackpot} kez JACKPOT patlattın!`);
+      if (y.ruletSayi) rekorlar.push(`🎡 Rulette ${y.ruletSayi} kez sayıyı tutturdun`);
       if (y.enBuyukKazanc > 0) rekorlar.push(`💰 Tek seferde en büyük kârın +${sayi(y.enBuyukKazanc)} BERKAY`);
       if (rekorlar.length) kart("lacivert", "🏅", "KUMARHANE REKORLARIN", rekorlar[0], rekorlar.slice(1).join(" · "));
     }
@@ -108,6 +110,12 @@
     const oyunlar = Object.entries(y.oyunlar || {}).sort((a, b) => b[1] - a[1]);
     if (oyunlar[0]) kucuk.push(`🥊 en çok oynadığın oyun: ${({ boks: "Boks", penalti: "Penaltı", motor: "Kasksız 85", g2048: "2048", yilan: "Yılan" })[oyunlar[0][0]] || oyunlar[0][0]}`);
     if (kucuk.length) kart("turkuaz", "✨", "BİR DE BUNLAR VAR", kucuk[0], kucuk.slice(1).join(" · "));
+    // Turnuvalar
+    if (y.turnuva) {
+      const tk = (c.turnuvaKupa || []).filter((x) => String(x.hafta).startsWith(String(YIL)));
+      kart("lacivert", "🏆", "TURNUVALAR", `${y.turnuva} turnuvaya katıldın`, tk.length ? `${tk.length} kez ilk 3'e girdin, ${tk.filter((x) => x.sira === 1).length} kez şampiyon oldun.` : "Kupa çıkmadı ama katılmak da bir şeydir 🙂",
+        tk.length ? `Toplam ödül: +${sayi(tk.reduce((t, x) => t + (x.odul || 0), 0))} BERKAY` : null);
+    }
     // Seviye + lig
     const sv = Oyuncu.seviye(c.xp), u = Oyuncu.unvan(sv);
     const kupalar = (c.ligKupa || []).filter((x) => String(x.hafta).startsWith(String(YIL)));

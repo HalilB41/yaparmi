@@ -92,7 +92,32 @@
     } catch (err) { console.warn("Oyun ödülü:", err.message); }
   }
   // Sayfadan çıkarken bekleyenleri hemen gönder
-  addEventListener("pagehide", () => Object.keys(bekleyen).forEach(gonder));
+  addEventListener("pagehide", () => { Object.keys(bekleyen).forEach(gonder); if (tuBekleyen) tuGonder(); });
+
+  // ---------------- Turnuva skoru (kumarhane → Turnuva'ya katılanlar) ----------------
+  // Katılım bilgisi localStorage'da ("hafta|oyun"); katılmayan hiç istek atmaz.
+  let tuBekleyen = null, tuGiden = 0, tuZaman = null;
+  function turnuvaKaydi() { try { const [k, oyun] = String(localStorage.getItem("yaparmi_turnuva") || "").split("|"); return k ? { k, oyun } : null; } catch { return null; } }
+  function turnuvaSkor(oyun, deger) {
+    deger = Math.round(Number(deger) || 0);
+    const t = turnuvaKaydi();
+    if (!deger || !t || t.oyun !== oyun || !kayitli()) return;
+    const haftaBitis = Date.parse(t.k + "T00:00:00Z") - 3 * 3600000 + 7 * 86400000;
+    if (Date.now() > haftaBitis) return;
+    if (deger <= tuGiden || (tuBekleyen && deger <= tuBekleyen.deger)) return;
+    tuBekleyen = { oyun, deger };
+    clearTimeout(tuZaman); tuZaman = setTimeout(tuGonder, 4000);
+  }
+  async function tuGonder() {
+    const b = tuBekleyen; tuBekleyen = null;
+    if (!b || b.deger <= tuGiden) return;
+    tuGiden = b.deger;
+    try {
+      const r = await api("turnuvaSkor", { oyun: b.oyun, skor: b.deger });
+      if (r.katilmadi) { try { localStorage.removeItem("yaparmi_turnuva"); } catch { /* yok */ } return; }
+      if (r.skor && r.sira) toast(`🏆 Turnuva: yeni en iyi skorun ${r.skor.toLocaleString("tr-TR")} · ${r.sira}. sıradasın (${r.kisi} kişi)`, 4500);
+    } catch (err) { console.warn("Turnuva:", err.message); }
+  }
 
   // ---------------- Özet + kendi cüzdanım + isim süsleri ----------------
   // Firestore okuma kotası için: herkesin cüzdanı OKUNMAZ. Sunucu 10 dk'da bir borsa/ozet belgesi
@@ -232,5 +257,5 @@
   }
 
   window.EkonomiApi = api;
-  window.Ekonomi = { api, toast, skor, cuzdanlar, cuzdanim, ozet, isim, kozmetikBul, bugun };
+  window.Ekonomi = { api, toast, skor, turnuvaSkor, cuzdanlar, cuzdanim, ozet, isim, kozmetikBul, bugun };
 })();

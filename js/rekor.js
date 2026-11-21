@@ -24,6 +24,7 @@
     skor = Math.max(0, Math.min(o ? o.ust : 0, Math.round(skor)));
     if (!o || !skor) return;
     if (window.Ekonomi) Ekonomi.skor(oyun, skor); // kişisel rekorsa BERKAY ödülü (js/ekonomi.js)
+    if (window.Ekonomi && Ekonomi.turnuvaSkor) Ekonomi.turnuvaSkor(oyun, skor); // haftalık turnuvaya katıldıysa
     if (oyun === "penalti") lsMax("spor_rekor_penalti", skor);
     if (oyun === "motor") lsMax("spor_rekor_motor", skor);
     const p = profil();

@@ -24,6 +24,7 @@
     if (!location.hash.startsWith("#d=") && location.hash.slice(1) !== ad) history.replaceState(null, "", "#" + ad);
     window.dispatchEvent(new Event("resize")); // gizliyken boyutu 0 olan tuvaller toparlansın
     if (ad === "plinko") plinkoCiz();
+    window.dispatchEvent(new CustomEvent("km-sekme", { detail: ad }));
     if (kaydir) document.querySelector(".km-sekmeler").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   sekmeler.forEach((b) => b.addEventListener("click", () => ac(b.dataset.oyun)));

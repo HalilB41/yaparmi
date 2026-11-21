@@ -651,8 +651,17 @@ async function ozetHesapla(db, now, eski) {
     ligGecen = { k: eski.lig.k, kazananlar };
     ligOdendi = eski.lig.k;
   }
+  // Turnuva: geçen haftanınki ödenmediyse öde (belge içinde "odendi" işaretiyle, iki kez ödenmez)
+  const oncekiHafta = haftaAnahtari(now - 7 * 86400_000);
+  let turnuvaOdendi = (eski && eski.turnuvaOdendi) || null;
+  if (turnuvaOdendi !== oncekiHafta) {
+    try { await turnuvaOde(db, now, oncekiHafta); turnuvaOdendi = oncekiHafta; } catch (e) { console.error("turnuva ödemesi:", e.message); }
+  }
+  const kumarS = await db.collection("borsa").doc("kumar").get();
+  const kumarV = kumarS.exists ? kumarS.data() : {};
   const ozet = {
-    t: now, gecmisT, hafta: haftaListe, kozmetik, kisi, lig, ligGecen, ligOdendi,
+    t: now, gecmisT, hafta: haftaListe, kozmetik, kisi, lig, ligGecen, ligOdendi, turnuvaOdendi,
+    jackpot: kumarV.jackpot || SLOT_JACKPOT_TABAN, sonJackpot: kumarV.sonJackpot || null,
     zengin: kisiler.slice(0, 20).map((k) => ({ uid: k.uid, ad: k.ad, deger: k.deger, kozmetik: k.kozmetik })),
     olay: (eski && eski.olay) || null,
   };
@@ -675,6 +684,32 @@ async function ligOde(db, now, hafta, kazananlar) {
       tx.set(s.ref, c);
       k.loglar.push({ uid: kz.uid, ad: kz.ad, tur: "lig", detay: `Haftalık lig ${i + 1}.'si (${hafta} haftası, ${kz.xp} XP) → +${odul} BERKAY`, bkc: odul, btl: 0 });
     });
+    return null;
+  });
+}
+
+async function turnuvaOde(db, now, hk) {
+  const tRef = db.collection("borsa_turnuva").doc(hk);
+  const on = await tRef.get();
+  if (!on.exists || on.data().odendi) return;
+  const { havuz, kazananlar } = turnuvaOdulleri(on.data());
+  const refs = { t: tRef };
+  kazananlar.forEach((k, i) => { refs["w" + i] = db.collection("borsa_cuzdan").doc(k.uid); });
+  await islem(db, now, refs, async ({ tx, d, ek, k }) => {
+    if (!ek.t.exists || ek.t.data().odendi) return null;
+    const odenen = [];
+    kazananlar.forEach((kz, i) => {
+      const s = ek["w" + i];
+      if (!s.exists) return;
+      const c = s.data();
+      const odul = kasaTransfer(d, c, kz.odul);
+      c.turnuvaKupa = [{ hafta: hk, oyun: ek.t.data().oyun, sira: i + 1, skor: kz.skor, odul }, ...(c.turnuvaKupa || [])].slice(0, 20);
+      oyuncuOlay(c, "turnuvaKupa", { sira: i + 1 }, now);
+      tx.set(s.ref, c);
+      odenen.push({ ad: kz.ad, skor: kz.skor, odul });
+      k.loglar.push({ uid: kz.uid, ad: kz.ad, tur: "turnuva", detay: `Turnuva ${i + 1}.'si (${hk}, skor ${kz.skor}) → +${odul} BERKAY`, bkc: odul, btl: 0 });
+    });
+    tx.set(tRef, { odendi: true, havuzSon: havuz, kazananlar: odenen }, { merge: true });
     return null;
   });
 }
@@ -846,7 +881,7 @@ async function kullaniciIslem(db, kim, govde, now) {
 // Hepsi cüzdanda tutulur, ek okuma gerekmez:
 //   c.xp (toplam), c.hafta {k: haftanın pazartesisi, xp}, c.gorev {g: gün, s: {id: ilerleme}, al: [alınanlar]},
 //   c.xpGun {g, kumar} (kumardan günlük XP sınırı), c.yil {"2026": {...sayaçlar}} (Berkay Wrapped için).
-const XP_ODUL = { islem: 5, market: 10, gunluk: 20, oyun: 5, cark: 5, tahmin: 10, duello: 10, kumar: 2, kumarKazanc: 3, gorev: 25 };
+const XP_ODUL = { islem: 5, market: 10, gunluk: 20, oyun: 5, cark: 5, tahmin: 10, duello: 10, kumar: 2, kumarKazanc: 3, gorev: 25, turnuva: 15 };
 const KUMAR_XP_GUNLUK = 150; // kumar spamıyla seviye kasılmasın
 function seviyeHesap(xp) { return Math.floor(Math.sqrt(Math.max(0, xp || 0) / 50)) + 1; } // 2:50, 3:200, 5:800, 10:4050 XP
 function seviyeCarkBonus(sv) { return (sv >= 5 ? 1 : 0) + (sv >= 10 ? 1 : 0) + (sv >= 20 ? 1 : 0); } // seviyeyle bedava çark hakkı
@@ -887,7 +922,7 @@ function oyuncuOlay(c, tur, v, now) {
   const gun = gunAnahtari(now);
   // XP
   let xp = 0;
-  if (["crash", "mines", "plinko", "bj"].includes(tur)) {
+  if (["crash", "mines", "plinko", "bj", "rulet", "slot"].includes(tur)) {
     c.xpGun = c.xpGun && c.xpGun.g === gun ? { ...c.xpGun } : { g: gun, kumar: 0 };
     const istenen = XP_ODUL.kumar + (v.kazanc > (v.bahis || 0) ? XP_ODUL.kumarKazanc : 0);
     xp = Math.max(0, Math.min(istenen, KUMAR_XP_GUNLUK - c.xpGun.kumar));
@@ -917,12 +952,12 @@ function oyuncuOlay(c, tur, v, now) {
   art("xp", xp);
   if (y.sonGun !== gun) { y.sonGun = gun; art("gun"); }
   if (tur === "islem") { art("islem"); if (v.coin) { y.coinler = Object.assign({}, y.coinler || {}); y.coinler[v.coin] = (y.coinler[v.coin] || 0) + 1; } }
-  if (["crash", "mines", "plinko", "bj"].includes(tur)) { art("kumarOyun"); art(tur + "Oyun"); art("kumarBahis", v.bahis || 0); if (v.kazanc != null) art("kumarKazanc", v.kazanc); }
+  if (["crash", "mines", "plinko", "bj", "rulet", "slot"].includes(tur)) { art("kumarOyun"); art(tur + "Oyun"); art("kumarBahis", v.bahis || 0); if (v.kazanc != null) art("kumarKazanc", v.kazanc); }
   if (tur === "crashCek") { art("kumarKazanc", v.odeme || 0); enb("crashEnYuksek", v.carpan || 0); }
   if (tur === "mines" && !v.patladi) enb("minesEnCok", v.acilan || 0);
   if (tur === "plinko") enb("plinkoEnYuksek", v.carpan || 0);
   if (tur === "bj") { if (v.sonuc > 0) art("bjKazan"); if (v.blackjack) art("bjBlackjack"); }
-  if (["crash", "mines", "plinko", "bj"].includes(tur) || tur === "crashCek") enb("enBuyukKazanc", (v.kazanc || v.odeme || 0) - (v.bahis || 0));
+  if (["crash", "mines", "plinko", "bj", "rulet", "slot"].includes(tur) || tur === "crashCek") enb("enBuyukKazanc", (v.kazanc || v.odeme || 0) - (v.bahis || 0));
   if (tur === "duello") { art(v.kazandi ? "duelloG" : "duelloM"); if (v.rakip) { y.rakipler = Object.assign({}, y.rakipler || {}); const r = (y.rakipler[v.rakip] ||= { g: 0, m: 0 }); y.rakipler[v.rakip] = { g: r.g + (v.kazandi ? 1 : 0), m: r.m + (v.kazandi ? 0 : 1) }; } }
   if (tur === "tahmin") art("tahmin");
   if (tur === "cark") { art("cark"); art("carkKazanc", v.miktar || 0); }
@@ -930,6 +965,10 @@ function oyuncuOlay(c, tur, v, now) {
   if (tur === "oyun") { y.oyunlar = Object.assign({}, y.oyunlar || {}); y.oyunlar[v.oyun] = (y.oyunlar[v.oyun] || 0) + 1; }
   if (tur === "market") art("market");
   if (tur === "gorev") art("gorev");
+  if (tur === "slot" && v.jackpot) art("slotJackpot");
+  if (tur === "rulet" && v.kazanc >= v.bahis * 10) art("ruletSayi");
+  if (tur === "turnuva") art("turnuva");
+  if (tur === "turnuvaKupa") { art("turnuvaKupa"); enb("turnuvaEnIyi", 4 - (v.sira || 3)); }
 }
 
 // ---------------- Kumarhane: Crash + Düello ----------------
@@ -1012,6 +1051,90 @@ const PLINKO = {
   orta: [30, 10, 4, 2, 1.1, 0.6, 0.3, 0.6, 1.1, 2, 4, 10, 30],
   yuksek: [100, 20, 8, 2.2, 0.6, 0.3, 0.2, 0.3, 0.6, 2.2, 8, 20, 100],
 };
+// RULET (canlı, herkes aynı turda): 30 sn'lik turlar, ilk 20 sn bahis, sonra 6 sn çark döner.
+// Sonuç turun numarasından gizli anahtarla (HMAC) çıkar, bahis kapanmadan kimse bilemez. Avrupa ruleti (tek sıfır = "Berkay sıfırı").
+const RULET = { TUR_MS: 30_000, BAHIS_MS: 20_000, DONUS_MS: 6_000, MAX: 500, MAX_ADET: 30 };
+const RULET_KIRMIZI = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
+function ruletSonuc(tur) { return Math.floor(hmacSayilar("rulet:" + tur, 1)[0] * 37); }
+function ruletAn(now) {
+  const tur = Math.floor(now / RULET.TUR_MS), bas = tur * RULET.TUR_MS, gecen = now - bas;
+  const faz = gecen < RULET.BAHIS_MS ? "bahis" : gecen < RULET.BAHIS_MS + RULET.DONUS_MS ? "donus" : "sonuc";
+  return { tur, bas, faz, sonuc: faz === "bahis" ? null : ruletSonuc(tur) };
+}
+// Bahis çeşitleri → kazanınca bahsin kaç katı geri döner
+function ruletCarpan(b, n) {
+  const d = String(b.deger);
+  if (b.tip === "sayi") return Number(d) === n ? 36 : 0;
+  if (n === 0) return 0;
+  if (b.tip === "renk") return (RULET_KIRMIZI.has(n) ? "kirmizi" : "siyah") === d ? 2 : 0;
+  if (b.tip === "tekcift") return (n % 2 ? "tek" : "cift") === d ? 2 : 0;
+  if (b.tip === "yarim") return (n <= 18 ? "1" : "2") === d ? 2 : 0;
+  if (b.tip === "duzine") return String(Math.ceil(n / 12)) === d ? 3 : 0;
+  return 0;
+}
+function ruletGecerli(b) {
+  const d = String(b && b.deger);
+  if (b.tip === "sayi") return /^\d{1,2}$/.test(d) && Number(d) <= 36;
+  return ({ renk: ["kirmizi", "siyah"], tekcift: ["tek", "cift"], yarim: ["1", "2"], duzine: ["1", "2", "3"] })[b.tip]?.includes(d) || false;
+}
+// Turu biten açık bahisleri sonuçlandır
+function ruletKapat(c, now, ode) {
+  const r = c.rulet;
+  if (!r || r.durum !== "acik") return null;
+  const an = ruletAn(now);
+  if (r.tur === an.tur && an.faz === "bahis") return null;
+  const n = ruletSonuc(r.tur);
+  let odeme = 0;
+  for (const b of r.bahisler) odeme += b.miktar * ruletCarpan(b, n);
+  odeme = ode(odeme);
+  const bahis = r2(r.bahisler.reduce((t, b) => t + b.miktar, 0));
+  c.rulet = { ...r, durum: "bitti", sonuc: n, odeme };
+  const ozet = { tur: r.tur, sonuc: n, bahis, odeme, t: now };
+  c.ruletGecmis = [ozet, ...(c.ruletGecmis || [])].slice(0, 10);
+  oyuncuOlay(c, "rulet", { bahis, kazanc: odeme, sayi: n }, now);
+  return ozet;
+}
+
+// SLOT: 3 makara, her makarada aynı ağırlıklar (toplam 28). Ortalama geri ödeme ≈ %94 + jackpot payı (%2).
+// Üç Berkay = JACKPOT (her çevirmenin %2'si birikir). Ödemeler kasadan.
+const SLOT_SEMBOL = ["kiraz", "limon", "burger", "at", "para", "yedi", "berkay"];
+const SLOT_AGIRLIK = [8, 7, 5, 4, 2, 1, 1];
+const SLOT_UC = { kiraz: 6, limon: 10, burger: 18, at: 30, para: 80, yedi: 250 };
+const SLOT_JACKPOT_TABAN = 1000, SLOT_JACKPOT_PAY = 0.02, SLOT_MAX = 200;
+function slotSembol(x) {
+  let t = x * 28;
+  for (let i = 0; i < SLOT_SEMBOL.length; i++) { if (t < SLOT_AGIRLIK[i]) return SLOT_SEMBOL[i]; t -= SLOT_AGIRLIK[i]; }
+  return SLOT_SEMBOL[0];
+}
+function slotDegerlendir(s) {
+  const [a, b, c] = s;
+  if (a === b && b === c) return a === "berkay" ? { jackpot: true, carpan: 0, ad: "JACKPOT" } : { carpan: SLOT_UC[a], ad: "Üçlü " + a };
+  const bk = s.filter((x) => x === "berkay").length;
+  if (bk === 2) return { carpan: 15, ad: "İki Berkay" };
+  if (s.filter((x) => x === "kiraz").length === 2) return { carpan: 1.8, ad: "İki kiraz" };
+  if (bk === 1) return { carpan: 0.5, ad: "Bir Berkay" };
+  return { carpan: 0, ad: null };
+}
+
+// TURNUVA: haftalık, oyunu haftaya göre değişir (Spor sayfası: Boks → Penaltı → Kasksız 85). Giriş ücreti kasaya girer; hafta bitince
+// havuz (girişler + en az 3 kişi katıldıysa kasadan bonus) ilk 3'e %60/%25/%15 dağıtılır.
+const TURNUVA = { GIRIS: 50, BONUS: 250, PAY: [0.6, 0.25, 0.15], UST: { boks: 999, penalti: 1000, motor: 1500 } };
+const TURNUVA_SIRA = ["boks", "penalti", "motor"];
+function turnuvaOyunu(hk) { return TURNUVA_SIRA[Math.floor(Date.parse(hk + "T00:00:00Z") / (7 * 86400_000)) % 3]; }
+function turnuvaListe(t) {
+  return Object.entries((t && t.katilimci) || {}).map(([uid, x]) => ({ uid, ad: x.ad, skor: x.skor || 0, t: x.t || 0 }))
+    .sort((a, b) => b.skor - a.skor || a.t - b.t);
+}
+function turnuvaOdulleri(t) {
+  const l = turnuvaListe(t).filter((x) => x.skor > 0);
+  const havuz = r2((t.havuz || 0) + (Object.keys(t.katilimci || {}).length >= 3 ? TURNUVA.BONUS : 0));
+  const kazananlar = l.slice(0, 3);
+  const paylar = kazananlar.map((_, i) => TURNUVA.PAY[i]);
+  const artan = TURNUVA.PAY.slice(kazananlar.length).reduce((a, b) => a + b, 0);
+  if (paylar.length) paylar[0] += artan;
+  return { havuz, kazananlar: kazananlar.map((k, i) => ({ ...k, odul: Math.floor(havuz * paylar[i]) })) };
+}
+
 // Kart: 0..51 → değer = i % 13 (0 = As, 9..12 = 10/J/Q/K)
 function bjDeste(g, uid) { return karistir(52, `bj:${uid}:${g.id}`); }
 function bjToplam(kartlar) {
@@ -1054,10 +1177,17 @@ async function kumarIslem(db, kim, govde, now) {
     for (let i = 1; i <= 15; i++) gecmis.push({ tur: an.tur - i, nokta: crashNoktasi(an.tur - i) });
     return { ok: true, sunucu: now, tur: an.tur, bas: an.bas, faz: an.faz, carpan: an.carpan, nokta: an.faz === "dustu" ? an.nokta : null, gecmis, ayar: { ...CRASH, UST: CRASH_UST } };
   }
+  if (tur === "ruletDurum") {
+    // Veritabanına dokunmaz. Sonuç sadece bahisler kapandıktan sonra verilir.
+    const an = ruletAn(now);
+    const gecmis = [];
+    for (let i = 1; i <= 15; i++) gecmis.push({ tur: an.tur - i, sonuc: ruletSonuc(an.tur - i) });
+    return { ok: true, sunucu: now, tur: an.tur, bas: an.bas, faz: an.faz, sonuc: an.sonuc, gecmis, ayar: RULET };
+  }
 
   const cuzRef = db.collection("borsa_cuzdan").doc(kim.uid);
   const kumarRef = db.collection("borsa").doc("kumar");
-  const kasaYaz = (tx, x) => { if (x) tx.set(kumarRef, { bekleyen: FieldValue.increment(r6(x)) }, { merge: true }); };
+  const kasaYaz = (tx, x, ek) => { if (x || ek) tx.set(kumarRef, { ...(x ? { bekleyen: FieldValue.increment(r6(x)) } : {}), ...(ek || {}) }, { merge: true }); };
   if (tur === "crashBahis" || tur === "crashCek") {
     return db.runTransaction(async (tx) => {
       const s = await tx.get(cuzRef);
@@ -1109,9 +1239,11 @@ async function kumarIslem(db, kim, govde, now) {
   // ---------------- MINES / PLINKO / BLACKJACK ----------------
   // Bomba yerleri ve deste, oyun kimliğinden sunucunun gizli anahtarıyla (HMAC) üretilir: cüzdanda sadece
   // kimlik ve açılan kutular/kartlar durur, cüzdanı okuyan biri bile bombaları ya da sıradaki kartı göremez.
-  if (["minesBasla", "minesAc", "minesCek", "plinko", "bjBasla", "bjKart", "bjDur", "bjIkiye"].includes(tur)) {
+  if (["minesBasla", "minesAc", "minesCek", "plinko", "slot", "bjBasla", "bjKart", "bjDur", "bjIkiye"].includes(tur)) {
     return db.runTransaction(async (tx) => {
       const s = await tx.get(cuzRef);
+      const kumarSnap = tur === "slot" ? await tx.get(kumarRef) : null;
+      let kumarEk = null;
       if (!s.exists) throw new Hata("Önce borsaya bir kez gir (cüzdanın açılsın).");
       const c = s.data();
       if (now - (c.sonKumar || 0) < 300) throw new Hata("Biraz yavaş 🙂");
@@ -1160,6 +1292,19 @@ async function kumarIslem(db, kim, govde, now) {
           oyuncuOlay(c, "mines", { bahis: g.miktar, kazanc: odeme, acilan: g.acilan.length }, now);
         }
         cevap = { ok: true, mines: minesGorunum(c.mines, kim.uid) };
+      } else if (tur === "slot") {
+        const m = bahisAl(govde.miktar, SLOT_MAX);
+        const sayilar = [0, 1, 2].map(() => randomInt(0, 2 ** 47) / 2 ** 47);
+        const semboller = sayilar.map(slotSembol);
+        const sonuc = slotDegerlendir(semboller);
+        let jackpot = kumarSnap && kumarSnap.exists && kumarSnap.data().jackpot > 0 ? kumarSnap.data().jackpot : SLOT_JACKPOT_TABAN;
+        jackpot = r2(jackpot + m * SLOT_JACKPOT_PAY);
+        let odeme = 0, jackpotKazandi = 0;
+        if (sonuc.jackpot) { jackpotKazandi = ode(jackpot); odeme = jackpotKazandi; jackpot = SLOT_JACKPOT_TABAN; }
+        else odeme = ode(m * sonuc.carpan);
+        kumarEk = { jackpot, ...(jackpotKazandi ? { sonJackpot: { ad: kim.ad, miktar: jackpotKazandi, t: now } } : {}) };
+        oyuncuOlay(c, "slot", { bahis: m, kazanc: odeme, jackpot: !!jackpotKazandi }, now);
+        cevap = { ok: true, semboller, carpan: sonuc.jackpot ? r2(odeme / m) : sonuc.carpan, ad: sonuc.ad, odeme, jackpot, jackpotKazandi };
       } else if (tur === "plinko") {
         const risk = ["dusuk", "orta", "yuksek"].includes(govde.risk) ? govde.risk : "orta";
         const m = bahisAl(govde.miktar);
@@ -1200,7 +1345,96 @@ async function kumarIslem(db, kim, govde, now) {
         cevap = { ok: true, bj: bjGorunum(c.bj, kim.uid) };
       }
       tx.set(cuzRef, c);
+      kasaYaz(tx, kasa.v, kumarEk);
+      cevap.cuzdan = cuzdanCevap(c);
+      return cevap;
+    });
+  }
+
+  // RULET: bahisler cüzdanda (c.rulet) tutulur; tur bitince "ruletTopla" ya da bir sonraki bahis sonuçlandırır.
+  if (tur === "ruletBahis" || tur === "ruletTopla") {
+    return db.runTransaction(async (tx) => {
+      const s = await tx.get(cuzRef);
+      if (!s.exists) throw new Hata("Önce borsaya bir kez gir (cüzdanın açılsın).");
+      const c = s.data();
+      if (now - (c.sonKumar || 0) < 300) throw new Hata("Biraz yavaş 🙂");
+      c.sonKumar = now;
+      const kasa = { v: 0 };
+      const ode = (x) => { x = Math.min(KUMAR_MAX_ODEME, r2(x)); if (x > 0) { c.bkc = r6((c.bkc || 0) + x); kasa.v -= x; } return x; };
+      const kapanan = ruletKapat(c, now, ode);
+      const an = ruletAn(now);
+      if (tur === "ruletBahis") {
+        if (an.faz !== "bahis") throw new Hata("Bahisler kapandı, çark dönüyor. Sonraki turu bekle.");
+        const yeni = (Array.isArray(govde.bahisler) ? govde.bahisler : []).map((b) => ({ tip: String(b.tip), deger: String(b.deger), miktar: Math.round(sayi(b.miktar) * 100) / 100 }));
+        if (!yeni.length) throw new Hata("Önce masaya fiş koy.");
+        for (const b of yeni) { if (!ruletGecerli(b)) throw new Hata("Geçersiz bahis."); if (!(b.miktar >= 1)) throw new Hata("Fiş en az 1 BERKAY."); }
+        const r = c.rulet && c.rulet.tur === an.tur && c.rulet.durum === "acik" ? { ...c.rulet, bahisler: [...c.rulet.bahisler] } : { tur: an.tur, bahisler: [], durum: "acik", t: now };
+        // aynı yere konan fişleri birleştir
+        for (const b of yeni) {
+          const v = r.bahisler.find((x) => x.tip === b.tip && x.deger === b.deger);
+          if (v) v.miktar = r2(v.miktar + b.miktar); else r.bahisler.push(b);
+        }
+        if (r.bahisler.length > RULET.MAX_ADET) throw new Hata(`Bir turda en fazla ${RULET.MAX_ADET} farklı yere bahis.`);
+        const ek = r2(yeni.reduce((t, b) => t + b.miktar, 0));
+        const toplam = r2(r.bahisler.reduce((t, b) => t + b.miktar, 0));
+        if (toplam > RULET.MAX) throw new Hata(`Bir turda toplam en fazla ${RULET.MAX} BERKAY.`);
+        if (ek > (c.bkc || 0) + 1e-9) throw new Hata("Yeterli BERKAY'ın yok.");
+        c.bkc = r6(c.bkc - ek); kasa.v += ek;
+        c.rulet = r;
+      }
+      tx.set(cuzRef, c);
       kasaYaz(tx, kasa.v);
+      return { ok: true, kapanan, rulet: c.rulet || null, gecmis: c.ruletGecmis || [], cuzdan: cuzdanCevap(c) };
+    });
+  }
+
+  // TURNUVA (haftalık 2048 / Yılan)
+  if (tur === "turnuvaDurum" || tur === "turnuvaKatil" || tur === "turnuvaSkor") {
+    const hk = haftaAnahtari(now), oyun = turnuvaOyunu(hk);
+    const tRef = db.collection("borsa_turnuva").doc(hk);
+    if (tur === "turnuvaDurum") {
+      const onceki = haftaAnahtari(now - 7 * 86400_000);
+      const [ts, os] = await Promise.all([tRef.get(), db.collection("borsa_turnuva").doc(onceki).get()]);
+      const t = ts.exists ? ts.data() : { havuz: 0, katilimci: {} };
+      const liste = turnuvaListe(t);
+      const sira = liste.findIndex((x) => x.uid === kim.uid);
+      const o = os.exists ? os.data() : null;
+      return { ok: true, k: hk, oyun, bitis: Date.parse(hk + "T00:00:00Z") - 3 * 3600_000 + 7 * 86400_000, giris: TURNUVA.GIRIS, bonus: TURNUVA.BONUS, pay: TURNUVA.PAY,
+        havuz: r2(t.havuz || 0), kisi: liste.length, liste: liste.slice(0, 20).map(({ ad, skor }) => ({ ad, skor })),
+        ben: sira >= 0 ? { sira: sira + 1, skor: liste[sira].skor } : null,
+        gecen: o ? { k: onceki, oyun: o.oyun || turnuvaOyunu(onceki), odendi: !!o.odendi, kazananlar: o.kazananlar || turnuvaOdulleri(o).kazananlar.map(({ ad, skor, odul }) => ({ ad, skor, odul })) } : null };
+    }
+    return db.runTransaction(async (tx) => {
+      const [s, ts] = await Promise.all([tx.get(cuzRef), tx.get(tRef)]);
+      if (!s.exists) throw new Hata("Önce borsaya bir kez gir (cüzdanın açılsın).");
+      const c = s.data();
+      const t = ts.exists ? ts.data() : { k: hk, oyun, havuz: 0, katilimci: {} };
+      t.katilimci = { ...(t.katilimci || {}) };
+      const ben = t.katilimci[kim.uid];
+      let cevap = { ok: true };
+      if (tur === "turnuvaKatil") {
+        if (ben) throw new Hata("Bu haftaki turnuvaya zaten katıldın.");
+        if (TURNUVA.GIRIS > (c.bkc || 0) + 1e-9) throw new Hata(`Giriş ${TURNUVA.GIRIS} BERKAY, yeterli BERKAY'ın yok.`);
+        c.bkc = r6(c.bkc - TURNUVA.GIRIS);
+        t.havuz = r2((t.havuz || 0) + TURNUVA.GIRIS);
+        t.katilimci[kim.uid] = { ad: kim.ad, skor: 0, t: now };
+        c.turnuva = { k: hk, oyun };
+        oyuncuOlay(c, "turnuva", {}, now);
+        kasaYaz(tx, TURNUVA.GIRIS);
+        tx.set(cuzRef, c);
+        cevap.katildi = true;
+      } else {
+        if (!ben) return { ok: true, katilmadi: true };
+        if (String(govde.oyun) !== oyun) return { ok: true, baskaOyun: true };
+        const skor = Math.max(0, Math.min(TURNUVA.UST[oyun], Math.round(sayi(govde.skor) || 0)));
+        if (skor <= (ben.skor || 0)) return { ok: true, rekorDegil: true, skor: ben.skor };
+        t.katilimci[kim.uid] = { ...ben, ad: kim.ad, skor, t: now };
+        cevap.skor = skor;
+      }
+      tx.set(tRef, t);
+      const liste = turnuvaListe(t);
+      cevap.sira = liste.findIndex((x) => x.uid === kim.uid) + 1;
+      cevap.kisi = liste.length;
       cevap.cuzdan = cuzdanCevap(c);
       return cevap;
     });
@@ -1281,7 +1515,7 @@ async function kumarIslem(db, kim, govde, now) {
   }
   return null;
 }
-const KUMAR_ISLEMLERI = ["crashDurum", "crashBahis", "crashCek", "duelloAc", "duelloKabul", "duelloIptal", "minesBasla", "minesAc", "minesCek", "plinko", "bjBasla", "bjKart", "bjDur", "bjIkiye"];
+const KUMAR_ISLEMLERI = ["crashDurum", "ruletDurum", "ruletBahis", "ruletTopla", "slot", "turnuvaDurum", "turnuvaKatil", "turnuvaSkor", "crashBahis", "crashCek", "duelloAc", "duelloKabul", "duelloIptal", "minesBasla", "minesAc", "minesCek", "plinko", "bjBasla", "bjKart", "bjDur", "bjIkiye"];
 
 // ---------------- Ekonomi: kullanıcı işlemleri ----------------
 const EKONOMI_ISLEMLERI = ["gorevAl", "gunluk", "oyunSkor", "carkCevir", "tahminBahis"];
@@ -1789,9 +2023,10 @@ const profilOnbellek = new Map();
 export default async function handler(req, res) {
   // Crash durumu: GET + Vercel CDN'de 1 sn önbellek → kaç kişi bakarsa baksın saniyede en fazla 1 çalışma.
   // Cevap sadece o anki durumu söyler (düşmeden çöküş noktasını vermez), 1 sn bayat olması bir şey sızdırmaz.
-  if (req.method === "GET" && String((req.query && req.query.islem) || "") === "crashDurum") {
+  const getIslem = req.method === "GET" ? String((req.query && req.query.islem) || "") : "";
+  if (getIslem === "crashDurum" || getIslem === "ruletDurum") {
     res.setHeader("Cache-Control", "public, max-age=0, s-maxage=1");
-    return res.status(200).json(await kumarIslem(null, null, { islem: "crashDurum" }, Date.now()));
+    return res.status(200).json(await kumarIslem(null, null, { islem: getIslem }, Date.now()));
   }
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ ok: false, hata: "Sadece POST." });
@@ -1802,7 +2037,7 @@ export default async function handler(req, res) {
     const now = Date.now();
     const tur = String(govde.islem || "");
     // Crash durumu herkese açık ve veritabanına dokunmaz (sık sorulur, kota harcamasın)
-    if (tur === "crashDurum") return res.status(200).json(await kumarIslem(null, null, govde, now));
+    if (tur === "crashDurum" || tur === "ruletDurum") return res.status(200).json(await kumarIslem(null, null, govde, now));
 
     const { db, auth } = firebase();
     const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
@@ -1849,4 +2084,4 @@ export default async function handler(req, res) {
 }
 
 // Testler için dışa açık matematik
-export const _ic = { minesCarpan, minesBombalar, bjToplam, bjDeste, PLINKO, oyuncuOlay, seviyeHesap, gunGorevleri, haftaAnahtari, GOREVLER, kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
+export const _ic = { ruletAn, ruletSonuc, ruletCarpan, slotDegerlendir, SLOT_SEMBOL, SLOT_AGIRLIK, turnuvaOyunu, TURNUVA, minesCarpan, minesBombalar, bjToplam, bjDeste, PLINKO, oyuncuOlay, seviyeHesap, gunGorevleri, haftaAnahtari, GOREVLER, kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };

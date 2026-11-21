@@ -22,7 +22,7 @@
     <header class="page-head">
       <span class="eyebrow"><i>🎰</i> Kumarhane</span>
       <h1>Berkay <em>Kumarhanesi</em></h1>
-      <p class="lead">Crash, Mines, Plinko, Blackjack ve düello. Oynadıkça XP kazan, seviye atla, günlük görevleri bitir, haftalık ligde zirveye oyna.</p>
+      <p class="lead">Crash, Mines, Plinko, Blackjack, canlı rulet, Berkay slotu, turnuvalar ve düello. Oynadıkça XP kazan, seviye atla, günlük görevleri bitir, haftalık ligde zirveye oyna.</p>
     </header>
     <div class="card cark-kapi" id="ekKapi">
       <div class="cark-kapi-ico">🔐</div>
@@ -38,6 +38,9 @@
         <button type="button" role="tab" data-oyun="mines">💣 Mines</button>
         <button type="button" role="tab" data-oyun="plinko">🔻 Plinko</button>
         <button type="button" role="tab" data-oyun="blackjack">🃏 Blackjack</button>
+        <button type="button" role="tab" data-oyun="rulet">🎡 Rulet</button>
+        <button type="button" role="tab" data-oyun="slot">🎰 Slot</button>
+        <button type="button" role="tab" data-oyun="turnuva">🏆 Turnuva</button>
         <button type="button" role="tab" data-oyun="duello">⚔️ Düello</button>
         <button type="button" role="tab" data-oyun="lig">🎯 Görevler &amp; Lig <span class="adm-say" id="kmGorevSay" hidden></span></button>
       </nav>
@@ -107,6 +110,66 @@
         </div>
         <p class="bx-durum" id="bjDurum" aria-live="polite"></p>
         <p class="muted km-not">21'e en yakın olan kazanır, 21'i geçen yanar. Kasa 17'ye kadar çeker. Blackjack (As + 10) 2.5 kat öder, beraberlikte bahis iade edilir. İkiye katlarsan bahis iki katına çıkar, tek kart çekersin.</p>
+      </section>
+
+      <!-- RULET -->
+      <section class="card km-oyun km-rulet" data-oyun="rulet" id="rulet" hidden>
+        <h2>🎡 Canlı Rulet <small class="muted">herkes aynı turda</small></h2>
+        <div class="km-rulet-ust">
+          <div class="km-rulet-cark">
+            <canvas id="ruTuval" aria-label="Rulet çarkı"></canvas>
+            <div class="km-rulet-ok" aria-hidden="true"></div>
+            <div class="km-rulet-merkez" id="ruSonuc">?</div>
+          </div>
+          <div class="km-rulet-bilgi">
+            <div class="km-rulet-faz" id="ruFaz">Bağlanıyor…</div>
+            <div class="km-rulet-sayac"><i id="ruBar"></i></div>
+            <div class="km-gecmis km-rulet-gecmis" id="ruGecmis"></div>
+            <div class="km-fisler" id="ruFisler" role="radiogroup" aria-label="Fiş değeri"></div>
+            <div class="km-rulet-toplam">Masadaki bahsin: <b id="ruToplam">0</b> BERKAY</div>
+            <div class="km-rulet-butonlar">
+              <button type="button" class="bx-gonder" id="ruTekrar">↺ Son bahsi tekrarla</button>
+              <button type="button" class="bx-gonder sat" id="ruTemizle">🧹 Gönderilmeyenleri sil</button>
+            </div>
+            <p class="bx-durum" id="ruDurum" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="km-rulet-masa" id="ruMasa" aria-label="Rulet masası"></div>
+        <p class="muted km-not">Fiş seç, masada istediğin yere tıkla, fişler kendiliğinden gönderilir. Bahisler her turun ilk 20 saniyesinde açık. Tek sayı 36x, düzine 3x, renk / tek-çift / yarım 2x öder. 0 = <b>Berkay sıfırı</b> 🐴: çıkarsa dış bahislerin hepsi yanar. Bir turda en fazla 500 BERKAY.</p>
+      </section>
+
+      <!-- SLOT -->
+      <section class="card km-oyun km-slot" data-oyun="slot" id="slot" hidden>
+        <h2>🎰 Berkay Slotu</h2>
+        <div class="km-slot-jackpot"><small>💰 JACKPOT</small><b id="slJackpot">—</b><small id="slSonJp">Üç Berkay yan yana gelirse hepsi senin</small></div>
+        <div class="km-slot-makine">
+          <div class="km-makara"><div class="km-serit" id="slM0"></div></div>
+          <div class="km-makara"><div class="km-serit" id="slM1"></div></div>
+          <div class="km-makara"><div class="km-serit" id="slM2"></div></div>
+          <div class="km-slot-cizgi" aria-hidden="true"></div>
+        </div>
+        <p class="km-slot-soz" id="slSoz">Berkay: “Çevir bakalım, korkma.”</p>
+        <div class="km-bj-kontrol">
+          <div class="bx-girdi km-bj-bahis"><input type="number" id="slMiktar" min="1" max="200" step="1" inputmode="numeric" placeholder="5" aria-label="Bahis" /><em>BERKAY</em></div>
+          <button type="button" class="bx-gonder al km-buyuk" id="slBtn">🎰 Çevir</button>
+        </div>
+        <p class="bx-durum" id="slDurum" aria-live="polite"></p>
+        <details class="km-slot-tablo"><summary>Ödeme tablosu</summary><div id="slTablo"></div></details>
+      </section>
+
+      <!-- TURNUVA -->
+      <section class="km-oyun km-lig-alani" data-oyun="turnuva" id="turnuva" hidden>
+        <div class="card km-kart km-turnuva">
+          <h2>🏆 Haftanın turnuvası</h2>
+          <div id="tuUst"><p class="muted">Yükleniyor…</p></div>
+          <div class="km-turnuva-buton">
+            <button type="button" class="bx-gonder al km-buyuk" id="tuKatil" hidden>🎟️ Katıl</button>
+            <a class="bx-gonder al km-buyuk" id="tuOyna" hidden href="/oyun">🎮 Oyna</a>
+          </div>
+          <p class="bx-durum" id="tuDurum" aria-live="polite"></p>
+          <p class="muted km-not">Her hafta oyun değişir: <b>Boks makinesi</b> → <b>Penaltı</b> (en uzun gol serisi) → <b>Kasksız 85</b> (en uzun yol). Giriş 50 BERKAY, hepsi ödül havuzuna gider. En az 3 kişi katılırsa kasa havuza 250 BERKAY ekler. Hafta bitince en iyi 3 skor havuzu %60 / %25 / %15 paylaşır. Katıldıktan sonra Spor sayfasında oynadığın her oyun sayılır, en iyi skorun kalır.</p>
+        </div>
+        <div class="card km-kart"><h2>📋 Sıralama</h2><div id="tuListe"><p class="muted">Yükleniyor…</p></div><div id="tuGecen"></div></div>
       </section>
 
       <!-- CRASH -->
@@ -189,5 +252,6 @@
   <script src="js/oyuncu.js"></script>
   <script src="js/kumarhane.js"></script>
   <script src="js/kumarhane-oyunlar.js"></script>
+  <script src="js/kumarhane-ek.js"></script>
 </body>
 </html>
