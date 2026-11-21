@@ -469,6 +469,7 @@ window.MACERA_SEVIYELER = [
 ],
 "ikon": "⏰",
 "muzik": "final",
-"bossBurger": 20
+"bossBurger": 20,
+"atisHiz": 1800
 }
 ];

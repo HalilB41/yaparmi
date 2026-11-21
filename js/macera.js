@@ -321,7 +321,7 @@
       atBasildi = false;
       if ((s.toplanan + s.ekstra - s.atilan) > 0 && s.atisBekle <= 0) {
         s.atilan++; s.atisBekle = 0.28;
-        s.bizim.push({ x: p.x + p.w / 2 - 13 + p.yon * 12, y: p.y + 12, w: 26, h: 26, vx: p.yon * 720, t: 0, aci: 0 });
+        s.bizim.push({ x: p.x + p.w / 2 - 13 + p.yon * 12, y: p.y + 12, w: 26, h: 26, vx: p.yon * (s.sv.atisHiz || 720), t: 0, aci: 0, jet: !!s.sv.atisHiz });
         bip(700, 300, 0.07, "triangle", 0.12);
       } else if ((s.toplanan + s.ekstra - s.atilan) <= 0 && s.atisBekle <= 0) { s.atisBekle = 0.5; s.mesaj = { yazi: `Hiç ${s.sv.topla || "🍔"} kalmadı, topla!`, t: 1.2 }; }
     }
@@ -636,7 +636,10 @@
       else if (d.tip === "uc") emoji(DUS.uc || (s.tema === "kutuphane" ? "🦇" : s.tema === "sinav" ? "📸" : "🕊️"), d.x + 18, d.y + 14, 30);
       else if (d.tip === "araba") { ctx.save(); ctx.translate(d.x + 32, d.y + 17); ctx.scale(-1, 1); emoji("🚗", 0, 0, 56); ctx.restore(); }
     }
-    for (const m of s.bizim) emoji(s.sv.topla || "🍔", m.x + 13, m.y + 13, 26, m.aci);
+    for (const m of s.bizim) {
+      if (m.jet) { const g = ctx.createLinearGradient(m.x + 13 - Math.sign(m.vx) * 90, 0, m.x + 13, 0); g.addColorStop(0, "rgba(251,146,60,0)"); g.addColorStop(1, "rgba(251,191,36,.9)"); ctx.fillStyle = g; ctx.fillRect(Math.min(m.x + 13, m.x + 13 - Math.sign(m.vx) * 90), m.y + 8, 90, 10); }
+      emoji(s.sv.topla || "🍔", m.x + 13, m.y + 13, 26, m.aci);
+    }
     for (const c of s.cephane) { emoji(s.sv.topla || "🍔", c.x + 13, c.y + 13 + (c.yer ? Math.sin(performance.now() / 200 + c.x) * 3 : 0), 28); ctx.fillStyle = "#facc15"; ctx.font = "900 11px sans-serif"; ctx.textAlign = "center"; ctx.fillText("+" + c.deger, c.x + 13, c.y - 4); ctx.textAlign = "left"; }
     for (const m of s.mermi) { emoji(m.emoji, m.x + m.w / 2, m.y + m.h / 2, 28, m.aci); if (m.yazi) { ctx.fillStyle = "#dc2626"; ctx.font = "900 10px sans-serif"; ctx.fillText(m.yazi, m.x - 2, m.y - 4); } }
     if (s.boss) bossCiz(s.boss);
