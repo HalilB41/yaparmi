@@ -252,7 +252,7 @@
     if (p.yer && Math.abs(p.vx) > 20) p.adim += dt * Math.abs(p.vx) / 40;
     // düşme / diken
     if (p.y > s.H * T + 60) return ol("Boşluğa düştün");
-    const c0 = Math.floor(p.x / T), c1 = Math.floor((p.x + p.w - 1) / T), r0 = Math.floor((p.y + p.h * 0.5) / T), r1 = Math.floor((p.y + p.h - 1) / T);
+    const c0 = Math.floor((p.x + 8) / T), c1 = Math.floor((p.x + p.w - 9) / T), r0 = Math.floor((p.y + p.h * 0.5) / T), r1 = Math.floor((p.y + p.h - 1) / T);
     for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) if (kare(c, r) === "^" && p.y + p.h > r * T + T * 0.45) return ol("Dikene bastın");
     // burger, kontrol noktası, bitiş
     for (const b of s.burger) if (!b.al && kesisir(p, b)) { b.al = true; s.toplanan++; SES.burger(); parcaPatla(b.x + 12, b.y + 12, "#f5b82e", 8); }
