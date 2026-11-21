@@ -2839,3 +2839,71 @@ body.mc-oynuyor .mc-oyun { scroll-margin-top: 70px; }
 .ev-mik { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); font-size: 1.15rem; cursor: pointer; flex: none; box-shadow: 0 6px 16px -6px rgba(0,0,0,.5); }
 .ev-mik.on { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.35), 0 6px 16px -6px rgba(0,0,0,.5); }
 .ev-ses-ac { position: absolute; left: 50%; bottom: 70px; transform: translateX(-50%); border: 0; border-radius: 999px; padding: 9px 16px; background: #111; color: #fff; font: inherit; font-weight: 800; cursor: pointer; z-index: 3; box-shadow: 0 8px 18px -8px rgba(0,0,0,.6); }
+
+/* ---------------- Grup Belgeseli ---------------- */
+.bg-body { background: #0b0b0f; }
+.bg-body .topbar { background: rgba(11,11,15,.85); }
+.bg-page { color: #f4f4f5; }
+.bg-hero { position: relative; border-radius: 26px; overflow: hidden; min-height: 360px; display: flex; align-items: flex-end; padding: 40px; margin-bottom: 30px;
+  background: radial-gradient(1200px 400px at 80% -10%, rgba(229,9,20,.45), transparent 60%), radial-gradient(800px 300px at 0% 120%, rgba(124,58,237,.5), transparent 60%), linear-gradient(135deg, #18181b, #09090b); }
+.bg-hero::after { content: "🏍️ 🍔 😳 🤓 🍞 🎤 🧥 🎮"; position: absolute; right: 30px; top: 30px; font-size: 2.4rem; letter-spacing: .4rem; opacity: .22; max-width: 50%; text-align: right; line-height: 1.6; }
+.bg-hero-ic { position: relative; z-index: 1; max-width: 620px; }
+.bg-etiket { font-weight: 900; font-size: .78rem; letter-spacing: .18em; color: #e50914; }
+.bg-hero h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); margin: 8px 0 10px; color: #fff; line-height: 1; }
+.bg-hero p { color: #d4d4d8; font-size: 1.05rem; }
+.bg-hero-btn { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.bg-oynat { background: #fff; color: #111; border: 0; border-radius: 10px; padding: 12px 22px; font-weight: 900; font-size: 1rem; cursor: pointer; }
+.bg-oynat:hover { background: #e4e4e7; }
+.bg-ikincil { background: rgba(255,255,255,.14); color: #fff; border: 0; border-radius: 10px; padding: 12px 18px; font-weight: 800; cursor: pointer; }
+.bg-ikincil:hover { background: rgba(255,255,255,.24); }
+.bg-sira { margin-bottom: 28px; }
+.bg-sira h2 { color: #fff; font-size: 1.3rem; margin: 0 0 12px; }
+.bg-raf { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 230px); gap: 14px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+.bg-kart { scroll-snap-align: start; text-align: left; background: #18181b; border: 0; border-radius: 16px; padding: 0 0 12px; color: #fff; cursor: pointer; overflow: hidden; transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column; gap: 4px; }
+.bg-kart:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+.bg-kart-gorsel { position: relative; height: 120px; display: grid; place-items: center; background: linear-gradient(135deg, var(--renk), #09090b); margin-bottom: 6px; }
+.bg-kart-emoji { font-size: 3.2rem; filter: drop-shadow(0 6px 12px rgba(0,0,0,.5)); }
+.bg-kart-bar { position: absolute; left: 0; bottom: 0; height: 4px; background: #e50914; }
+.bg-kart b { padding: 0 12px; font-size: 1rem; }
+.bg-kart small { padding: 0 12px; color: #a1a1aa; }
+.bg-not { text-align: center; color: #71717a; font-size: .85rem; }
+.bg-acik { overflow: hidden; }
+.bg-oynatici { position: fixed; inset: 0; z-index: 200; color: #fff; display: flex; flex-direction: column;
+  background: radial-gradient(900px 500px at 70% 20%, color-mix(in srgb, var(--kisi, #7c3aed) 55%, transparent), transparent 70%), radial-gradient(700px 400px at 10% 100%, color-mix(in srgb, var(--renk, #7c3aed) 45%, transparent), transparent 70%), #09090b;
+  transition: background .6s; }
+.bg-ilerleme { display: flex; gap: 4px; padding: 14px 16px 0; }
+.bg-ilerleme span { flex: 1; height: 4px; background: rgba(255,255,255,.25); border-radius: 2px; overflow: hidden; }
+.bg-ilerleme i { display: block; height: 100%; width: 0; background: #fff; }
+.bg-ust { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; font-weight: 800; color: #e4e4e7; }
+.bg-kapat { background: rgba(255,255,255,.15); border: 0; color: #fff; width: 38px; height: 38px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; }
+.bg-sahne { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 10px 70px; overflow-y: auto; }
+.bg-giris { animation: bgGiris .7s ease both; }
+@keyframes bgGiris { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: none; } }
+.bg-bolum-giris { text-align: center; max-width: 720px; }
+.bg-bolum-giris h2 { font-size: clamp(2rem, 5vw, 3.4rem); margin: 6px 0; color: #fff; }
+.bg-bolum-giris p { color: #d4d4d8; }
+.bg-bolum-giris .bg-oynat, .bg-bolum-giris .bg-ikincil { margin: 14px 6px 0; }
+.bg-lakap { font-style: italic; color: #a1a1aa !important; font-size: .9rem; }
+.bg-buyuk-emoji { font-size: 4.4rem; animation: bgNefes 3s ease-in-out infinite; }
+@keyframes bgNefes { 50% { transform: scale(1.08); } }
+.bg-kutu { max-width: 760px; width: 100%; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.1); border-radius: 22px; padding: 26px 30px; backdrop-filter: blur(8px); }
+.bg-kim { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bg-kim-emoji { font-size: 1.8rem; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--kisi, #7c3aed) 50%, #18181b); }
+.bg-kim b { font-size: 1.1rem; }
+.bg-kim time { margin-left: auto; color: #a1a1aa; font-size: .85rem; }
+.bg-kutu h3 { font-size: 1.5rem; margin: 6px 0 10px; color: #fff; }
+.bg-kutu blockquote { margin: 0 0 14px; padding: 10px 16px; border-left: 4px solid var(--kisi, #e50914); font-size: 1.35rem; font-weight: 800; font-style: italic; color: #fde68a; background: rgba(255,255,255,.05); border-radius: 0 12px 12px 0; }
+.bg-kutu p { color: #e4e4e7; line-height: 1.6; font-size: 1.05rem; margin: 0; }
+.bg-git { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.1); border: 0; color: #fff; width: 48px; height: 80px; border-radius: 14px; font-size: 2rem; cursor: pointer; }
+.bg-git:hover { background: rgba(255,255,255,.22); }
+.bg-geri { left: 12px; } .bg-ileri { right: 12px; }
+.bg-alt { display: flex; justify-content: center; align-items: center; gap: 14px; padding: 12px 16px 20px; }
+@media (max-width: 640px) {
+  .bg-hero { padding: 24px; min-height: 300px; } .bg-hero::after { font-size: 1.5rem; }
+  .bg-sahne { padding: 10px 14px; } .bg-git { width: 36px; height: 60px; top: auto; bottom: 70px; transform: none; }
+  .bg-kutu { padding: 18px; } .bg-kutu h3 { font-size: 1.2rem; } .bg-kutu blockquote { font-size: 1.1rem; }
+}
+
+.mk-sekmeler .mk-sekme-link { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px; font-weight: 800; text-decoration: none; color: #fff; background: linear-gradient(135deg, #e50914, #7c3aed); white-space: nowrap; }
+.bg-body .brand-word, .bg-body .mainnav a:not(.on) { color: #e4e4e7; }
+.bg-body .mainnav a:not(.on):hover { color: #fff; }

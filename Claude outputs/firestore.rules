@@ -246,6 +246,12 @@ service cloud.firestore {
 
 
     // Site ayarları: ayarlar/kahin { sinirsizBot } → ana sayfadaki "Sınırsız bot" düğmesi görünsün mü.
+    // Grup belgeseli: belgesel/veri. Sadece giriş yapmış (anonim olmayan) üyeler okur, admin yükler.
+    match /belgesel/{docId} {
+      allow read: if hesapli();
+      allow write: if isAdmin() && docId == 'veri';
+    }
+
     // ayarlar/duyuru { aktif, metin, link, tur, id } → her sayfanın en üstündeki duyuru bandı.
     match /ayarlar/{docId} {
       allow read: if true;

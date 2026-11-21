@@ -241,8 +241,8 @@
   altSayfa.innerHTML =
     '<div class="alt-sayfa-kart" role="dialog" aria-label="Bütün bölümler"><div class="alt-tutamac"></div>' +
     '<div class="alt-izgara">' +
-    NAV.concat([["/profil", "Profilim"], ["/topluluk#wiki", "Berkaypedia"], ["/topluluk#harita", "Harita"], ["/topluluk#olasi", "Kim daha olası?"], ["/topluluk#tahmin", "Tahmin"], ["/topluluk#soz", "Sözler"], ["/topluluk#itiraf", "İtiraflar"]]).map(([href, ad]) =>
-      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || ({ "/profil": "👤", "/topluluk#wiki": "📖", "/topluluk#harita": "🗺️", "/topluluk#olasi": "🤔", "/topluluk#tahmin": "🎲", "/topluluk#soz": "🤝", "/topluluk#itiraf": "🤫" })[href] || "🏆") + "</i><span>" + ad + "</span></a>").join("") +
+    NAV.concat([["/profil", "Profilim"], ["/topluluk#wiki", "Berkaypedia"], ["/topluluk#harita", "Harita"], ["/topluluk#olasi", "Kim daha olası?"], ["/topluluk#tahmin", "Tahmin"], ["/topluluk#soz", "Sözler"], ["/topluluk#itiraf", "İtiraflar"], ["/belgesel", "Belgesel"]]).map(([href, ad]) =>
+      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || ({ "/profil": "👤", "/topluluk#wiki": "📖", "/topluluk#harita": "🗺️", "/topluluk#olasi": "🤔", "/topluluk#tahmin": "🎲", "/topluluk#soz": "🤝", "/topluluk#itiraf": "🤫", "/belgesel": "🎬" })[href] || "🏆") + "</i><span>" + ad + "</span></a>").join("") +
     "</div></div>";
   document.body.appendChild(altBar);
   document.body.appendChild(altSayfa);

@@ -489,6 +489,16 @@
       <section class="adm-panel admin-grid" data-panel="icerik" hidden>
         <div class="adm-intro wide"><b>📝 İçerik</b> Sosyal Hayat hikâyesi ve ana sayfadaki zaman sayaçları ("Berkay ehliyet alalı X gün").</div>
         <div class="panel card admin-section wide">
+          <h2>🎬 Grup Belgeseli</h2>
+          <p class="muted">Belgesel verisini (belgesel.json) buradan yükle. Yükleyince <a href="/belgesel">/belgesel</a> sayfasında sadece giriş yapmış üyeler izleyebilir. Dosyayı sitenin klasörüne koyma, oradan internete çıkar.</p>
+          <div class="tpl-form adm-form">
+            <label>belgesel.json <input type="file" id="belgeselDosya" accept=".json,application/json" /></label>
+            <button type="button" class="admin-btn publish" id="belgeselYukle">🎬 Yükle</button>
+            <button type="button" class="admin-btn reject" id="belgeselSil">🗑️ Belgeseli kaldır</button>
+          </div>
+          <p class="suggest-status" id="belgeselDurum"></p>
+        </div>
+        <div class="panel card admin-section wide">
           <div class="se-top">
             <h2>👥 Sosyal hayat hikâyesi</h2>
             <button type="button" class="admin-btn publish" id="sosyalEditBtn">Düzenleyiciyi aç</button>
@@ -651,6 +661,7 @@
   <script src="js/kahin-paylas.js"></script>
   <script src="js/kahin-ayar-admin.js"></script>
   <script src="js/duyuru-admin.js"></script>
+  <script src="js/belgesel-admin.js"></script>
   <script src="js/sayac.js"></script>
   <script src="js/cark-ciz.js"></script>
   <script src="js/cark-admin.js"></script>

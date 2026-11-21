@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Grup Belgeseli · yaparmi.com</title>
+  <meta name="description" content="Grubun belgeseli. Sadece üyeler izleyebilir." />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#eceefa" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0a0c1b" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%235a3fd4%22/%3E%3Cg transform=%22translate(4 4) scale(1) rotate(-6 12 12)%22%3E%3Cpath d=%22M8 3h8a5 5 0 0 1 5 5v4a5 5 0 0 1-5 5h-6.3l-3.7 3.3c-.5.45-1.3.1-1.3-.57v-3.1A5 5 0 0 1 3 12V8a5 5 0 0 1 5-5z%22 fill=%22%23fff%22/%3E%3Cpath d=%22M9.7 8.2a2.4 2.4 0 1 1 3.5 2.15c-.75.38-1.2.95-1.2 1.75v.25%22 fill=%22none%22 stroke=%22%235a3fd4%22 stroke-width=%222.4%22 stroke-linecap=%22round%22/%3E%3Ccircle cx=%2212%22 cy=%2214.9%22 r=%221.4%22 fill=%22%235a3fd4%22/%3E%3C/g%3E%3C/svg%3E" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema"),r=localStorage.getItem("yaparmi_renk");if(t)document.documentElement.dataset.theme=t;if(r)document.documentElement.dataset.renk=r}catch(e){}</script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/images/ikon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-body">
+  <main class="page bg-page">
+    <div class="card cark-kapi" id="bgKapi">
+      <div class="cark-kapi-ico">🎬</div>
+      <p id="bgKapiYazi">Yükleniyor…</p>
+      <button type="button" class="btn" id="bgGirisBtn" hidden>Kayıt ol / giriş yap</button>
+    </div>
+    <div id="bgIcerik" hidden>
+      <section class="bg-hero" id="bgHero">
+        <div class="bg-hero-ic">
+          <span class="bg-etiket">🎬 YAPARMI ORİJİNAL BELGESELİ</span>
+          <h1>Grubun Belgeseli</h1>
+          <p id="bgHeroAlt">Sekiz kişi, yüzlerce olay, hiç gerçekleşmeyen bir Aquapark planı. Hepsi gerçek, hepsi grup arşivinden.</p>
+          <div class="bg-hero-btn">
+            <button type="button" class="bg-oynat" id="bgBasla">▶ İzle</button>
+            <button type="button" class="bg-ikincil" id="bgRastgele">🎲 Rastgele bölüm</button>
+            <button type="button" class="bg-ikincil" id="bgDevam" hidden>⏯ Kaldığın yerden</button>
+          </div>
+        </div>
+      </section>
+      <section class="bg-sira"><h2>🎭 Karakterler</h2><div class="bg-raf" id="bgKarakter"></div></section>
+      <section class="bg-sira"><h2>📜 Destanlar</h2><div class="bg-raf" id="bgDestan"></div></section>
+      <p class="muted bg-not">Bu sayfa Google'a kapalı ve sadece giriş yapmış üyeler izleyebilir.</p>
+    </div>
+  </main>
+
+  <div class="bg-oynatici" id="bgOynatici" hidden>
+    <div class="bg-ilerleme" id="bgIlerleme"></div>
+    <div class="bg-ust"><span id="bgBolumAd"></span><button type="button" class="bg-kapat" id="bgKapat" aria-label="Kapat">✕</button></div>
+    <div class="bg-sahne" id="bgSahne" aria-live="polite"></div>
+    <button type="button" class="bg-git bg-geri" id="bgGeri" aria-label="Önceki">‹</button>
+    <button type="button" class="bg-git bg-ileri" id="bgIleri" aria-label="Sonraki">›</button>
+    <div class="bg-alt"><button type="button" class="bg-ikincil" id="bgDur">⏸ Durdur</button><span class="muted" id="bgSayac"></span></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/belgesel.js"></script>
+</body>
+</html>
