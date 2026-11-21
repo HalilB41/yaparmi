@@ -26,24 +26,97 @@
     const i = new Image(); i.onload = () => (yuzler[ad] = i); i.src = `/images/yuz-${ad}.webp`;
   }
 
-  // ---------- ses (WebAudio bip) ----------
-  let ses = null, sessiz = false;
+  // ---------- ses: efektler + bölüm müzikleri (WebAudio, dosya yok) ----------
+  // Tarayıcılar sesi ancak bir dokunuş/tuş anında açtırır: sesAc() her tıklamada ve tuşta çağrılır.
+  let ses = null, ana = null, muzikKazanc = null, sessiz = false;
   try { sessiz = localStorage.getItem("macera_sessiz") === "1"; } catch { /* yok */ }
-  function bip(f1, f2, sure, tip = "square", hacim = 0.08) {
-    if (sessiz) return;
+  function sesAc() {
     try {
-      ses = ses || new (window.AudioContext || window.webkitAudioContext)();
-      const o = ses.createOscillator(), g = ses.createGain(), t = ses.currentTime;
-      o.type = tip; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(Math.max(40, f2), t + sure);
-      g.gain.setValueAtTime(hacim, t); g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
-      o.connect(g).connect(ses.destination); o.start(t); o.stop(t + sure);
+      if (!ses) {
+        ses = new (window.AudioContext || window.webkitAudioContext)();
+        ana = ses.createGain(); ana.gain.value = sessiz ? 0 : 1; ana.connect(ses.destination);
+        muzikKazanc = ses.createGain(); muzikKazanc.gain.value = 0.55; muzikKazanc.connect(ana);
+      }
+      if (ses.state === "suspended") ses.resume();
     } catch { /* ses yok */ }
   }
+  ["pointerdown", "keydown", "touchstart"].forEach((o) => addEventListener(o, sesAc, { passive: true }));
+  function sesDurumu(kapali) { sessiz = kapali; try { localStorage.setItem("macera_sessiz", kapali ? "1" : "0"); } catch { /* yok */ } if (ana) ana.gain.value = kapali ? 0 : 1; $("mcSes").textContent = kapali ? "🔇" : "🔊"; }
+  function bip(f1, f2, sure, tip = "square", hacim = 0.12, gecikme = 0) {
+    if (!ses || sessiz) return;
+    const o = ses.createOscillator(), g = ses.createGain(), t = ses.currentTime + gecikme;
+    o.type = tip; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(Math.max(40, f2), t + sure);
+    g.gain.setValueAtTime(hacim, t); g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
+    o.connect(g).connect(ana); o.start(t); o.stop(t + sure + 0.02);
+  }
+  let gurultuTampon = null;
+  function gurultu(sure, hacim, filtre = 3000, gecikme = 0, hedef) {
+    if (!ses) return;
+    if (!gurultuTampon) { gurultuTampon = ses.createBuffer(1, ses.sampleRate * 0.5, ses.sampleRate); const v = gurultuTampon.getChannelData(0); for (let i = 0; i < v.length; i++) v[i] = Math.random() * 2 - 1; }
+    const k = ses.createBufferSource(), f = ses.createBiquadFilter(), g = ses.createGain(), t = ses.currentTime + gecikme;
+    k.buffer = gurultuTampon; f.type = "highpass"; f.frequency.value = filtre;
+    g.gain.setValueAtTime(hacim, t); g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
+    k.connect(f).connect(g).connect(hedef || ana); k.start(t); k.stop(t + sure + 0.02);
+  }
   const SES = {
-    zipla: () => bip(330, 660, 0.12), burger: () => bip(880, 1320, 0.09, "triangle"), ez: () => bip(220, 80, 0.15),
-    ol: () => bip(300, 50, 0.5, "sawtooth", 0.1), boss: () => bip(160, 60, 0.3, "sawtooth", 0.12), bitti: () => { bip(523, 523, 0.12, "triangle"); setTimeout(() => bip(659, 659, 0.12, "triangle"), 130); setTimeout(() => bip(784, 1046, 0.3, "triangle"), 260); },
-    kontrol: () => bip(600, 900, 0.15, "triangle"),
+    zipla: () => bip(260, 620, 0.13, "square", 0.1),
+    burger: () => { bip(988, 988, 0.06, "square", 0.08); bip(1319, 1319, 0.12, "square", 0.08, 0.06); },
+    ez: () => { bip(180, 60, 0.18, "square", 0.14); gurultu(0.12, 0.2, 800); },
+    ol: () => { bip(440, 70, 0.7, "sawtooth", 0.14); gurultu(0.4, 0.2, 300); },
+    boss: () => { bip(110, 40, 0.45, "sawtooth", 0.18); gurultu(0.3, 0.25, 200); },
+    vurus: () => { bip(90, 30, 0.25, "square", 0.2); gurultu(0.25, 0.3, 400); },
+    firlat: () => gurultu(0.12, 0.08, 2000),
+    kontrol: () => { bip(660, 660, 0.08, "triangle", 0.14); bip(990, 990, 0.16, "triangle", 0.14, 0.09); },
+    bitti: () => [523, 659, 784, 1047].forEach((f, i) => bip(f, f, i === 3 ? 0.5 : 0.14, "square", 0.1, i * 0.13)),
   };
+
+  // Müzik: 16'lık adımlar, melodi (kare dalga) + bas (üçgen) + davul (gürültü). Notalar MIDI numarası, 0 = sus.
+  const M = (s) => s.trim().split(/\s+/).map((x) => (x === "." ? 0 : Number(x)));
+  const MUZIK = {
+    depo: { bpm: 118, melodi: M("69 . 72 . 76 . 74 72 . 69 . 67 . 69 . 69 . 72 . 76 . 79 . 77 . 76 . 74 . 72 ."), bas: M("45 . . 45 . . 45 . 41 . . 41 . . 43 . 45 . . 45 . . 45 . 41 . . 41 43 . 43 .") },
+    yol: { bpm: 150, melodi: M("76 . 79 81 . 79 76 . 74 . 76 . 79 . . . 76 . 79 81 . 84 83 . 81 . 79 . 76 . . ."), bas: M("40 . 52 . 40 . 52 . 45 . 57 . 45 . 57 . 43 . 55 . 43 . 55 . 47 . 59 . 47 . 59 .") },
+    sinav: { bpm: 132, melodi: M("72 . 74 . 76 . 72 . 79 . . 77 76 . 74 . 72 . 74 . 76 . 77 . 76 74 72 . 71 . 72 ."), bas: M("48 . . 48 . 48 . . 43 . . 43 . 43 . . 45 . . 45 . 45 . . 43 . . 43 . 47 . .") },
+    kutuphane: { bpm: 104, melodi: M("62 . . 65 . . 69 . 68 . . 65 . . 62 . 61 . . 64 . . 68 . 67 . . 64 . . 61 ."), bas: M("38 . . . 38 . . . 37 . . . 37 . . . 36 . . . 36 . . . 37 . . . 37 . 37 .") },
+    boss: { bpm: 168, melodi: M("69 72 76 72 69 72 76 81 68 71 76 71 68 71 76 80 67 70 74 70 67 70 74 79 68 71 74 77 76 74 71 68"), bas: M("45 . 45 . 45 . 45 . 44 . 44 . 44 . 44 . 43 . 43 . 43 . 43 . 40 . 40 . 40 . 40 .") },
+    zafer: { bpm: 140, melodi: M("72 . 76 . 79 . 84 . . . 83 . 84 . . . 79 . 84 . 88 . . . 86 . 84 . . . . ."), bas: M("48 . . . 55 . . . 48 . . . 55 . . . 53 . . . 55 . . . 48 . . . . . . .") },
+  };
+  const midiHz = (n) => 440 * Math.pow(2, (n - 69) / 12);
+  let muzik = null, muzikZaman = null;
+  function muzikCal(ad) {
+    if (muzik && muzik.ad === ad) return;
+    muzikDur();
+    const m = MUZIK[ad]; if (!m) return;
+    muzik = { ad, m, adim: 0, sonraki: 0 };
+    const tik = () => {
+      if (!ses || !muzik || ses.state !== "running") return;
+      const adimSn = 60 / m.bpm / 4;
+      if (muzik.sonraki < ses.currentTime) muzik.sonraki = ses.currentTime + 0.05;
+      while (muzik.sonraki < ses.currentTime + 0.25) {
+        const i = muzik.adim % m.melodi.length, t = muzik.sonraki;
+        const n = m.melodi[i], b = m.bas[i % m.bas.length];
+        if (n) nota(n, t, adimSn * 0.9, "square", 0.045);
+        if (b) nota(b, t, adimSn * 1.8, "triangle", 0.12);
+        if (i % 4 === 0) davul(t, 0.22, 120); else if (i % 2 === 0) gurultu(0.04, 0.03, 7000, t - ses.currentTime, muzikKazanc);
+        if (i % 8 === 4) gurultu(0.12, 0.09, 1500, t - ses.currentTime, muzikKazanc);
+        muzik.adim++; muzik.sonraki += adimSn;
+        if (ad === "zafer" && muzik.adim >= m.melodi.length) { const s = muzik; setTimeout(() => { if (muzik === s) muzikDur(); }, 600); break; }
+      }
+    };
+    muzikZaman = setInterval(tik, 60); tik();
+  }
+  function nota(n, t, sure, tip, hacim) {
+    const o = ses.createOscillator(), g = ses.createGain();
+    o.type = tip; o.frequency.setValueAtTime(midiHz(n), t);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(hacim, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
+    o.connect(g).connect(muzikKazanc); o.start(t); o.stop(t + sure + 0.02);
+  }
+  function davul(t, hacim, f) {
+    const o = ses.createOscillator(), g = ses.createGain();
+    o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+    g.gain.setValueAtTime(hacim, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+    o.connect(g).connect(muzikKazanc); o.start(t); o.stop(t + 0.17);
+  }
+  function muzikDur() { clearInterval(muzikZaman); muzikZaman = null; muzik = null; }
 
   // ---------- giriş ----------
   const tus = { sol: false, sag: false, zipla: false };
@@ -199,7 +272,7 @@
         if (ustten) {
           p.vy = -560; p.y = d.y - p.h;
           if (d.tip !== "araba") { d.canli = false; SES.ez(); parcaPatla(d.x + d.w / 2, d.y + d.h / 2, "#a855f7", 14); s.sallanma = 0.12; }
-          else bip(500, 700, 0.08);
+          else bip(500, 700, 0.08, "square", 0.1);
         } else return ol(d.tip === "araba" ? "Arabaya çarptın" : "Yakalandın");
       }
     }
@@ -237,7 +310,7 @@
     s.arena.aktif = true;
     s.boss = { ...b, x: s.bossBas.x, y: s.bossBas.y, w: 64, h: 90, vx: 0, vy: 0, kalan: b.can, atis: 1.4, hedefX: s.bossBas.x, dokunulmaz: 0, yer: false, olu: false, yon: -1 };
     s.mesaj = { yazi: `⚠️ ${b.ad}!`, t: 2 };
-    SES.boss();
+    SES.boss(); muzikCal("boss");
   }
   function bossGuncelle(dt) {
     const s = S, b = s.boss, p = s.p;
@@ -261,19 +334,19 @@
       for (let i = 0; i < adet; i++) {
         s.mermi.push({ x: b.x + b.w / 2 - 14, y: b.y + 10, w: 28, h: 28, vx: (dx / ucus) * (i ? 0.7 : 1), vy: -G * ucus / 2 + (p.y - b.y) / ucus * 0.5, emoji: b.mermi, don: 8, aci: 0, yazi: b.yazi, olum: `${b.ad} vurdu` });
       }
-      bip(400, 200, 0.1, "triangle", 0.05);
+      SES.firlat();
     }
     // temas
     if (kesisir(p, b) && b.dokunulmaz <= 0) {
       if (p.vy > 0 && p.y + p.h - b.y < 28) {
-        b.kalan--; b.dokunulmaz = 1.1; p.vy = -650; p.y = b.y - p.h; s.sallanma = 0.25; SES.boss();
+        b.kalan--; b.dokunulmaz = 1.1; p.vy = -650; p.y = b.y - p.h; s.sallanma = 0.25; SES.vurus();
         parcaPatla(b.x + b.w / 2, b.y + 20, "#ef4444", 18);
         if (b.kalan <= 0) {
           b.olu = true; s.arena.bitti = true;
           for (let r = 0; r < 12; r++) S.k[r][s.arena.duvarC] = ".";
           s.mesaj = { yazi: `🏆 ${b.ad} yenildi! Çıkışa koş →`, t: 3 };
           s.mermi = [];
-          SES.bitti();
+          SES.bitti(); muzikCal(s.tema);
         }
       } else if (b.dokunulmaz <= 0) return ol(`${b.ad} yakaladı`);
     }
@@ -300,14 +373,14 @@
     const s = S;
     s.p = oyuncuYeni(s.kontrolNokta);
     s.mermi = [];
-    if (s.boss && !s.arena.bitti) { s.boss = null; s.arena.aktif = false; }
+    if (s.boss && !s.arena.bitti) { s.boss = null; s.arena.aktif = false; muzikCal(s.tema); }
     if (s.polis) s.polis.x = s.p.x - 460;
     // arabalar geri gelsin (motor bölümünde öldükten sonra yol boş kalmasın)
     s.dusman.forEach((d, i) => { if (d.tip === "araba") { const o = s.ilkDusman[i]; d.x = o.x; d.vx = 0; } });
   }
   function bitir() {
     const s = S;
-    s.bitti = true; SES.bitti();
+    s.bitti = true; muzikCal("zafer");
     const sure = Math.round(s.sure), bolum = s.no + 1;
     let enIyi = null;
     try {
@@ -528,7 +601,7 @@
     } else if (tip === "durdu") {
       k.append(el("h2", null, "⏸ Durdu"));
       const bt = el("div", "mc-btns");
-      bt.append(dugme("▶ Devam", ekranTamam, true), dugme("↺ Baştan", () => bolumBaslat(S.no)), dugme(sessiz ? "🔈 Sesi aç" : "🔇 Sesi kapat", () => { sessiz = !sessiz; try { localStorage.setItem("macera_sessiz", sessiz ? "1" : "0"); } catch { /* yok */ } ekranGoster("durdu"); }), dugme("Bölümler", oyundanCik));
+      bt.append(dugme("▶ Devam", ekranTamam, true), dugme("↺ Baştan", () => bolumBaslat(S.no)), dugme(sessiz ? "🔊 Sesi aç" : "🔇 Sesi kapat", () => { sesDurumu(!sessiz); ekranGoster("durdu"); }), dugme("Bölümler", oyundanCik));
       k.append(bt);
     }
     katman.append(k);
@@ -537,14 +610,15 @@
   const kutu = (a, b) => { const d = el("div"); d.append(el("small", null, a), el("b", null, String(b))); return d; };
   function dugme(yazi, f, ana) { const b = el("button", "mc-btn" + (ana ? " ana" : ""), yazi); b.type = "button"; b.addEventListener("click", (e) => { e.stopPropagation(); f(); }); return b; }
   function ekranTamam() {
-    if (ekran === "giris" || ekran === "durdu") { ekran = null; katman.hidden = true; sonZaman = performance.now(); ziplaBasildi = false; }
+    if (ekran === "giris" || ekran === "durdu") { sesAc(); ekran = null; katman.hidden = true; sonZaman = performance.now(); ziplaBasildi = false; muzikCal(S.boss && !S.boss.olu ? "boss" : S.tema); }
     else if (ekran === "bitti" && S.no + 1 < SEV.length) bolumBaslat(S.no + 1);
   }
-  function duraklat() { if (!S || S.bitti || ekran) return; ekranGoster("durdu"); }
+  function duraklat() { if (!S || S.bitti || ekran) return; muzikDur(); ekranGoster("durdu"); }
   $("mcDurdur").addEventListener("click", () => (ekran === "durdu" ? ekranTamam() : duraklat()));
-  document.addEventListener("visibilitychange", () => { if (document.hidden && oyunAcik() && !ekran) duraklat(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && oyunAcik() && !ekran) duraklat(); else if (document.hidden) muzikDur(); });
 
   function bolumBaslat(no) {
+    sesAc(); muzikDur();
     S = bolumKur(no);
     $("mcSecim").hidden = true; $("mcOyun").hidden = false;
     document.body.classList.add("mc-oynuyor");
@@ -554,7 +628,7 @@
     $("mcOyun").scrollIntoView({ behavior: "smooth", block: "center" });
   }
   function oyundanCik() {
-    calisiyor = false; S = null; ekran = null;
+    calisiyor = false; S = null; ekran = null; muzikDur();
     $("mcOyun").hidden = true; $("mcSecim").hidden = false; katman.hidden = true;
     document.body.classList.remove("mc-oynuyor");
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -562,6 +636,9 @@
     secimCiz();
   }
   $("mcCik").addEventListener("click", oyundanCik);
+  $("mcSes").addEventListener("click", () => { sesAc(); sesDurumu(!sessiz); });
+  $("mcSes").textContent = sessiz ? "🔇" : "🔊";
+  addEventListener("keydown", (e) => { if (e.code === "KeyM" && oyunAcik()) { sesAc(); sesDurumu(!sessiz); } });
   $("mcTam").addEventListener("click", async () => {
     const k = $("mcOyun");
     try {

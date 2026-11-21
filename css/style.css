@@ -2807,3 +2807,6 @@ body.mc-oynuyor .mc-oyun { scroll-margin-top: 70px; }
 /* 10 bağlantılı üst menü orta genişliklerde sığsın */
 @media (max-width: 1240px) and (min-width: 901px) { .mainnav a { padding: 7px 8px; font-size: .86rem; } }
 @media (max-width: 1120px) and (min-width: 901px) { .mainnav a { padding: 6px 6px; font-size: .8rem; } }
+.ev-mik { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); font-size: 1.15rem; cursor: pointer; flex: none; box-shadow: 0 6px 16px -6px rgba(0,0,0,.5); }
+.ev-mik.on { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.35), 0 6px 16px -6px rgba(0,0,0,.5); }
+.ev-ses-ac { position: absolute; left: 50%; bottom: 70px; transform: translateX(-50%); border: 0; border-radius: 999px; padding: 9px 16px; background: #111; color: #fff; font: inherit; font-weight: 800; cursor: pointer; z-index: 3; box-shadow: 0 8px 18px -8px rgba(0,0,0,.6); }

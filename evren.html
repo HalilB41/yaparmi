@@ -30,7 +30,9 @@
         <canvas id="evTuval" aria-label="Berkay Evreni haritası"></canvas>
         <div class="ev-kapi" id="evKapi" hidden></div>
         <div class="ev-emojiler" id="evEmojiler" aria-label="Emoji gönder"></div>
+        <button type="button" class="ev-ses-ac" id="evSesAc" hidden>🔈 Sesleri açmak için dokun</button>
         <form class="ev-form" id="evForm" autocomplete="off">
+          <button type="button" class="ev-mik" id="evMik" title="Mikrofonu aç">🔇</button>
           <input id="evYazi" maxlength="140" placeholder="Bir şey yaz, kafanın üstünde çıksın… (Enter)" enterkeyhint="send" />
           <button type="submit" aria-label="Gönder">➤</button>
         </form>
@@ -42,7 +44,7 @@
         <div class="ev-avatarlar" id="evAvatarlar"></div>
         <h3>Sohbet</h3>
         <div class="ev-log" id="evLog"></div>
-        <p class="muted ev-ipucu">WASD / oklar ya da haritaya dokunarak yürü · Enter yaz · 1–8 emoji · kapıda E ile gir</p>
+        <p class="muted ev-ipucu">WASD / oklar ya da haritaya dokunarak yürü · Enter yaz · M mikrofon · 1–8 emoji · kapıda E ile gir. Mikrofonu açınca yakınındakiler seni duyar, uzaklaştıkça sesin kısılır.</p>
       </aside>
     </div>
   </main>

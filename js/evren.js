@@ -188,6 +188,7 @@
     // başkalarını yumuşakça hedef konuma kaydır
     kisiler.forEach((k) => { const f = Math.min(1, dt * (k.kanal && k.kanal.readyState === "open" ? 12 : 3)); const ex = k.x, ey = k.y; k.x += (k.hx - k.x) * f; k.y += (k.hy - k.y) * f; k.hareket = Math.hypot(k.x - ex, k.y - ey) > 0.3; if (k.hareket) k.adim = (k.adim || 0) + dt * 10; });
     npcGuncelle(dt, t);
+    sesGuncelle();
     // kamera
     kam.x = Math.max(0, Math.min(DW - cv._w, ben.x - cv._w / 2));
     kam.y = Math.max(0, Math.min(DH - cv._h, ben.y - cv._h / 2));
@@ -237,11 +238,13 @@
     ctx.globalAlpha = uzak ? 0.6 : 1;
     ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.beginPath(); ctx.ellipse(k.x, k.y + 2, 13, 5, 0, 0, 7); ctx.fill();
     ctx.fillStyle = benim ? "#fff" : "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(k.x, k.y - 18 - bob, 17, 0, 7); ctx.fill();
-    if (benim) { ctx.strokeStyle = "#7c3aed"; ctx.lineWidth = 3; ctx.stroke(); }
+    const konusuyor = benim ? mik.konusuyor : k.konusuyor;
+    if (konusuyor) { ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 4 + Math.sin(t / 80) * 1.5; ctx.stroke(); }
+    else if (benim) { ctx.strokeStyle = "#7c3aed"; ctx.lineWidth = 3; ctx.stroke(); }
     emojiYaz(k.avatar || "🙂", k.x, k.y - 17 - bob, 24);
     // isim
     ctx.font = "800 12px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-    const ad = (benim ? "sen" : k.ad || "?") + (uzak ? " 📶" : "");
+    const ad = (benim ? "sen" : k.ad || "?") + ((benim ? mik.acik : k.mik) ? " 🎙️" : "") + (uzak ? " 📶" : "");
     const tw = ctx.measureText(ad).width + 10;
     ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.beginPath(); ctx.roundRect(k.x - tw / 2, k.y + 6, tw, 17, 8); ctx.fill();
     ctx.fillStyle = "#fff"; ctx.fillText(ad, k.x, k.y + 19);
@@ -297,6 +300,10 @@
     logaYaz("sen", y);
     $("evYazi").value = ""; $("evYazi").blur();
   });
+  $("evMik").addEventListener("click", mikDegistir);
+  $("evSesAc").addEventListener("click", sesleriAc);
+  addEventListener("keydown", (e) => { if (e.code === "KeyM" && document.activeElement !== $("evYazi")) mikDegistir(); });
+  cv.addEventListener("pointerdown", () => { if (!$("evSesAc").hidden) sesleriAc(); });
   const emoKutu = $("evEmojiler");
   EMOJI.forEach((e, i) => { const b = el("button", null, e); b.type = "button"; b.title = `${e} (${i + 1})`; b.addEventListener("click", () => emoGonder(e)); emoKutu.append(b); });
   function emoGonder(e) { if (!ben) return; ben.emo = { e, bitis: performance.now() + 2000 }; yayinla({ t: "emo", e }); }
@@ -360,7 +367,13 @@
   }
   function kanalKur(k, kanal) {
     k.kanal = kanal;
-    kanal.onopen = () => { k.durum = "canli"; kanal.send(JSON.stringify({ t: "bilgi", ad: profile.kullaniciAdi, avatar })); kanal.send(JSON.stringify({ t: "poz", x: Math.round(ben.x), y: Math.round(ben.y), yon: ben.yon })); listeCiz(); };
+    kanal.onopen = () => {
+      k.durum = "canli";
+      kanal.send(JSON.stringify({ t: "bilgi", ad: profile.kullaniciAdi, avatar }));
+      kanal.send(JSON.stringify({ t: "poz", x: Math.round(ben.x), y: Math.round(ben.y), yon: ben.yon }));
+      if (mik.akis) { sesEkle(k); kanal.send(JSON.stringify({ t: "mik", acik: mik.acik })); }
+      listeCiz();
+    };
     kanal.onclose = () => { k.durum = "uzak"; listeCiz(); };
     kanal.onmessage = (e) => {
       let m; try { m = JSON.parse(e.data); } catch { return; }
@@ -368,12 +381,91 @@
       else if (m.t === "msg") { const y = String(m.yazi || "").slice(0, 140); k.balon = { yazi: y, bitis: performance.now() + 6000 }; logaYaz(k.ad, y); }
       else if (m.t === "emo") { if (EMOJI.includes(m.e)) k.emo = { e: m.e, bitis: performance.now() + 2000 }; }
       else if (m.t === "bilgi") { if (AVATARLAR.includes(m.avatar)) k.avatar = m.avatar; listeCiz(); }
+      else if (m.t === "mik") { k.mik = !!m.acik; listeCiz(); }
+      else if (m.t === "sdp" || m.t === "ice") yenidenAnlas(k, m);
     };
+  }
+  // Bağlantı kurulduktan sonraki pazarlıklar (mikrofon eklenince vb.) Firestore'a değil veri kanalına gider.
+  // "Kibar eş" yöntemi: iki taraf aynı anda teklif ederse büyük uid'li olan geri çekilir.
+  function pcHazirla(k, pc) {
+    k.kibar = profile.uid > k.uid; k.teklifte = false; k.yoksay = false;
+    pc.ontrack = (e) => sesBagla(k, e.streams[0] || new MediaStream([e.track]));
+    pc.onnegotiationneeded = async () => {
+      if (!(k.kanal && k.kanal.readyState === "open")) return; // ilk bağlantı Firestore üzerinden yapılır
+      try { k.teklifte = true; await pc.setLocalDescription(); k.kanal.send(JSON.stringify({ t: "sdp", d: pc.localDescription })); }
+      catch (e) { console.warn("pazarlık:", e.message); } finally { k.teklifte = false; }
+    };
+    pc.onicecandidate = (e) => { if (e.candidate && k.kanal && k.kanal.readyState === "open") k.kanal.send(JSON.stringify({ t: "ice", c: e.candidate })); };
+  }
+  async function yenidenAnlas(k, m) {
+    const pc = k.pc; if (!pc) return;
+    try {
+      if (m.t === "sdp") {
+        const d = m.d, cakisma = d.type === "offer" && (k.teklifte || pc.signalingState !== "stable");
+        k.yoksay = !k.kibar && cakisma;
+        if (k.yoksay) return;
+        await pc.setRemoteDescription(d);
+        if (d.type === "offer") { await pc.setLocalDescription(); k.kanal.send(JSON.stringify({ t: "sdp", d: pc.localDescription })); }
+      } else if (m.c) {
+        try { await pc.addIceCandidate(m.c); } catch (e) { if (!k.yoksay) console.warn("ice:", e.message); }
+      }
+    } catch (e) { console.warn("yeniden anlaşma:", e.message); }
+  }
+
+  // ---------- sesli sohbet (yakınlık) ----------
+  // Yakındakini tam duyarsın (≈4 kare), uzaklaştıkça kısılır, ≈15 kareden sonra duyulmaz.
+  const mik = { akis: null, acik: false, analiz: null, konusuyor: false };
+  let sesBaglam = null;
+  const baglamAl = () => { try { sesBaglam = sesBaglam || new (window.AudioContext || window.webkitAudioContext)(); if (sesBaglam.state === "suspended") sesBaglam.resume(); } catch { /* yok */ } return sesBaglam; };
+  function analizKur(akis) {
+    const b = baglamAl(); if (!b) return null;
+    try { const a = b.createAnalyser(); a.fftSize = 256; b.createMediaStreamSource(akis).connect(a); return { a, veri: new Uint8Array(a.frequencyBinCount) }; } catch { return null; }
+  }
+  const sesDuzeyi = (an) => { if (!an) return 0; an.a.getByteFrequencyData(an.veri); let t = 0; for (let i = 2; i < 40; i++) t += an.veri[i]; return t / 38; };
+  function sesBagla(k, akis) {
+    if (k.sesEl && k.sesEl.srcObject === akis) return;
+    if (!k.sesEl) { k.sesEl = new Audio(); k.sesEl.autoplay = true; k.sesEl.playsInline = true; }
+    k.sesEl.srcObject = akis;
+    k.sesEl.volume = 0;
+    k.sesEl.play().catch(() => { $("evSesAc").hidden = false; });
+    k.analiz = analizKur(akis);
+  }
+  function sesEkle(k) {
+    if (!mik.akis || !k.pc || k.sesGonderen) return;
+    try { k.sesGonderen = k.pc.addTrack(mik.akis.getAudioTracks()[0], mik.akis); } catch (e) { console.warn("ses ekle:", e.message); }
+  }
+  async function mikDegistir() {
+    const b = $("evMik");
+    if (!mik.akis) {
+      try {
+        mik.akis = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      } catch (e) { logaYaz("🎙️", "Mikrofona izin verilmedi."); return; }
+      mik.analiz = analizKur(mik.akis);
+      kisiler.forEach(sesEkle);
+    }
+    mik.acik = !mik.acik;
+    mik.akis.getAudioTracks().forEach((t) => (t.enabled = mik.acik));
+    b.classList.toggle("on", mik.acik); b.textContent = mik.acik ? "🎙️" : "🔇"; b.title = mik.acik ? "Mikrofonu kapat" : "Mikrofonu aç";
+    yayinla({ t: "mik", acik: mik.acik });
+    baglamAl(); sesleriAc();
+    listeCiz();
+  }
+  function sesleriAc() { kisiler.forEach((k) => { if (k.sesEl) k.sesEl.play().catch(() => {}); }); $("evSesAc").hidden = true; baglamAl(); }
+  function sesGuncelle() {
+    kisiler.forEach((k) => {
+      if (!k.sesEl || !ben) return;
+      const d = Math.hypot(k.x - ben.x, k.y - ben.y);
+      const v = d < 130 ? 1 : d > 480 ? 0 : 1 - (d - 130) / 350;
+      k.sesEl.volume = Math.max(0, Math.min(1, v * v));
+      k.konusuyor = k.mik && sesDuzeyi(k.analiz) > 18;
+    });
+    mik.konusuyor = mik.acik && sesDuzeyi(mik.analiz) > 18;
   }
   async function baglan(k, deneme = 0) {
     if (!(profile.uid < k.uid)) { k.durum = "bekliyor"; return; } // teklifi küçük uid'li taraf yapar
     k.durum = "baglaniyor"; listeCiz();
-    const pc = new RTCPeerConnection(ICE); k.pc = pc;
+    const pc = new RTCPeerConnection(ICE); k.pc = pc; k.sesGonderen = null;
+    pcHazirla(k, pc);
     kanalKur(k, pc.createDataChannel("evren"));
     pc.onconnectionstatechange = () => izle(k, pc, deneme);
     await pc.setLocalDescription(await pc.createOffer());
@@ -396,7 +488,8 @@
     if (!k) { bekleyenTeklif[v.kimden] = { id, v }; return; } // kişinin varlık kaydı gelince işlenir
     islenen[id] = v.t;
     if (k.pc) try { k.pc.close(); } catch { /* yok */ }
-    const pc = new RTCPeerConnection(ICE); k.pc = pc; k.durum = "baglaniyor"; listeCiz();
+    const pc = new RTCPeerConnection(ICE); k.pc = pc; k.sesGonderen = null; k.durum = "baglaniyor"; listeCiz();
+    pcHazirla(k, pc);
     pc.ondatachannel = (e) => kanalKur(k, e.channel);
     pc.onconnectionstatechange = () => izle(k, pc, 0);
     await pc.setRemoteDescription(JSON.parse(v.offer));
@@ -412,7 +505,7 @@
       if (deneme < 2 && kisiler.has(k.uid)) setTimeout(() => { if (kisiler.has(k.uid) && k.pc === pc) baglan(k, deneme + 1); }, 4000 + deneme * 4000);
     }
   }
-  function kapat(k) { try { if (k.sinyalDur) k.sinyalDur(); if (k.pc) k.pc.close(); } catch { /* yok */ } }
+  function kapat(k) { try { if (k.sinyalDur) k.sinyalDur(); if (k.pc) k.pc.close(); if (k.sesEl) { k.sesEl.pause(); k.sesEl.srcObject = null; } } catch { /* yok */ } }
   function yayinla(m) { const s = JSON.stringify(m); kisiler.forEach((k) => { if (k.kanal && k.kanal.readyState === "open") try { k.kanal.send(s); } catch { /* yok */ } }); }
 
   // ---------- liste ----------
@@ -420,10 +513,10 @@
     const l = $("evListe"); l.textContent = "";
     const n = kisiler.size + (ben ? 1 : 0);
     $("evSayi").textContent = n ? `${n} kişi evrende` : "";
-    if (ben) { const s = el("div", "ev-kisi ben"); s.append(el("span", null, avatar), el("b", null, profile.kullaniciAdi + " (sen)")); l.append(s); }
+    if (ben) { const s = el("div", "ev-kisi ben"); s.append(el("span", null, avatar), el("b", null, profile.kullaniciAdi + " (sen)" + (mik.acik ? " 🎙️" : ""))); l.append(s); }
     kisiler.forEach((k) => {
       const s = el("div", "ev-kisi");
-      s.append(el("span", null, k.avatar || "🙂"), el("b", null, k.ad), el("small", "ev-durum " + (k.durum || ""), { canli: "🟢 canlı", baglaniyor: "🟡 bağlanıyor", bekliyor: "🟡 bağlanıyor", uzak: "⚪ yavaş bağlantı", yeni: "🟡" }[k.durum] || ""));
+      s.append(el("span", null, k.avatar || "🙂"), el("b", null, k.ad + (k.mik ? " 🎙️" : "")), el("small", "ev-durum " + (k.durum || ""), { canli: "🟢 canlı", baglaniyor: "🟡 bağlanıyor", bekliyor: "🟡 bağlanıyor", uzak: "⚪ yavaş bağlantı", yeni: "🟡" }[k.durum] || ""));
       s.addEventListener("click", () => { hedef = { x: k.x, y: k.y + 30 }; });
       l.append(s);
     });
