@@ -142,5 +142,6 @@
     basladi = true;
     anketleriDinle(); sayaclariYukle(); vardiyalariDinle();
   }
-  if (window.YaparmiAuth) window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin") basla(); });
+  // Veriyi Topluluk bölümü ilk açılınca yükle (okuma kotası)
+  if (window.YaparmiAuth) window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin") (window.AdminSekme ? window.AdminSekme.acilinca("topluluk", basla) : basla()); });
 })();

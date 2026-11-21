@@ -301,6 +301,13 @@
   });
 
   // ---------------- Cüzdanlar ----------------
+  let cuzdanSira = { alan: "toplam", ters: true };
+  document.querySelectorAll(".bxa-siralanir th[data-sira]").forEach((th) => th.addEventListener("click", () => {
+    const a = th.dataset.sira;
+    cuzdanSira = cuzdanSira.alan === a ? { alan: a, ters: !cuzdanSira.ters } : { alan: a, ters: a !== "ad" };
+    cuzdanlarCiz();
+  }));
+  $("bxaCuzdanAra").addEventListener("input", () => cuzdanlarCiz());
   function cuzdanlarCiz() {
     const tb = $("bxaCuzdanlar"); tb.textContent = "";
     if (!d) return;
@@ -311,9 +318,19 @@
       const kz = poz.reduce((t, p) => t + E.pnl(p, d.fiyat, d.derinlik), 0);
       const toplam = BC.bakiye(c, secili) * d.fiyat + c.btl + poz.reduce((t, p) => t + Math.max(0, p.teminat + E.pnl(p, d.fiyat, d.derinlik)), 0);
       return { c, poz, teminat, kz, toplam };
-    }).sort((a, b) => b.toplam - a.toplam);
-    satirlar.forEach(({ c, poz, teminat, kz, toplam }) => {
+    });
+    // Arama + sıralama (başlığa tıklayınca)
+    const q = ($("bxaCuzdanAra").value || "").trim().toLocaleLowerCase("tr");
+    const deger = { ad: (x) => x.c.ad || "", coin: (x) => BC.bakiye(x.c, secili), usdt: (x) => x.c.btl || 0, gercek: (x) => x.c.gerceklesen || 0, toplam: (x) => x.toplam };
+    const f = deger[cuzdanSira.alan] || deger.toplam;
+    satirlar.sort((a, b) => { const x = f(a), y = f(b); const k = typeof x === "string" ? x.localeCompare(y, "tr") : x - y; return cuzdanSira.ters ? -k : k; });
+    document.querySelectorAll(".bxa-siralanir th[data-sira]").forEach((th) => { th.classList.toggle("on", th.dataset.sira === cuzdanSira.alan); th.dataset.yon = cuzdanSira.ters ? "▾" : "▴"; });
+    satirlar.filter((x) => !q || (x.c.ad || "").toLocaleLowerCase("tr").includes(q)).forEach(({ c, poz, teminat, kz, toplam }) => {
       const tr = el("tr");
+      tr.classList.add("bxa-tikla");
+      if ((c.btl || 0) > 1e6) tr.classList.add("bxa-anormal"); // olağandışı büyük bakiye: göze çarpsın
+      tr.title = "Para gönder kutusunda seç";
+      tr.addEventListener("click", (e) => { if (e.target.closest("button")) return; const sel = $("bxaKisi"); if (sel && [...sel.options].some((o) => o.value === c.uid)) { sel.value = c.uid; sel.dispatchEvent(new Event("change")); $("bxaKisi").scrollIntoView({ behavior: "smooth", block: "center" }); } });
       const m = BC.bakiye(c, secili);
       tr.append(el("td", null, c.ad), el("td", null, para(m, 4)), el("td", null, ((m / d.toplamArz) * 100).toFixed(3) + "%"), el("td", null, para(c.btl)),
         el("td", null, poz.length ? `${poz.length} poz · ${para(teminat)} USDT` : "—"),
@@ -433,5 +450,7 @@
   setInterval(() => { if (d) { pozlarCiz(); } }, 15000);
   // ilk çizim (coinler gelmeden)
   coinlerCiz();
-  window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin" && !basladi) { basladi = true; baslat(); } });
+  // Veriyi Borsa bölümü ilk açılınca yükle (okuma kotası)
+  const bxaBasla = () => { if (!basladi) { basladi = true; baslat(); } };
+  window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin") (window.AdminSekme ? window.AdminSekme.acilinca("borsa", bxaBasla) : bxaBasla()); });
 })();

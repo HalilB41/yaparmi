@@ -503,6 +503,7 @@
   }
 
   if (window.YaparmiAuth) {
-    window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin") basla(); });
+    // Veriyi Çark bölümü ilk açılınca yükle (okuma kotası)
+    window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin") (window.AdminSekme ? window.AdminSekme.acilinca("cark", basla) : basla()); });
   }
 })();

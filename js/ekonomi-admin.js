@@ -18,7 +18,9 @@
 
   let basladi = false, e = VARSAYILAN, ekoDolu = false, dilimler = [];
 
-  window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin" && !basladi) { basladi = true; baslat(); } });
+  // Veriyi Ekonomi bölümü ilk açılınca yükle (okuma kotası)
+  const ekoBasla = () => { if (!basladi) { basladi = true; baslat(); } };
+  window.YaparmiAuth.onChange((p) => { if (p && p.rol === "admin") (window.AdminSekme ? window.AdminSekme.acilinca("ekonomi", ekoBasla) : ekoBasla()); });
 
   async function islem(btn, durumEl, ad, veri) {
     if (btn) btn.disabled = true;

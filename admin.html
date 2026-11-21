@@ -19,10 +19,9 @@
 </head>
 <body>
   <main class="page">
-    <header class="page-head">
+    <header class="page-head adm-bas">
       <span class="eyebrow"><i>⚙️</i> Yönetim</span>
-      <h1>Admin <em>paneli</em></h1>
-      <p class="lead">Kâhin, borsa, çark, topluluk, içerik, oyunlar ve galeri — her şey kendi sekmesinde.</p>
+      <h1>Kontrol <em>merkezi</em></h1>
     </header>
 
     <div class="panel card admin-section" id="adminGate">
@@ -32,23 +31,51 @@
       </div>
     </div>
 
-    <div id="adminContent" hidden>
+    <div id="adminContent" class="adm-yerlesim" hidden>
       <nav class="adm-tabs" role="tablist" aria-label="Admin bölümleri">
-        <button type="button" role="tab" data-tab="kahin">🔮 Kâhin</button>
-        <button type="button" role="tab" data-tab="borsa">📈 Borsa <span class="adm-say" id="admSiparisSay" hidden></span></button>
-        <button type="button" role="tab" data-tab="ekonomi">💰 Ekonomi</button>
-        <button type="button" role="tab" data-tab="cark">🎡 Çark <span class="adm-say" id="admCarkSay" hidden></span></button>
-        <button type="button" role="tab" data-tab="topluluk">📊 Topluluk</button>
-        <button type="button" role="tab" data-tab="icerik">📝 İçerik</button>
-        <button type="button" role="tab" data-tab="oyunlar">🎮 Oyunlar</button>
-        <button type="button" role="tab" data-tab="galeri">🖼️ Galeri <span class="adm-say" id="admOneriSay" hidden></span></button>
+        <button type="button" role="tab" data-tab="genel"><i>🏠</i><span>Genel bakış</span></button>
+        <span class="adm-menu-baslik">Para &amp; oyun</span>
+        <button type="button" role="tab" data-tab="borsa"><i>📈</i><span>Borsa</span><span class="adm-say" id="admSiparisSay" hidden></span></button>
+        <button type="button" role="tab" data-tab="ekonomi"><i>💰</i><span>Ekonomi</span></button>
+        <button type="button" role="tab" data-tab="cark"><i>🎡</i><span>Çark</span><span class="adm-say" id="admCarkSay" hidden></span></button>
+        <span class="adm-menu-baslik">Site</span>
+        <button type="button" role="tab" data-tab="kahin"><i>🔮</i><span>Kâhin</span></button>
+        <button type="button" role="tab" data-tab="galeri"><i>🖼️</i><span>Galeri</span><span class="adm-say" id="admOneriSay" hidden></span></button>
+        <button type="button" role="tab" data-tab="topluluk"><i>📊</i><span>Topluluk</span></button>
+        <button type="button" role="tab" data-tab="icerik"><i>📝</i><span>İçerik</span></button>
+        <button type="button" role="tab" data-tab="oyunlar"><i>🎮</i><span>Oyunlar</span></button>
+        <a class="adm-menu-site" href="/">↩ Siteye dön</a>
       </nav>
 
-      <!-- ================= BORSA ================= -->
-      <section class="adm-panel admin-grid" data-panel="borsa" hidden>
-        <div class="adm-intro wide"><b>📈 Borsa</b> Bütün coinler burada: arz, kimde ne kadar var, kim kaldıraçta, kâr/zararlar, market siparişleri ve fiyat kontrolü. Aşağıdaki özet, grafik, MM, ayarlar, arz ve pozisyonlar <b>seçili coin</b> içindir. <a href="/borsa" target="_blank">Borsayı aç</a></div>
+      <!-- ================= GENEL BAKIŞ ================= -->
+      <section class="adm-panel adm-genel" data-panel="genel" hidden>
+        <div class="adm-kutular">
+          <a class="adm-kutu" href="#borsa/market" data-ayna="admSiparisSay"><i>📦</i><b>0</b><span>teslim bekleyen market siparişi</span></a>
+          <a class="adm-kutu" href="#galeri/oneri" data-ayna="admOneriSay"><i>🖼️</i><b>0</b><span>onay bekleyen galeri fotoğrafı</span></a>
+          <a class="adm-kutu" href="#cark/sonuc" data-ayna="admCarkSay"><i>🎡</i><b>0</b><span>ödülünü isteyen (çark)</span></a>
+        </div>
+        <div class="panel card admin-section">
+          <h2>⚡ Hızlı işlemler</h2>
+          <div class="adm-hizli">
+            <a href="#borsa/genel"><i>📰</i><b>Son dakika yayınla</b><span>Haber yaz, coin fiyatı oynasın</span></a>
+            <a href="#borsa/kullanici"><i>💸</i><b>Para gönder / geri al</b><span>BERKAY, coin ya da USDT</span></a>
+            <a href="#borsa/fiyat"><i>🤖</i><b>Fiyat ve piyasa yapıcı</b><span>Fiyat ver, rota çiz, MM ayarla</span></a>
+            <a href="#borsa/market"><i>🛒</i><b>Market</b><span>Siparişler ve ürünler</span></a>
+            <a href="#topluluk/anket"><i>🗳️</i><b>Anket aç</b><span>Günün sorusu, haftanın rezili</span></a>
+            <a href="#galeri/oneri"><i>📸</i><b>Galeriye fotoğraf</b><span>Önerileri onayla ya da direkt ekle</span></a>
+            <a href="#icerik"><i>⏱️</i><b>Sayaçlar</b><span>"Berkay ehliyet alalı X gün"</span></a>
+            <a href="#ekonomi"><i>🎁</i><b>Ödüller ve tahmin</b><span>Günlük ödül, çark dilimleri, tahmin pazarı</span></a>
+            <a href="#kahin"><i>🔮</i><b>Kâhin'e sorulanlar</b><span>Kim ne sordu, bot ne dedi</span></a>
+          </div>
+        </div>
+        <p class="muted adm-ipucu">💡 Her bölüm verisini ilk açtığında yükler; bu sayfayı açmak neredeyse hiç okuma harcamaz.</p>
+      </section>
 
-        <div class="panel card admin-section wide bxa-coin-kart">
+      <!-- ================= BORSA ================= -->
+      <section class="adm-panel admin-grid" data-panel="borsa" data-altlar="genel:📊 Genel|fiyat:✏️ Fiyat &amp; MM|kullanici:👛 Kullanıcılar|market:🛒 Market|hareket:🧾 Hareketler" hidden>
+        <div class="adm-intro wide" data-alt="genel"><b>📈 Borsa</b> Bütün coinler burada: arz, kimde ne kadar var, kim kaldıraçta, kâr/zararlar, market siparişleri ve fiyat kontrolü. Aşağıdaki özet, grafik, MM, ayarlar, arz ve pozisyonlar <b>seçili coin</b> içindir. <a href="/borsa" target="_blank">Borsayı aç</a></div>
+
+        <div data-alt="*" class="panel card admin-section wide bxa-coin-kart">
           <div class="se-top">
             <h2>🪙 Coin seç</h2>
             <span class="muted" id="bxaCoinBilgi"></span>
@@ -73,7 +100,7 @@
           </details>
         </div>
 
-        <div class="panel card admin-section wide bxa-olay-kart">
+        <div data-alt="genel" class="panel card admin-section wide bxa-olay-kart">
           <h2>📰 Son dakika (olay)</h2>
           <p class="muted">Bir haber yaz ve etkisini seç: <b>seçili coinin</b> fiyatı anında o kadar değişir, kaldıraçtakiler etkilenir ve sitenin her sayfasında 30 dakika "SON DAKİKA" bandı çıkar. Gerçek fiyatlı coinlerde (BTC/ETH/SOL) çalışmaz.</p>
           <div class="tpl-form adm-form">
@@ -91,7 +118,7 @@
           <div class="bx-liste" id="bxaOlaylar"></div>
         </div>
 
-        <div class="panel card admin-section wide">
+        <div data-alt="genel" class="panel card admin-section wide">
           <div class="se-top">
             <h2>📊 Özet</h2>
             <div class="sayac-butonlar">
@@ -103,7 +130,7 @@
           <p class="suggest-status" id="bxaGenelDurum"></p>
         </div>
 
-        <div class="panel card admin-section wide">
+        <div data-alt="fiyat" class="panel card admin-section wide">
           <h2>✏️ Fiyatı yönet</h2>
           <p class="muted"><b>Çizim modu</b>nu aç, grafiğin sağındaki "gelecek" alanına fareyle (telefonda parmakla) çizgi çiz, <b>Rotayı uygula</b> de. Fiyat her 10 saniyede bir çizdiğin çizgiye doğru çekilir (alım/satımlar yine anlık oynatır ama çizgiye geri döner). Rota sadece sende görünür, kullanıcılar görmez. Fiyat çizgiyi izlerken kaldıraçtakiler likide olabilir.</p>
           <div class="bx-admin-araclar">
@@ -127,7 +154,7 @@
           <p class="suggest-status" id="bxaFiyatDurum"></p>
         </div>
 
-        <div class="panel card admin-section wide">
+        <div data-alt="fiyat" class="panel card admin-section wide">
           <h2>🤖 Piyasa yapıcı (MM)</h2>
           <p class="muted">Kasa adına <b>dakikada bir</b> alım/satım yapan bot. Kullanıcı bakiyelerine ve toplam arza dokunmaz, sadece fiyatı iter (normal alım-satımla aynı eğriden). <b>Serbest</b>: sabit hedef yok, fiyat istediği yöne gider. MM fiyatın son N dakikalık ortalamasını izler; fiyat bir anda ortalamadan ±bant kadar koparsa (dev alım/satım iğnesi) geri törpüler. Yavaş yükseliş/düşüşe karışmaz, ortalama da arkasından gelir. <b>Sabit hedef</b>: fiyatı girdiğin değerin çevresinde tutar. <b>Sürekli al / sat</b>: her dakika sabit miktar. Çalışması için birinin borsa ya da admin sayfası açık olmalı (kimse yokken geçen süre, biri girince geriye dönük hesaplanır).</p>
           <div class="tpl-form adm-form">
@@ -147,7 +174,7 @@
           <p class="suggest-status" id="bxaMMSonuc"></p>
         </div>
 
-        <div class="panel card admin-section">
+        <div data-alt="fiyat" class="panel card admin-section wide">
           <h2>⚙️ Piyasa ayarları</h2>
           <div class="tpl-form adm-form">
             <label>Likidite derinliği (USDT) <input type="number" id="bxaDerinlik" min="100" step="100" /></label>
@@ -159,7 +186,7 @@
           <p class="suggest-status" id="bxaAyarDurum"></p>
         </div>
 
-        <div class="panel card admin-section">
+        <div data-alt="kullanici" class="panel card admin-section wide">
           <h2>🏦 Arz ve para gönder</h2>
           <div class="tpl-form adm-form">
             <label>Kullanıcı <select id="bxaKisi"><option value="">Seç…</option></select></label>
@@ -174,15 +201,19 @@
           <p class="suggest-status" id="bxaParaDurum"></p>
         </div>
 
-        <div class="panel card admin-section wide">
-          <h2>👛 Cüzdanlar · kimde ne var</h2>
-          <div class="admin-table-wrap"><table class="admin-table bx-tablo">
-            <thead><tr><th>Kullanıcı</th><th class="bxa-sym">BERKAY</th><th>Arz payı</th><th>USDT</th><th>Kaldıraçta</th><th>Açık K/Z</th><th>Gerçekleşen K/Z</th><th>Toplam değer</th><th>Süsler</th></tr></thead>
+        <div data-alt="kullanici" class="panel card admin-section wide">
+          <div class="se-top">
+            <h2>👛 Cüzdanlar · kimde ne var</h2>
+            <label class="bxa-ara"><span aria-hidden="true">🔍</span><input type="search" id="bxaCuzdanAra" placeholder="Kullanıcı ara" autocomplete="off" /></label>
+          </div>
+          <p class="muted bxa-ipucu">Başlıklara tıklayınca sıralanır. Bir satıra tıklarsan o kişi "Para gönder" kutusunda seçilir.</p>
+          <div class="admin-table-wrap"><table class="admin-table bx-tablo bxa-siralanir">
+            <thead><tr><th data-sira="ad">Kullanıcı</th><th data-sira="coin" class="bxa-sym">BERKAY</th><th>Arz payı</th><th data-sira="usdt">USDT</th><th>Kaldıraçta</th><th>Açık K/Z</th><th data-sira="gercek">Gerçekleşen K/Z</th><th data-sira="toplam">Toplam değer</th><th>Süsler</th></tr></thead>
             <tbody id="bxaCuzdanlar"><tr><td colspan="8" class="muted">Yükleniyor…</td></tr></tbody>
           </table></div>
         </div>
 
-        <div class="panel card admin-section wide">
+        <div data-alt="genel" class="panel card admin-section wide">
           <h2>⚡ Kaldıraç pozisyonları (canlı)</h2>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
             <thead><tr><th>Kullanıcı</th><th>Yön</th><th>Teminat</th><th>Büyüklük</th><th>Giriş</th><th>Likidasyon</th><th>K/Z</th><th>Açılış</th><th>İşlem</th></tr></thead>
@@ -190,7 +221,7 @@
           </table></div>
         </div>
 
-        <div class="panel card admin-section wide">
+        <div data-alt="market" class="panel card admin-section wide">
           <h2>📦 Market siparişleri</h2>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
             <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Ürün</th><th>Fiyat</th><th>Durum</th><th>İşlem</th></tr></thead>
@@ -198,12 +229,12 @@
           </table></div>
         </div>
 
-        <div class="panel card admin-section">
+        <div data-alt="market" class="panel card admin-section">
           <h2>🛒 Market ürünleri</h2>
           <div id="bxaUrunler"><p class="muted">Yükleniyor…</p></div>
         </div>
 
-        <div class="panel card admin-section">
+        <div data-alt="market" class="panel card admin-section">
           <h2 id="bxaUrunBaslik">➕ Ürün ekle</h2>
           <div class="tpl-form adm-form">
             <input type="hidden" id="bxaUrunId" />
@@ -225,7 +256,7 @@
           <p class="suggest-status" id="bxaUrunDurum"></p>
         </div>
 
-        <div class="panel card admin-section wide">
+        <div data-alt="hareket" class="panel card admin-section wide">
           <h2>🧾 Para hareketleri</h2>
           <p class="muted">Kim ne aldı, ne sattı, kime ne gitti. Son 300 kayıt.</p>
           <div class="admin-table-wrap"><table class="admin-table bx-tablo">
@@ -306,10 +337,10 @@
       </section>
 
       <!-- ================= ÇARK ================= -->
-      <section class="adm-panel admin-grid" data-panel="cark" id="carkAdmin" hidden>
-        <div class="adm-intro wide"><b>🎡 Çark</b> Sırayla: ① çarkı aç/kapat ② mola seç ③ kuralları yaz ④ dilimleri düzenle ⑤ kime ne çıktı.</div>
+      <section class="adm-panel admin-grid" data-panel="cark" id="carkAdmin" data-altlar="durum:🎡 Durum|kural:📜 Kurallar|dilim:🍕 Dilimler|sonuc:🏆 Kime ne çıktı" hidden>
+        <div class="adm-intro wide" data-alt="durum"><b>🎡 Çark</b> Sırayla: ① çarkı aç/kapat ② mola seç ③ kuralları yaz ④ dilimleri düzenle ⑤ kime ne çıktı.</div>
 
-      <div class="panel card admin-section wide">
+      <div data-alt="durum" class="panel card admin-section wide">
         <div class="se-top">
           <h2>🎡 Çark durumu</h2>
           <div class="sayac-butonlar">
@@ -337,7 +368,7 @@
         </div>
       </div>
 
-      <div class="panel card admin-section wide">
+      <div data-alt="kural" class="panel card admin-section wide">
         <h2>📜 Çark kuralları</h2>
         <p class="muted">Çark sayfasına girenler önce bu maddeleri görür, "Okudum, anladım" deyince çark açılır. Her satır bir madde (en fazla 10). Boş bırakırsan kural ekranı çıkmaz. Maddeleri değiştirince herkes yeniden okuyup onaylar.</p>
         <textarea id="carkKuralInput" class="cark-kural-input" maxlength="3000" placeholder="Örn. Ödüller sadece Halil depodayken verilir.&#10;Bir kişi birden fazla hesap açarsa ödülü iptal olur.&#10;..."></textarea>
@@ -347,7 +378,7 @@
         <p class="suggest-status" id="carkKuralDurum"></p>
       </div>
 
-      <div class="panel card admin-section wide">
+      <div data-alt="dilim" class="panel card admin-section wide">
         <h2>🎡 Sınırsız Çark</h2>
         <p class="muted">Düzenlemek istediğin dilime tıkla. Dilim ne kadar büyükse o kadar sık çıkar, kullanıcının gördüğü çark da aynen böyle. "🌟 Maximus" işaretli dilim çıkan kişi Sınırsız Maximus Çarkı'nı bir kez çevirme hakkı kazanır.</p>
         <div id="carkSinirsizEditor"></div>
@@ -362,7 +393,7 @@
         <p class="suggest-status" id="carkKaydetDurum"></p>
       </div>
 
-      <div class="panel card admin-section wide">
+      <div data-alt="sonuc" class="panel card admin-section wide">
         <h2>🏆 Kime ne çıktı</h2>
         <p class="muted">Ödülü istesin istemesin herkesin sonucu burada. Sarı satırlar ödülünü isteyip henüz almayanlar; verince "Verildi"ye bas, kişinin Ödüllerim'inde de görünür.</p>
         <div class="admin-table-wrap">
@@ -379,10 +410,10 @@
             </section>
 
       <!-- ================= TOPLULUK ================= -->
-      <section class="adm-panel admin-grid" data-panel="topluluk" hidden>
-        <div class="adm-intro wide"><b>📊 Topluluk</b> Günün sorusu / anket / haftanın rezili oluştur, grup sayaçlarını artır, vardiya kayıtlarını yönet. Hepsi <a href="/topluluk" target="_blank">topluluk sayfasında</a> görünür.</div>
+      <section class="adm-panel admin-grid" data-panel="topluluk" data-altlar="anket:🗳️ Anketler|sayac:🔢 Grup sayaçları|vardiya:🏭 Vardiya" hidden>
+        <div class="adm-intro wide" data-alt="anket"><b>📊 Topluluk</b> Günün sorusu / anket / haftanın rezili oluştur, grup sayaçlarını artır, vardiya kayıtlarını yönet. Hepsi <a href="/topluluk" target="_blank">topluluk sayfasında</a> görünür.</div>
 
-        <div class="panel card admin-section">
+        <div data-alt="anket" class="panel card admin-section">
           <h2>🗳️ Yeni anket</h2>
           <p class="muted">Tür seç, başlığı ve seçenekleri yaz (her satır bir seçenek). "Günün Sorusu" ve "Haftanın Rezili" de aynı yerden açılır.</p>
           <div class="tpl-form adm-form">
@@ -394,7 +425,7 @@
           <p class="suggest-status" id="anketOlusturDurum"></p>
         </div>
 
-        <div class="panel card admin-section">
+        <div data-alt="sayac" class="panel card admin-section">
           <h2>🔢 Grup sayaçları</h2>
           <p class="muted">"Berkay napıcak" gibi sayaçlar. +1 / −1 ile artır, kaydet.</p>
           <div id="grupSayacAdmin"><p class="muted">Yükleniyor…</p></div>
@@ -405,13 +436,13 @@
           <p class="suggest-status" id="grupSayacDurum"></p>
         </div>
 
-        <div class="panel card admin-section wide">
+        <div data-alt="anket" class="panel card admin-section wide">
           <h2>📋 Anketler</h2>
           <p class="muted">Açık olanları kapat, doğru cevabı işaretle (liderlikte "kim bildi" buradan hesaplanır), gereksizleri sil.</p>
           <div id="anketAdminListe"><p class="muted">Yükleniyor…</p></div>
         </div>
 
-        <div class="panel card admin-section wide">
+        <div data-alt="vardiya" class="panel card admin-section wide">
           <h2>🏭 Vardiya kayıtları</h2>
           <p class="muted">Kullanıcıların girdiği vardiyalar. Yevmiyeyi düzeltip kaydedebilir, yanlış kaydı silebilirsin. Son 200.</p>
           <div class="admin-table-wrap">
@@ -467,9 +498,9 @@
 </section>
 
       <!-- ================= GALERİ ================= -->
-      <section class="adm-panel admin-grid" data-panel="galeri" hidden>
-        <div class="adm-intro wide"><b>🖼️ Galeri</b> Gelen fotoğraf önerilerini yayınla/reddet ya da direkt fotoğraf ekle.</div>
-        <div class="panel card admin-section">
+      <section class="adm-panel admin-grid" data-panel="galeri" data-altlar="oneri:📸 Öneriler|gecmis:🕓 Geçmiş" hidden>
+        <div class="adm-intro wide" data-alt="oneri"><b>🖼️ Galeri</b> Gelen fotoğraf önerilerini yayınla/reddet ya da direkt fotoğraf ekle.</div>
+        <div data-alt="oneri" class="panel card admin-section">
           <h2>📸 Bekleyen öneriler</h2>
           <div class="sayac-butonlar oneri-toplu" id="oneriToplu" hidden>
             <button type="button" class="admin-btn publish se-small" id="oneriHepsiYayinla">✅ Hepsini yayınla</button>
@@ -477,7 +508,7 @@
           </div>
           <div id="queueList"><p class="muted">Yükleniyor…</p></div>
         </div>
-        <div class="panel card admin-section">
+        <div data-alt="oneri" class="panel card admin-section">
           <h2>➕ Galeriye direkt fotoğraf ekle</h2>
           <form class="admin-upload" id="adminUploadForm" autocomplete="off">
             <input type="file" id="adminUploadFile" accept="image/*" multiple required />
@@ -485,7 +516,7 @@
           </form>
           <p class="suggest-status" id="adminUploadStatus"></p>
         </div>
-        <div class="panel card admin-section wide">
+        <div data-alt="gecmis" class="panel card admin-section wide">
           <h2>🕓 Öneri geçmişi</h2>
           <p class="muted">Karar verdiğin her öneri burada kalır: kim, ne zaman önerdi ve sen ne zaman ne yaptın. Reddettiğini sonradan yayınlayabilir, yayınladığını galeriden kaldırabilirsin. Bu özellik eklenmeden önce karar verilen öneriler silindiği için listede yok.</p>
           <div class="oneri-filtre" id="oneriFiltre" role="group" aria-label="Geçmiş filtresi">
@@ -562,6 +593,16 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/site.js"></script>
+  <script>
+    // Admin bölümleri verisini İLK AÇILDIĞINDA yükler (Firestore okuma kotası). admin-sekme.js "acildi" der.
+    window.AdminSekme = (function () {
+      var acik = {}, bekleyen = {};
+      return {
+        acilinca: function (ad, fn) { if (acik[ad]) fn(); else (bekleyen[ad] = bekleyen[ad] || []).push(fn); },
+        acildi: function (ad) { if (acik[ad]) return; acik[ad] = true; (bekleyen[ad] || []).splice(0).forEach(function (f) { try { f(); } catch (e) { console.error(e); } }); }
+      };
+    })();
+  </script>
   <script src="js/ekonomi.js"></script>
   <script src="js/basarim.js"></script>
   <script src="js/bildirim.js"></script>
