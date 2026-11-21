@@ -588,14 +588,14 @@ service cloud.firestore {
         && (resource == null || request.resource.data.sure < resource.data.sure);
       allow delete: if isAdmin();
     }
-    // Berkay: The Game 20 bölümlük yeni düzen (bölüm sırası değiştiği için ayrı tablo)
+    // Berkay: The Game 30 bölümlük yeni düzen (bölüm sırası değiştiği için ayrı tablo)
     match /macera_skor2/{id} {
       allow read: if true;
       allow create, update: if hesapli()
         && request.resource.data.keys().hasOnly(['uid', 'ad', 'bolum', 'sure', 'olum', 'burger', 'tarih'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.ad == kullaniciAdim()
-        && request.resource.data.bolum is int && request.resource.data.bolum >= 1 && request.resource.data.bolum <= 20
+        && request.resource.data.bolum is int && request.resource.data.bolum >= 1 && request.resource.data.bolum <= 30
         && id == request.auth.uid + '_' + string(request.resource.data.bolum)
         && request.resource.data.sure is int && request.resource.data.sure >= 5000 && request.resource.data.sure <= 3600000
         && request.resource.data.olum is int && request.resource.data.burger is int

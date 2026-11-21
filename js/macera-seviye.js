@@ -60,49 +60,23 @@ window.MACERA_SEVIYELER = [
 ]
 },
 {
-"ad": "Kasksız 85",
-"tema": "yol",
-"harita": [
-"........................................................................................................................................................................................................",
-"........................................................................................................................................................................................................",
-"........................................................................................................................................................................................................",
-"........................................................................................................................................................................................................",
-"........................................................................................................................................................................................................",
-"........................................................................................................................................................................................................",
-"........................................................................................................................................................................................................",
-"........................................................................................................................................................................................................",
-".....................................................................ooooo.................................................................ooooo........................................................",
-".............................oooo............................................................................oooo.......................................................................................",
-"........................o....................o....................o....................o............=.......o....................o.........................................o....................o.......",
-"...P..................c.................c.......=.........c..........................=.........c....=...C...............c.........=...................c.........=..............c.........=....F.........",
-"##############################..######################################...#####################################..############################...######################..#################################",
-"##############################..######################################...#####################################..############################...######################..#################################"
-],
-"otomatik": true,
-"boss": {
-"tip": "polis",
-"ad": "Trafik Polisi",
-"emoji": "🚓",
-"olum": "Polis yakaladı 🚓",
-"berkay": [
-"Trafiği kapatın!",
-"Polis mi aq, 85 yapıyom"
-]
-},
-"hikaye": "Kasksız 85 yine kasksız. Arkada siren sesi. Durursan Trafik Polisi seni yakalar: arabaların üstünden atla, çukurlara düşme, kolilere takılma. Gaz sende, sen sadece zıpla.",
-"kim": "Berkay",
-"motor": true,
-"ikon": "🏍️",
 "muzik": "yol",
+"ad": "Kasksız 85",
+"kim": "Berkay",
+"tema": "yol",
+"ikon": "🏍️",
+"mini": "trafik",
+"hikaye": "Berkay kasksız motorla bayır aşağı iniyor. Hedef belli: 85'i görmek. Arabalar, inekler, çukurlar… Şerit değiştirerek kaç, hız 85'e çıkınca 12 saniye dayan. Kask yok, hata payı yok.",
+"ipucu": "Kuşbakışı motor: ← → şerit değiştir. Hız kendiliğinden artar, 85'te 12 sn dayan.",
 "sozler": [
 "kubiiii 85'i gördüm 85!",
 "Araba hızlı evet, gövde etten",
 "Kask mı? Gerek yok",
-"Düşer kalkarım sanki yapboz"
+"Trafiği kapatın"
 ],
 "bitisSoz": [
 "kubiiii 85'i gördüm 85!",
-"Tek kollu ama eve vardım"
+"Bu sefer düşmedim"
 ]
 },
 {
@@ -239,56 +213,23 @@ window.MACERA_SEVIYELER = [
 ]
 },
 {
-"ad": "3. Lig Topçusu",
-"kim": "Berkay vs Salih",
-"tema": "halisaha",
 "muzik": "neon",
+"ad": "3. Lig Topçusu",
+"kim": "Berkay",
+"tema": "halisaha",
 "ikon": "⚽",
-"topla": "⚽",
-"gorev": {
-"tip": "kovala",
-"ad": "Salih",
-"emoji": "🏃",
-"hiz": 250,
+"mini": "penalti",
+"hikaye": "Halısaha bitti, maç penaltılara kaldı. Berkay kendini 3. lig topçusu ilan etmiş, 10 gol sözü vermiş. Kalede 'gelcem' deyip gelen tek kişi Salih var. 8 şutta 5 gol at, satanlara gününü göster.",
+"ipucu": "Penaltı: Boşluk ile önce sağ-sol nişanı, sonra yüksekliği kilitle. 8 şutta 5 gol.",
 "sozler": [
-"Gelcem aga gelcem",
-"Forvetamcığım tuttu",
-"İlk iş günümdü o gün",
-"15'inde maaş yatıyor",
-"Para yok ki"
-]
-},
-"dusman": {
-"yuru": "🥅",
-"uc": "🪁"
-},
-"hikaye": "Halısaha maçı saat 10'da. Salih 'gelcem' dedi, yine sattı. Berkay kendini 3. lig topçusu ilan etti ve 10 gol atma sözü verdi ama kadro eksik. Salih'i yakala, sahaya getir. Forvet oynamak istiyor zaten.",
-"ipucu": "Görev: kaçan Salih'i yakala (yanına değ). Engellerin üstünden atla.",
-"sozler": [
-"Satanlar var aq",
 "3. lig topçusuyum ben",
 "10 gol atacam bugün",
+"Satanlar var aq",
 "Parasının amına koyayım gel sen"
 ],
 "bitisSoz": [
-"Salih sahada, 10 gol geliyor",
-"Satan kalmadı"
-],
-"harita": [
-"..........................................................................................................................................................................",
-"..........................................................................................................................................................................",
-"..........................................................................................................................................................................",
-"..........................................................................................................................................................................",
-"..........................................................................................................................................................................",
-"..........................................................................................................................................................................",
-"..........................................................................................................................................................................",
-"..........................................................................................................................................................................",
-".........................................................oo......................................oo.......oo..............................................................",
-"...................ooo........................ooo.......----....................................----.....----..............ooo...............ooo..........................",
-"..................................................................................................................==......................................................",
-"...P..........K.....=........e.................=..........................e........C..............................==........=........e........=...........................",
-"######################################..#########################..####################..##############################################################..#################",
-"######################################..#########################..####################..##############################################################..#################"
+"Salih kalede ağladı",
+"3. lig farkı"
 ]
 },
 {
@@ -354,54 +295,19 @@ window.MACERA_SEVIYELER = [
 ]
 },
 {
-"ad": "KPSS",
-"tema": "kutuphane",
-"harita": [
-"............k.................k.....................k......................k....................k.........A.................................=.............................",
-"............................................................................................................................................=.............................",
-"............................................................................................................................................=.............................",
-"............................................................................................................................................=.............................",
-"......................................................o.........u...........................................................................=.............................",
-"........................oo.......u...................---............................u.......................................................=.............................",
-".......................----.................................................................................................................=.............................",
-".................................................---.................................................................----...................=.............................",
-"......................................................................................ooooo.................................................=.............................",
-".....................=.......................---.........---..........==.----..................................----........----....----.....=.............................",
-"....................==................................................==..............................................................B.....=.............................",
-"..P............e....==.......e.......^....C...................e...e...==..^^....e............e......C.......................................=..............F..............",
-"######################.....##################............##############################...################################################################################",
-"######################.....##################............##############################...################################################################################"
-],
-"boss": {
-"tip": "atici",
-"ad": "Kurban",
-"yuz": "kurban",
-"emoji": "🤓",
-"can": 5,
-"mermi": "📚",
-"zorluk": {
-"yuru": 95,
-"atisAra": 2.3,
-"ziplama": 0.3,
-"ofke": 0.15,
-"ciftAtis": false,
-"isabet": 0.7
-},
-"berkay": [
-"Kubiii bükemediğin eli öp",
-"Hedef Berkay leveli"
-]
-},
-"hikaye": "Final: KPSS. Kütüphanede kitaplar tavandan yağıyor. Son boss Kurban, elinde soru bankalarıyla bekliyor. 5 kez kafasına zıpla, Berkay'ı memur yap.",
-"kim": "Kurban",
-"ikon": "📚",
 "muzik": "kutuphane",
-"bossBurger": 5,
+"ad": "KPSS Denemesi",
+"kim": "Berkay & Kurban",
+"tema": "kutuphane",
+"ikon": "📚",
+"mini": "kpss",
+"hikaye": "KPSS denemesi başladı ama sorular biraz farklı: hepsi grup hakkında. Kurban 6 ay çalışıp 91 aldı, Berkay 'QR çekip' 93 aldı. 10 soru, her biri 12 saniye. 3'ten fazla yanlış yaparsan optik okumaz.",
+"ipucu": "Bilgi yarışması: ← → seç, Boşluk ile cevapla (ya da tıkla, 1-4). 3'ten fazla yanlış = elendin.",
 "sozler": [
 "Optik değil QR çektim",
-"93 aldım Kubi geçemedin",
 "Kubi 6 ay çalıştı ben geçtim",
-"Atanıcam göreceksiniz"
+"Atanıcam göreceksiniz",
+"Bu soru KPSS'de çıkar mı aq"
 ],
 "bitisSoz": [
 "Bükemediğin eli öpeceksin Kubi",
@@ -409,48 +315,24 @@ window.MACERA_SEVIYELER = [
 ]
 },
 {
+"muzik": "borsa",
 "ad": "Çorbacı Borsası",
 "kim": "Kurban",
 "tema": "borsa",
-"topla": "💵",
-"dusman": {
-"yuru": "🐻",
-"uc": "📉"
-},
-"yagmur": "📉",
-"hikaye": "Kurban'ın 30 bin lirası var ama 12 TL bakiye ekran görüntüsü atıyor. Parasını borsanın her yerine saklamış. Yeşil-kırmızı yanan mumların üstünden atlayıp saklanan 8 desteyi bul. Hepsini toplamadan çıkış açılmaz.",
-"harita": [
-"........................................................................................................................................",
-"........................................................................................................................................",
-"........................................................................................................................................",
-"........................................................................................................................................",
-"..........................................u.....................................................................u.......................",
-".....................................u.....................................................................u............................",
-"........................................................................................................................................",
-"............o..............o.......................o.................---..........o..............o......................................",
-"........................................................................................................................................",
-"........m.............m..............o.........m.................---....---...m.............m..............o.........o..................",
-"........................................................................................................................................",
-"..P..........................................................C..........................................................e..e......F.....",
-"########.........#####.........################.........#########.........####.........#####.........###################################",
-"########.........#####.........################.........#########.........####.........#####.........###################################"
-],
 "ikon": "📈",
-"muzik": "borsa",
+"mini": "borsa",
+"hikaye": "Kurban'ın 30 bini var ama ekran görüntüsünde 12 TL görünüyor. Berkay elindeki 1.000 TL'yi KubiCoin'e yatırıyor. Doğru anda al, doğru anda sat. 60 saniyede parayı 2'ye katla. Son dakika haberlerine dikkat: Kubi gizlice satabilir.",
+"ipucu": "Al-sat: Boşluk ile AL, tekrar Boşluk ile SAT. 60 sn'de 2.000 TL'ye ulaş, 400'ün altına düşme.",
 "sozler": [
 "12 TL nedir aq Kubi",
 "Çorbacı Kubi",
-"Kubi parayı sakla sakla",
-"Ben bankayım zaten diyor aq"
+"Ben bankayım zaten",
+"Ayı piyasası geldi"
 ],
 "bitisSoz": [
-"Kubi 30 bin nerde",
-"Çorba parası çıktı"
-],
-"gorev": {
-"tip": "topla"
-},
-"ipucu": "Görev: 8 💵 desteyi topla, sonra çıkışa koş. Mumlar hareket ediyor."
+"Çorba parası değil, ana yemek parası",
+"Kubi kıskandı"
+]
 },
 {
 "ad": "Hindistan Gondolu",
@@ -491,64 +373,23 @@ window.MACERA_SEVIYELER = [
 ]
 },
 {
+"muzik": "gece",
 "ad": "Kurye Gecesi",
 "kim": "Alihan",
 "tema": "gece",
-"topla": "🥖",
-"dusman": {
-"yuru": "🛵",
-"uc": "🦉"
-},
-"yagmur": "🧥",
-"hikaye": "Alihan yine kuryelikte. 8.000 TL'lik ceketiyle siparişi götürüyor ama yolda müşterinin köfte ekmeğini yedi. Kapıda bekleyen Aç Müşteri 1 yıldızları hazırlamış. Köfte ekmekleri topla, yıldızlardan kaç.",
-"boss": {
-"tip": "atici",
-"ad": "Aç Müşteri",
-"yuz": "musteri",
-"emoji": "😡",
-"can": 3,
-"mermi": "⭐",
-"yazi": "1 YILDIZ",
-"zorluk": {
-"yuru": 90,
-"atisAra": 2.2,
-"ofke": 0.15,
-"ciftAtis": false,
-"isabet": 0.7,
-"ezmePayi": 36
-},
-"berkay": [
-"1 yıldız mı aq, yedim mi ben?",
-"Müşteri abi köfte ekmeği yedik pardon"
-]
-},
-"harita": [
-".........................................................................................A.............................=.............",
-".......................................................................................................................=.............",
-".......................................................................................................................=.............",
-".......................................................................................................................=.............",
-".......................................................................................................................=.............",
-"................u..........u....................................u......................................................=.............",
-".............................................................................oo........................................=.............",
-"............................................................................----.......................................=.............",
-".......................................................................................................................=.............",
-"........oo....ooooo......ooooo.......oo..........oo.....oo....ooooo........=...................----..........----......=.............",
-"..........................................................................==...................................B.......=.............",
-"..P.........................................C............................===........C..................................=.....F.......",
-"########..###########################..##########..#####..##################....#####################################################",
-"########..###########################..##########..#####..##################....#####################################################"
-],
 "ikon": "🛵",
-"muzik": "gece",
+"mini": "kurye",
+"hikaye": "Alihan kuryelikte, Berkay da yardıma geldi. Gökten siparişler yağıyor: köfte ekmekleri, burgerleri ve 8.000 TL'lik ceketi yakala. Ama aç müşterilerin 1 yıldızları da düşüyor. 3 tane yersen kovuldun.",
+"ipucu": "Yakalama: ← → (ya da dokun) ile motoru gezdir. 🥖🍔🧥 topla, ⭐ 1 yıldızlardan kaç. 25 sipariş.",
 "sozler": [
-"Alihan 8 bin TL ceket mi olur aq",
 "Köfte ekmek bana mı geldi",
-"Ali manitasına çiçek almış ıslandık",
-"Sipariş yolda abi"
+"Alihan 8 bin TL ceket mi olur aq",
+"Sipariş yolda abi",
+"5 yıldız ver abi"
 ],
 "bitisSoz": [
 "5 yıldız ver abi",
-"Alihan ceketi sat"
+"Köfte ekmeklerden biri yendi, kimse fark etmedi"
 ]
 },
 {
@@ -647,47 +488,23 @@ window.MACERA_SEVIYELER = [
 ]
 },
 {
+"muzik": "mutfak",
 "ad": "Tekel Bayisi",
 "kim": "Burger",
 "tema": "tekel",
-"muzik": "mutfak",
 "ikon": "🍻",
-"topla": "🍺",
-"kaygan": true,
-"gorev": {
-"tip": "topla"
-},
-"dusman": {
-"yuru": "🍾",
-"uc": "🐝"
-},
-"hikaye": "Burger ilanı attı: Çarşamba-Cuma-Cumartesi 16:00-21:00 tekel bayisinde dolap dolumu, günlük 1.000 TL. Altına ekledi: 'Berkay yapamaz kardeşim yapamaz.' Berkay geldi. Yerler dökülen biradan kaygan. 10 birayı topla, dolaba diz.",
-"ipucu": "Görev: 10 🍺 topla, sonra dolaba (bayrak) git. Zemin KAYGAN!",
+"mini": "dolap",
+"hikaye": "Burger ilan attı: tekel bayisinde dolap dolumu, günlük 1.000 TL. Altına da ekledi: 'Berkay yapamaz kardeşim yapamaz.' Kasalar kayıyor, Berkay bırakıyor. Taşan kısım düşüp kırılıyor. 12 kat diz, Burger'e kendini kanıtla.",
+"ipucu": "Dizme: kasa sağa sola kayar. Boşluk (ya da dokun) ile bırak. Tam üstüne denk getir, 12 kat diz.",
 "sozler": [
 "Yaparım kardeşim yaparım",
 "1000 TL günlük mü",
-"Tüm para gitti alkole",
-"Sınırsız sarı"
+"Sınırsız sarı",
+"Tüm para gitti alkole"
 ],
 "bitisSoz": [
 "Dolap dizildi, Burger özür dile",
 "Yapar kardeşim yapar"
-],
-"harita": [
-".......................................................................................................",
-".......................................................................................................",
-".......................................................................................................",
-".......................................................................................................",
-".......................................................................................................",
-".......................................................................................................",
-"...........o.................................................................o.........................",
-"..........----..............................................................----.......................",
-".......................................................................................................",
-".........=........o.o.........o......o..............o.o.........o..........=........o..................",
-"........==................................................................==...........................",
-"..P....===...........e..e..............e..e....C.......e..e.......e..e...===...........e..e......F.....",
-"##########....###############..#############################################....#######################",
-"##########....###############..#############################################....#######################"
 ]
 },
 {
@@ -794,61 +611,23 @@ window.MACERA_SEVIYELER = [
 ]
 },
 {
-"ad": "Sanayi",
+"muzik": "neon",
+"ad": "Cem'in Beati",
 "kim": "Cem",
-"tema": "sanayi",
-"topla": "🔩",
-"dusman": {
-"yuru": "🛞",
-"uc": "⚙️"
-},
-"yagmur": "🔧",
-"hikaye": "Cem Abi diyor ki: 'Depo işlerini bırakın, sanayiye gidin, zanaat öğrenin.' Berkay gitti. Tavandan İngiliz anahtarları yağıyor, Cem Abi de zanaat öğretmeye kararlı.",
-"boss": {
-"tip": "atici",
-"ad": "Cem Abi",
-"yuz": "cem",
-"emoji": "🧔",
-"can": 4,
-"mermi": "🔧",
-"yazi": "ZANAAT ÖĞREN",
-"zorluk": {
-"yuru": 120,
-"atisAra": 1.7,
-"ofke": 0.22
-},
-"berkay": [
-"Cem abi anahtarı atma!",
-"Zanaat öğrendim abi"
-]
-},
-"harita": [
-"....................k....k......k....k......................k....k.........................................k....k..........A.............................=.............",
-".........................................................................................................................................................=.............",
-".........................................................................................................................................................=.............",
-".........................................................................................................................................................=.............",
-".........................................................................................................................................................=.............",
-".........................................................................................................................................................=.............",
-"............o..................................o.........................................o...............................................................=.............",
-"...........---................................---..........................oo...........---.............................................---..............=.............",
-"..................................................................................................o......................................................=.............",
-".......................................................................m............---....---...----............................----..........----......=.............",
-"........==.........oo..........oo..........==..............oo.............................................oo.....................................B.......=.............",
-"..P.....==....e........e...........e.......==....e....C........e..................................^^..........e.......C..................................=.....F.......",
-"#######################################################################.........####.........##########################################################################",
-"#######################################################################.........####.........##########################################################################"
-],
-"ikon": "🔧",
-"muzik": "depo",
+"tema": "zula",
+"ikon": "🎵",
+"mini": "ritim",
+"hikaye": "Cem ve yengesi yeni şarkı yaptı. Berkay dinledi, 'Vay aq çok iyi la, nakarat çok iyi, tam arabada dinlemelik' dedi. Şimdi stüdyoda eşlik etme sırası. Notalar çizgiye gelince doğru tuşa bas. Ritmi kaçırma.",
+"ipucu": "Ritim: notalar çizgiye gelince ← / Boşluk / → (ya da şeride dokun). Notaların %70'ini tuttur.",
 "sozler": [
-"Cem abi zanaat öğret",
 "Vay aq nakarat çok iyi",
-"Cem gelir belki Aquapark'a",
-"Getir kurye mi olcaz"
+"Tam arabada dinlemelik",
+"Cem abi beat yap",
+"Cem gelir belki Aquapark'a"
 ],
 "bitisSoz": [
-"Sanayiden usta çıktım",
-"Cem abi beat yap"
+"Cem abi albüm çıkar",
+"Nakarat kafamdan çıkmıyor"
 ]
 },
 {
@@ -897,50 +676,223 @@ window.MACERA_SEVIYELER = [
 "ipucu": "Görev: 35 saniye hayatta kal. Sonra bayrak açılır. Z ile 💎 fırlatabilirsin."
 },
 {
-"ad": "Tavuk Dürüm",
-"kim": "İbo",
-"tema": "durum",
 "muzik": "gece",
-"ikon": "🌯",
-"topla": "🧻",
-"sarhos": true,
-"gorev": {
-"tip": "sure",
-"limit": 55,
-"bonus": 2
-},
-"dusman": {
-"yuru": "🦠",
-"uc": "🪰"
-},
-"yagmur": "🌯",
-"hikaye": "Gece İbo yazdı: 'O 100 liraya tavuk şiş dürüm yerinden 2 dürüm yedim, zehirlendim, karnım ağrıyor, ölcem.' Kurban cevap verdi: 'Hak ettin.' Dünya dönüyor, karın gurulduyor. Süre bitmeden tuvalete yetiş. Peçeteler süre kazandırır.",
-"ipucu": "Görev: süre bitmeden tuvalete (bayrak) yetiş. Her 🧻 +2 saniye. Ekran dönüyor.",
+"ad": "Gece Baskını",
+"kim": "Salih & Kurban",
+"tema": "izmir",
+"ikon": "🔦",
+"mini": "baskin",
+"hikaye": "Gece 03:13. Salih grupta ifşa etti: Kubi gece gece telefondan gizli gizli bir şeyler izliyor. Berkay feneri aldı, baskına çıktı. Kubi pencerelerden kafasını çıkarınca yakala. İbo da uyanık, ona vurma.",
+"ipucu": "Baskın: Kubi'ye tıkla / dokun (ya da ← → ile seç + Boşluk, 1-9). İbo'ya vurma. 20 kez yakala.",
 "sozler": [
-"İbo hak ettin",
-"100 liraya dürüm mü olur",
-"Hak ettin aq",
-"Popeyes'e gitseydin"
+"Ne izliyon gece 3'te",
+"Salih haklıymış",
+"Kubi telefonu sakla",
+"Raftan ifşa çıkıyor"
 ],
 "bitisSoz": [
-"Yetiştik çok şükür",
-"Bir daha o dürümcüye gitme İbo"
+"Kubi'nin ifşası raftan çıktı",
+"Salih haklıymış"
+]
+},
+{
+"ad": "Aquapark Ekibi",
+"kim": "İbo",
+"tema": "kerpe",
+"muzik": "yol",
+"ikon": "🏊",
+"mini": "hafiza",
+"hikaye": "İbo Temmuz'dan beri her gün yazıyor: 'Acilen Sakarya Aquapark yapmamız lazım, 7 kişi gidersek bilet 1.560 TL'ye düşüyor.' Ekip bir türlü toplanamadı. Kartları eşleştir, herkesi bir araya getir. 75 saniyen var.",
+"ipucu": "Hafıza: kartlara tıkla (ya da ← → + Boşluk). Aynı iki kartı bul, 8 çifti 75 sn'de eşleştir.",
+"sozler": [
+"Sakarya Aquapark yapalım",
+"Poğaça ye yeter",
+"Babam parasını veririm diyor",
+"Cem gelir belki"
 ],
-"harita": [
-".................................................................................................................................",
-".................................................................................................................................",
-".................................................................................................................................",
-".................................................................................................................................",
-".................................................................................................................................",
-".................................................................................................................................",
-"............o......................................................o.............................................................",
-"...........---....................oo............oo................---.................oo.......................oo................",
-".................................................................................................................................",
-"...................ooo........m.............m.............................ooo.....m.............ooo........m.....................",
-"........==.....................................................==................................................................",
-"..P.....==....e.......e..e................................C....==....e.............................e..e....................F.....",
-"##############################.........#####.........#####################...#####.........################.........#############",
-"##############################.........#####.........#####################...#####.........################.........#############"
+"bitisSoz": [
+"Ekip toplandı, İbo ağladı",
+"1.560 TL'ye indi bilet"
+]
+},
+{
+"ad": "Popeyes Yılanı",
+"kim": "Berkay",
+"tema": "durum",
+"muzik": "mutfak",
+"ikon": "🍗",
+"mini": "yilan",
+"hikaye": "Berkay'ın bütçesi belli: maaş gelir, Popeyes'e gider, kalanı alkole. Bu sefer de Popeyes'e daldı. Kovaları ye, uzadıkça kendine dolanma. 15 kova bitirince maaş da biter.",
+"ipucu": "Yılan: ← sola dön, → sağa dön. Duvara ve kendi kuyruğuna çarpma. 15 kova ye.",
+"sozler": [
+"Popeyes'e parayı gömdüm",
+"Bir kova daha",
+"Tüm para gitti tavuğa",
+"Sınırsız deme dayanamam"
+],
+"bitisSoz": [
+"Maaş bitti ama doydum",
+"Popeyes beni tanıyor artık"
+]
+},
+{
+"ad": "04:50 Servisi",
+"kim": "İbo & Berkay",
+"tema": "izmir",
+"muzik": "gece",
+"ikon": "⏰",
+"mini": "uyan",
+"hikaye": "Gebze'deki depo işi için sabah 04:50'de kalkmak lazım. İbo 'Bune aq, 2 saat önceden durakta beklicekmişim, has amele' dedi. Alarm çalınca hemen kalk. Erken basarsan da olmaz, servis daha gelmemiştir.",
+"ipucu": "Refleks: alarm çalınca hemen bas (Boşluk / dokun). Erken basarsan ya da geç kalırsan can gider. 10 tur.",
+"sozler": [
+"5 dakika daha",
+"Has amele",
+"Servis güzergaha dolu",
+"Ücretsiz izindeyim aslında"
+],
+"bitisSoz": [
+"Servise yetiştik",
+"Has amele ama dakik"
+]
+},
+{
+"ad": "Doğum Günü Hediyesi",
+"kim": "Kurban & İbo",
+"tema": "borsa",
+"muzik": "borsa",
+"ikon": "🎁",
+"mini": "bardak",
+"hikaye": "İbo, Kurban'a gecikmeli doğum günü hediyesi aldı: 301 TL'lik 2 parça sürpriz. Kurban önce 'Çorba mı aldın?' diye sordu. Hediye kutulardan birinde, ötekilerde çorba var. Kutular karışıyor, gözünü ayırma.",
+"ipucu": "Bardak oyunu: hediyeyi gözünle takip et, karışma bitince seç (← → + Boşluk, tıkla ya da 1-3). 5 doğru.",
+"sozler": [
+"Çorba mı aldın İbo",
+"Ya İbo senin alacağın hediye bu ne aq",
+"301 TL'ye ne alınır",
+"Kubi açsana"
+],
+"bitisSoz": [
+"Hediye bulundu, çorba değilmiş",
+"İbo cömertleşti"
+]
+},
+{
+"ad": "Miramar 8x",
+"kim": "Berkay & Alihan",
+"tema": "kerpe",
+"muzik": "neon",
+"ikon": "🎯",
+"mini": "sniper",
+"hikaye": "Berkay PUBG'de Miramar haritasında 8x dürbünle 'scoot' atma hayali kuruyordu. Alihan Pecado'daki 4 katlı evde kamp kurdu. Dürbünü al, düşmanları indir. Kubi de ortada geziyor, takım arkadaşını vurma.",
+"ipucu": "Nişancı: ← → nişan al, Boşluk ile ateş (ya da tıkla). 🪖 vur, 😳 Kubi'yi vurma. 12 vuruş, 8 ıska hakkı.",
+"sozler": [
+"8x dürbün farkı",
+"Kafanızı kesicem",
+"Pecado'dan çık Alihan",
+"Scoot attım"
+],
+"bitisSoz": [
+"Winner winner chicken dinner",
+"Miramar benim"
+]
+},
+{
+"ad": "Depo Ayıklama",
+"kim": "Alpaslan",
+"tema": "sanayi",
+"muzik": "depo",
+"ikon": "📦",
+"mini": "ayikla",
+"hikaye": "Trendyol ve Hepsiburada depolarında tır indirme vardiyası. Kolileri doğru banda at. Alpaslan da depoda, Berkay'ın ameleliğini denetliyor. 4 hata yaparsan kovulursun.",
+"ipucu": "Ayıklama: ← Trendyol, → Hepsiburada, Boşluk kırık koli çöpe (ya da ilgili yere dokun). 30 koli, 4 hata hakkı.",
+"sozler": [
+"Alpaslan da övdü beni",
+"Has amele benim",
+"38 bin mesaili çok iyi",
+"70k alıp kaçıcam bi anda"
+],
+"bitisSoz": [
+"Alpaslan bile övdü",
+"Yevmiyeyi hak ettim"
+]
+},
+{
+"ad": "Labanzubu",
+"kim": "Kurban",
+"tema": "zula",
+"muzik": "neon",
+"ikon": "🌀",
+"mini": "simon",
+"hikaye": "Sakarya Aquapark çağrılarına Kurban hep aynı cevabı verir: 'Labanzubu.' Bazen 'Lababazubu.' Gece sohbetinde bu akımın adı 'Kubizm' kondu. Kubi sırayı söylüyor, sen tekrarla. 9 tur dayanırsan Kubizm'e kabul edilirsin.",
+"ipucu": "Hafıza sırası: yanan sırayı tekrarla. ← LA · Boşluk BAN · → ZU · Z BU (ya da dokun, 1-4). 9 tur.",
+"sozler": [
+"Lababazubu",
+"Kubizm akımı",
+"Labanzubu ne aq",
+"Kubi napıyon"
+],
+"bitisSoz": [
+"Kubizm'e katıldım",
+"LABANZUBU"
+]
+},
+{
+"ad": "Kayalıklardan Atla",
+"kim": "Berkay",
+"tema": "kerpe",
+"muzik": "yol",
+"ikon": "🪨",
+"mini": "dalis",
+"hikaye": "Berkay denize kayalıklardan atladı, suya değil kayalara çakıldı, tüm vücudu soyuldu. Kerpe'de İbo 'Tepeden atlıcaz mı?' diye sorunca 'Güzel ülkem izin vermiyor' dedi. Rövanş zamanı: açıyı ve gücü ayarla, suya düş.",
+"ipucu": "Dalış: Boşluk ile önce açıyı, sonra gücü kilitle. Kesik çizgili suya düş. 5 dalış, 3 kaza hakkı.",
+"sozler": [
+"Güzel ülkem izin vermiyor",
+"Tepeden atlıcaz mı",
+"Bu sefer suya",
+"Tüm vücudum soyuldu aq"
+],
+"bitisSoz": [
+"Kayalar seni affetti",
+"Kerpe'nin efendisi"
+]
+},
+{
+"ad": "Burger'in Mesajları",
+"kim": "Burger",
+"tema": "gece",
+"muzik": "gece",
+"ikon": "📱",
+"mini": "yazim",
+"hikaye": "Burger çok hızlı yazıyor, harfler kayıyor: aquapark 'awuaqoark' oluyor, neredesiniz 'berddsnsşz'. Gece 04:22'de 50 video ürettikten sonra yazdıkları iyice çözülmez oldu. Ne demek istediğini bul.",
+"ipucu": "Çözme: Burger'in yazdığına bak, ne demek istediğini seç (← → + Boşluk, tıkla ya da 1-3). 12 mesaj, 3 hata hakkı.",
+"sozler": [
+"Burger klavyeyi değiştir",
+"Awuaqoark ne aq",
+"50 video ürettim diyor",
+"Uyu biraz Burger"
+],
+"bitisSoz": [
+"Burger dilini çözdüm",
+"Berddsnsşz = neredesiniz"
+]
+},
+{
+"ad": "Aquapark Kaydırağı",
+"kim": "Berkay",
+"tema": "gondol",
+"muzik": "borsa",
+"ikon": "🌊",
+"mini": "kaydirak",
+"hikaye": "Sonunda Sakarya Aquapark yapıldı. Hafta içi gidildi, 7 kişi toplandı, bilet 1.560 TL. Berkay en dik kaydırağa girdi. Kıvrımlarda borudan uçmadan 40 saniye dayan, dondurma ve poğaçaları topla.",
+"ipucu": "Kaydırak: ← → ile borunun içinde kal (ya da dokun). Kenara değersen uçarsın. 40 sn dayan.",
+"sozler": [
+"Sakarya Aquapark yapıldı sonunda",
+"Poğaça ye yeter",
+"Ohhh serinledik",
+"Sınırsız kaydırak"
+],
+"bitisSoz": [
+"Havuza indik",
+"İbo'nun hayali gerçek oldu"
 ]
 },
 {
