@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://yaparmi.com/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
+  <url><loc>https://yaparmi.com/</loc><priority>1.0</priority></url>
+  <url><loc>https://yaparmi.com/evren</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/macera</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/spor</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/sosyal</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/galeri</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/borsa</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/kumarhane</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/cark</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/topluluk</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/wrapped</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/soz</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/tahmin</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/basarimlar</loc><priority>0.7</priority></url>
+  <url><loc>https://yaparmi.com/arsiv</loc><priority>0.7</priority></url>
 </urlset>
