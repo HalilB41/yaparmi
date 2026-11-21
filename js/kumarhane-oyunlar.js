@@ -110,7 +110,7 @@
       return;
     }
     const m = Math.round(Number($("mnMiktar").value));
-    if (!(m >= 1 && m <= 500)) { durumYaz("mnDurum", "Bahis 1–500 BERKAY arası olmalı.", true); return; }
+    if (!(m >= 1)) { durumYaz("mnDurum", "Bahis en az 1 BERKAY.", true); return; }
     const r = await minesIstek("minesBasla", { miktar: m, bomba: Number($("mnBomba").value) });
     if (r) durumYaz("mnDurum", `${m} BERKAY · ${r.mines.bomba} bomba. Bir kutu seç!`);
   });
@@ -206,7 +206,7 @@
   $("plBtn").addEventListener("click", async () => {
     if (plMesgul) return;
     const m = Math.round(Number($("plMiktar").value));
-    if (!(m >= 1 && m <= 500)) { durumYaz("plDurum", "Bahis 1–500 BERKAY arası olmalı.", true); return; }
+    if (!(m >= 1)) { durumYaz("plDurum", "Bahis en az 1 BERKAY.", true); return; }
     plMesgul = true; $("plBtn").disabled = true;
     try {
       const r = await Ekonomi.api("plinko", { miktar: m, risk });
@@ -277,7 +277,7 @@
   }
   $("bjBasla").addEventListener("click", () => {
     const m = Math.round(Number($("bjMiktar").value));
-    if (!(m >= 1 && m <= 500)) { durumYaz("bjDurum", "Bahis 1–500 BERKAY arası olmalı.", true); return; }
+    if (!(m >= 1)) { durumYaz("bjDurum", "Bahis en az 1 BERKAY.", true); return; }
     bjIstek("bjBasla", { miktar: m });
   });
   $("bjKart").addEventListener("click", () => bjIstek("bjKart"));

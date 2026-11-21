@@ -59,7 +59,7 @@
           <div class="km-mines-panel">
             <div class="km-mines-carpan"><small>Şu anki</small><b id="mnCarpan">1.00x</b><small id="mnSonraki">Sonraki: —</small></div>
             <label class="bx-alan">Bahis
-              <div class="bx-girdi"><input type="number" id="mnMiktar" min="1" max="500" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
+              <div class="bx-girdi"><input type="number" id="mnMiktar" min="1" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
             </label>
             <label class="bx-alan">Bomba sayısı: <b id="mnBombaYazi">3</b>
               <input type="range" id="mnBomba" min="1" max="24" value="3" />
@@ -83,7 +83,7 @@
               <button type="button" data-risk="yuksek">Yüksek</button>
             </div>
             <label class="bx-alan">Bahis
-              <div class="bx-girdi"><input type="number" id="plMiktar" min="1" max="500" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
+              <div class="bx-girdi"><input type="number" id="plMiktar" min="1" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
             </label>
             <button type="button" class="bx-gonder al km-buyuk" id="plBtn">🔻 Top at</button>
             <p class="bx-durum" id="plDurum" aria-live="polite"></p>
@@ -102,7 +102,7 @@
           <div class="km-el"><small>Sen <b id="bjSenT"></b></small><div class="km-kartlar" id="bjSen"></div></div>
         </div>
         <div class="km-bj-kontrol">
-          <div class="bx-girdi km-bj-bahis"><input type="number" id="bjMiktar" min="1" max="500" step="1" inputmode="numeric" placeholder="10" aria-label="Bahis" /><em>BERKAY</em></div>
+          <div class="bx-girdi km-bj-bahis"><input type="number" id="bjMiktar" min="1" step="1" inputmode="numeric" placeholder="10" aria-label="Bahis" /><em>BERKAY</em></div>
           <button type="button" class="bx-gonder al" id="bjBasla">🃏 Dağıt</button>
           <button type="button" class="bx-gonder al" id="bjKart" hidden>➕ Kart çek</button>
           <button type="button" class="bx-gonder sat" id="bjDur" hidden>✋ Dur</button>
@@ -135,7 +135,7 @@
           </div>
         </div>
         <div class="km-rulet-masa" id="ruMasa" aria-label="Rulet masası"></div>
-        <p class="muted km-not">Fiş seç, masada istediğin yere tıkla, fişler kendiliğinden gönderilir. Bahisler her turun ilk 20 saniyesinde açık. Tek sayı 36x, düzine 3x, renk / tek-çift / yarım 2x öder. 0 = <b>Berkay sıfırı</b> 🐴: çıkarsa dış bahislerin hepsi yanar. Bir turda en fazla 500 BERKAY.</p>
+        <p class="muted km-not">Fiş seç, masada istediğin yere tıkla, fişler kendiliğinden gönderilir. Bahisler her turun ilk 20 saniyesinde açık. Tek sayı 36x, düzine 3x, renk / tek-çift / yarım 2x öder. 0 = <b>Berkay sıfırı</b> 🐴: çıkarsa dış bahislerin hepsi yanar. Bahis sınırı yok, bakiyen ne kadarsa.</p>
       </section>
 
       <!-- SLOT -->
@@ -150,7 +150,7 @@
         </div>
         <p class="km-slot-soz" id="slSoz">Berkay: “Çevir bakalım, korkma.”</p>
         <div class="km-bj-kontrol">
-          <div class="bx-girdi km-bj-bahis"><input type="number" id="slMiktar" min="1" max="200" step="1" inputmode="numeric" placeholder="5" aria-label="Bahis" /><em>BERKAY</em></div>
+          <div class="bx-girdi km-bj-bahis"><input type="number" id="slMiktar" min="1" step="1" inputmode="numeric" placeholder="5" aria-label="Bahis" /><em>BERKAY</em></div>
           <button type="button" class="bx-gonder al km-buyuk" id="slBtn">🎰 Çevir</button>
         </div>
         <p class="bx-durum" id="slDurum" aria-live="polite"></p>
@@ -185,9 +185,9 @@
         </div>
         <div class="km-kontrol">
           <label class="bx-alan">Bahis
-            <div class="bx-girdi"><input type="number" id="crMiktar" min="1" max="500" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
+            <div class="bx-girdi"><input type="number" id="crMiktar" min="1" step="1" inputmode="numeric" placeholder="10" /><em>BERKAY</em></div>
           </label>
-          <div class="bx-yuzde" id="crHizli"><button type="button" data-m="10">10</button><button type="button" data-m="50">50</button><button type="button" data-m="100">100</button><button type="button" data-m="500">500</button></div>
+          <div class="bx-yuzde" id="crHizli"><button type="button" data-m="10">10</button><button type="button" data-m="50">50</button><button type="button" data-m="100">100</button><button type="button" data-m="500">500</button><button type="button" data-m="hepsi">Hepsi</button></div>
           <label class="bx-alan">Otomatik çek (isteğe bağlı)
             <div class="bx-girdi"><input type="number" id="crHedef" min="1.01" step="0.01" inputmode="decimal" placeholder="ör. 2" /><em>x</em></div>
           </label>
@@ -215,7 +215,7 @@
             <button type="button" data-secim="tura">Tura</button>
           </div>
           <label class="bx-alan">Miktar
-            <div class="bx-girdi"><input type="number" id="duMiktar" min="1" max="1000" step="1" inputmode="numeric" placeholder="50" /><em>BERKAY</em></div>
+            <div class="bx-girdi"><input type="number" id="duMiktar" min="1" step="1" inputmode="numeric" placeholder="50" /><em>BERKAY</em></div>
           </label>
           <label class="bx-alan">Rakip (boş bırakırsan herkese açık)
             <div class="bx-girdi"><input type="text" id="duRakip" maxlength="20" placeholder="ör. burger" autocomplete="off" /></div>

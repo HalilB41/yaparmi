@@ -979,7 +979,7 @@ function oyuncuOlay(c, tur, v, now) {
 // sunucunun gizli anahtarıyla (HMAC) turdan hesaplanır: önceden kimse bilemez, veritabanı gerekmez.
 // Dağılım: P(çöküş ≥ x) = 0,97 / x → hangi hedefi seçersen seç beklenen getiri %97 (kasa %3 kazanır).
 // Bahis cüzdanda tutulur (c.crash); "çek" sunucu saatine göre değerlendirilir.
-const CRASH = { TUR_MS: 30_000, BAHIS_MS: 7_000, HIZ: 0.15, EV: 0.97, MIN: 1, MAX: 500 };
+const CRASH = { TUR_MS: 30_000, BAHIS_MS: 7_000, HIZ: 0.15, EV: 0.97, MIN: 1, MAX: 1e15 };
 const CRASH_UST = Math.floor(Math.exp((CRASH.HIZ * (CRASH.TUR_MS - CRASH.BAHIS_MS)) / 1000) * 100) / 100;
 function crashGizli() { return process.env.CRASH_SECRET || process.env.FIREBASE_SERVICE_ACCOUNT || "yerel-test-anahtari"; }
 function crashNoktasi(tur) {
@@ -1015,7 +1015,9 @@ function crashKapat(c, now, kasaDegis) {
 }
 
 // ---- Mines / Plinko / Blackjack yardımcıları ----
-const KUMAR_MAX = 500, KUMAR_MAX_ODEME = 25_000;
+// Kumarhanede para sınırı yok: tek sınır kişinin bakiyesi. (JSON'da Infinity olmadığı için çok büyük bir sayı.)
+const SINIRSIZ = 1e15;
+const KUMAR_MAX = SINIRSIZ, KUMAR_MAX_ODEME = SINIRSIZ;
 function hmacSayilar(etiket, n) {
   // gizli anahtardan n adet 0..1 arası sayı (aynı oyun kimliği → hep aynı sonuç)
   const out = [];
@@ -1053,7 +1055,7 @@ const PLINKO = {
 };
 // RULET (canlı, herkes aynı turda): 30 sn'lik turlar, ilk 20 sn bahis, sonra 6 sn çark döner.
 // Sonuç turun numarasından gizli anahtarla (HMAC) çıkar, bahis kapanmadan kimse bilemez. Avrupa ruleti (tek sıfır = "Berkay sıfırı").
-const RULET = { TUR_MS: 30_000, BAHIS_MS: 20_000, DONUS_MS: 6_000, MAX: 500, MAX_ADET: 30 };
+const RULET = { TUR_MS: 30_000, BAHIS_MS: 20_000, DONUS_MS: 6_000, MAX: 1e15, MAX_ADET: 37 + 9 };
 const RULET_KIRMIZI = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
 function ruletSonuc(tur) { return Math.floor(hmacSayilar("rulet:" + tur, 1)[0] * 37); }
 function ruletAn(now) {
@@ -1100,7 +1102,7 @@ function ruletKapat(c, now, ode) {
 const SLOT_SEMBOL = ["kiraz", "limon", "burger", "at", "para", "yedi", "berkay"];
 const SLOT_AGIRLIK = [8, 7, 5, 4, 2, 1, 1];
 const SLOT_UC = { kiraz: 6, limon: 10, burger: 18, at: 30, para: 80, yedi: 250 };
-const SLOT_JACKPOT_TABAN = 1000, SLOT_JACKPOT_PAY = 0.02, SLOT_MAX = 200;
+const SLOT_JACKPOT_TABAN = 1000, SLOT_JACKPOT_PAY = 0.02, SLOT_MAX = 1e15;
 function slotSembol(x) {
   let t = x * 28;
   for (let i = 0; i < SLOT_SEMBOL.length; i++) { if (t < SLOT_AGIRLIK[i]) return SLOT_SEMBOL[i]; t -= SLOT_AGIRLIK[i]; }
@@ -1201,7 +1203,7 @@ async function kumarIslem(db, kim, govde, now) {
         if (an.faz !== "bahis") throw new Hata("Bahisler kapandı, bir sonraki turu bekle.");
         if (c.crash && c.crash.tur === an.tur) throw new Hata("Bu tura zaten girdin.");
         const m = Math.round(sayi(govde.miktar) * 100) / 100;
-        if (!(m >= CRASH.MIN && m <= CRASH.MAX)) throw new Hata(`Bahis ${CRASH.MIN}–${CRASH.MAX} BERKAY arası olmalı.`);
+        if (!(m >= CRASH.MIN && m <= CRASH.MAX)) throw new Hata(`Bahis en az ${CRASH.MIN} BERKAY olmalı.`);
         if (m > (c.bkc || 0) + 1e-9) throw new Hata("Yeterli BERKAY'ın yok.");
         let hedef = sayi(govde.hedef);
         hedef = hedef >= 1.01 ? Math.min(CRASH_UST, Math.floor(hedef * 100) / 100) : null;
@@ -1251,7 +1253,7 @@ async function kumarIslem(db, kim, govde, now) {
       const kasa = { v: 0 };
       const bahisAl = (m, ust = KUMAR_MAX) => {
         m = Math.round(sayi(m) * 100) / 100;
-        if (!(m >= 1 && m <= ust)) throw new Hata(`Bahis 1–${ust} BERKAY arası olmalı.`);
+        if (!(m >= 1 && m <= ust)) throw new Hata("Bahis en az 1 BERKAY olmalı.");
         if (m > (c.bkc || 0) + 1e-9) throw new Hata("Yeterli BERKAY'ın yok.");
         c.bkc = r6(c.bkc - m); kasa.v += m;
         return m;
@@ -1449,7 +1451,7 @@ async function kumarIslem(db, kim, govde, now) {
       const c = s.data();
       const oyun = govde.oyun === "zar" ? "zar" : "yazitura";
       const m = Math.round(sayi(govde.miktar));
-      if (!(m >= 1 && m <= 1000)) throw new Hata("Miktar 1–1000 BERKAY arası olmalı.");
+      if (!(m >= 1)) throw new Hata("Miktar en az 1 BERKAY olmalı.");
       if (m > (c.bkc || 0) + 1e-9) throw new Hata("Yeterli BERKAY'ın yok.");
       if ((c.duelloAcik || 0) >= 3) throw new Hata("En fazla 3 açık düellon olabilir. Birini iptal et.");
       const rakip = String(govde.rakip || "").trim().slice(0, 20);

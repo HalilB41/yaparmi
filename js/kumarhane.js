@@ -77,8 +77,8 @@
   function crashBaslat() {
     durumSor();
     document.querySelectorAll("#crHizli button").forEach((b) => b.addEventListener("click", () => {
-      const m = Number(b.dataset.m);
-      $("crMiktar").value = String(cuzdan ? Math.max(1, Math.min(m, Math.floor(cuzdan.bkc || 0), ayar.MAX)) : m);
+      const m = b.dataset.m === "hepsi" ? Infinity : Number(b.dataset.m);
+      $("crMiktar").value = String(cuzdan ? Math.max(1, Math.min(m, Math.floor(cuzdan.bkc || 0))) : (m === Infinity ? 10 : m));
     }));
     $("crBtn").addEventListener("click", butonaBasildi);
     tuvalHazirla();
@@ -99,7 +99,7 @@
   async function gir() {
     if (giriliyor) return;
     const m = Math.round(Number($("crMiktar").value));
-    if (!(m >= ayar.MIN && m <= ayar.MAX)) { durumYaz("crDurum", `Bahis ${ayar.MIN}–${ayar.MAX} BERKAY arası olmalı.`, true); return; }
+    if (!(m >= ayar.MIN)) { durumYaz("crDurum", `Bahis en az ${ayar.MIN} BERKAY.`, true); return; }
     const h = Number($("crHedef").value);
     giriliyor = true;
     try { const r = await Ekonomi.api("crashBahis", { miktar: m, hedef: h >= 1.01 ? h : undefined }); durumYaz("crDurum", "✅ " + r.mesaj); }
@@ -236,7 +236,7 @@
     }));
     $("duBtn").addEventListener("click", async () => {
       const m = Math.round(Number($("duMiktar").value));
-      if (!(m >= 1 && m <= 1000)) { durumYaz("duDurum", "Miktar 1–1000 BERKAY arası olmalı.", true); return; }
+      if (!(m >= 1)) { durumYaz("duDurum", "Miktar en az 1 BERKAY.", true); return; }
       const rakip = $("duRakip").value.trim();
       $("duBtn").disabled = true;
       try {

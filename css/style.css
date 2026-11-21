@@ -2700,3 +2700,4 @@ a.hero-stat:hover { box-shadow: 0 0 0 2px var(--accent-soft); }
 .hr-sahne { isolation: isolate; scroll-margin-top: 150px; }
 .mk-bolum { scroll-margin-top: 150px; }
 @media (max-width: 760px) { .hr-sahne, .mk-bolum { scroll-margin-top: 130px; } .hr-arac { top: 10px; right: 10px; } .hr-arac .btn { padding: 8px 12px; font-size: .85rem; } }
+.km-fis.f500 { background: #ca8a04; } .km-fis.f1000 { background: #be123c; } .km-fis.f5000 { background: linear-gradient(135deg, #f5b82e, #b7791f); color: #2b1a00; font-size: .72rem; }

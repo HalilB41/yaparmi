@@ -67,7 +67,7 @@
     m.addEventListener("click", (e) => { const b = e.target.closest("[data-k]"); if (b) fisKoy(b.dataset.k); });
     m.addEventListener("contextmenu", (e) => { const b = e.target.closest("[data-k]"); if (b && bekleyen[b.dataset.k]) { e.preventDefault(); delete bekleyen[b.dataset.k]; masaCiz(); } });
     const f = $("ruFisler"); f.textContent = "";
-    [1, 5, 10, 25, 50, 100].forEach((v) => {
+    [1, 5, 10, 25, 50, 100, 500, 1000, 5000].forEach((v) => {
       const b = el("button", "km-fis f" + v + (v === fis ? " on" : ""), String(v)); b.type = "button"; b.setAttribute("role", "radio"); b.setAttribute("aria-checked", String(v === fis));
       b.addEventListener("click", () => { fis = v; [...f.children].forEach((x) => { const on = x === b; x.classList.toggle("on", on); x.setAttribute("aria-checked", String(on)); }); });
       f.append(b);
@@ -77,7 +77,7 @@
   function fisKoy(k) {
     if (!profile) { durumYaz("ruDurum", "Oynamak için giriş yap.", true); return; }
     if (an().faz !== "bahis") { durumYaz("ruDurum", "Bahisler kapandı, sonraki turu bekle.", true); return; }
-    if (toplamOf(bekleyen) + toplamOf(gonderilen) + fis > AYAR.MAX) { durumYaz("ruDurum", `Bir turda en fazla ${AYAR.MAX} BERKAY.`, true); return; }
+    
     if (cuzdan && toplamOf(bekleyen) + fis > (cuzdan.bkc || 0) + 1e-9) { durumYaz("ruDurum", "Yeterli BERKAY'ın yok.", true); return; }
     bekleyen[k] = (bekleyen[k] || 0) + fis;
     masaCiz();
@@ -363,7 +363,7 @@
     if (slotMesgul) return;
     if (!profile) { durumYaz("slDurum", "Oynamak için giriş yap.", true); return; }
     const m = Math.round(Number($("slMiktar").value || 5));
-    if (!(m >= 1 && m <= 200)) { durumYaz("slDurum", "Bahis 1–200 BERKAY arası olmalı.", true); return; }
+    if (!(m >= 1)) { durumYaz("slDurum", "Bahis en az 1 BERKAY.", true); return; }
     slotMesgul = true; $("slBtn").disabled = true; durumYaz("slDurum", "");
     // sonucu beklerken makaralar dönmeye başlasın
     seritler.forEach((s) => { s.parentElement.classList.add("donuyor"); });
