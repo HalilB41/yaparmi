@@ -308,7 +308,9 @@
   function bossBaslat() {
     const s = S, b = s.sv.boss;
     s.arena.aktif = true;
-    s.boss = { ...b, x: s.bossBas.x, y: s.bossBas.y, w: 64, h: 90, vx: 0, vy: 0, kalan: b.can, atis: 1.4, hedefX: s.bossBas.x, dokunulmaz: 0, yer: false, olu: false, yon: -1 };
+    // Zorluk: her boss kendi ayarını seviye dosyasından alır (yoksa varsayılan)
+    const z = Object.assign({ yuru: 120, atisAra: 1.7, ziplama: 0.5, ofke: 0.25, ciftAtis: true, ucus: 0.85, isabet: 1, ezmePayi: 28, ilkAtis: 1.4 }, b.zorluk || {});
+    s.boss = { ...b, z, x: s.bossBas.x, y: s.bossBas.y, w: 64, h: 90, vx: 0, vy: 0, kalan: b.can, atis: z.ilkAtis, hedefX: s.bossBas.x, dokunulmaz: 0, yer: false, olu: false, yon: -1 };
     s.mesaj = { yazi: `⚠️ ${b.ad}!`, t: 2 };
     SES.boss(); muzikCal("boss");
   }
@@ -316,21 +318,23 @@
     const s = S, b = s.boss, p = s.p;
     if (b.olu) { b.y += 300 * dt; b.aci = (b.aci || 0) + dt * 4; return; }
     const hiz = b.hizli ? 1.35 : 1;
-    const ofke = 1 + (b.can - b.kalan) * 0.25; // vuruldukça hızlanır
+    const z = b.z, ofke = 1 + (b.can - b.kalan) * z.ofke; // vuruldukça hızlanır
     b.dokunulmaz = Math.max(0, b.dokunulmaz - dt);
     // yürü: rastgele hedefe
     if (Math.abs(b.x - b.hedefX) < 10) b.hedefX = s.arena.bas + T * 2 + Math.random() * (s.arena.son - s.arena.bas - T * 5);
-    b.vx = Math.sign(b.hedefX - b.x) * 120 * hiz * ofke;
+    b.vx = Math.sign(b.hedefX - b.x) * z.yuru * hiz * ofke;
     b.yon = p.x < b.x ? -1 : 1;
     b.vy = Math.min(MAX_DUS, b.vy + G * dt);
     hareket(b, dt, true);
-    if (b.yer && Math.random() < dt * 0.5 * ofke) b.vy = -760;
+    if (b.yer && Math.random() < dt * z.ziplama * ofke) b.vy = -760;
     // fırlat
     b.atis -= dt * hiz * ofke;
     if (b.atis <= 0) {
-      b.atis = 1.7;
-      const dx = p.x + p.w / 2 - (b.x + b.w / 2), ucus = 0.85;
-      const adet = b.kalan <= Math.ceil(b.can / 2) ? 2 : 1;
+      b.atis = z.atisAra;
+      // isabet < 1: mermi oyuncunun biraz önüne/arkasına düşer (kaçması kolay)
+      const sapma = (1 - z.isabet) * (Math.random() < 0.5 ? -1 : 1) * 120;
+      const dx = p.x + p.w / 2 + sapma - (b.x + b.w / 2), ucus = z.ucus;
+      const adet = z.ciftAtis && b.kalan <= Math.ceil(b.can / 2) ? 2 : 1;
       for (let i = 0; i < adet; i++) {
         s.mermi.push({ x: b.x + b.w / 2 - 14, y: b.y + 10, w: 28, h: 28, vx: (dx / ucus) * (i ? 0.7 : 1), vy: -G * ucus / 2 + (p.y - b.y) / ucus * 0.5, emoji: b.mermi, don: 8, aci: 0, yazi: b.yazi, olum: `${b.ad} vurdu` });
       }
@@ -338,7 +342,7 @@
     }
     // temas
     if (kesisir(p, b) && b.dokunulmaz <= 0) {
-      if (p.vy > 0 && p.y + p.h - b.y < 28) {
+      if (p.vy > 0 && p.y + p.h - b.y < z.ezmePayi) {
         b.kalan--; b.dokunulmaz = 1.1; p.vy = -650; p.y = b.y - p.h; s.sallanma = 0.25; SES.vurus();
         parcaPatla(b.x + b.w / 2, b.y + 20, "#ef4444", 18);
         if (b.kalan <= 0) {

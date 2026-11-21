@@ -26,8 +26,9 @@ window.MACERA_SEVIYELER = [
 "ad": "Vardiya Müdürü",
 "yuz": "mudur",
 "emoji": "🧑‍💼",
-"can": 3,
-"mermi": "📦"
+"can": 2,
+"mermi": "📦",
+"zorluk": {"yuru": 70, "atisAra": 2.8, "ziplama": 0.15, "ofke": 0.1, "ciftAtis": false, "ucus": 1.15, "isabet": 0.55, "ezmePayi": 44, "ilkAtis": 2.5}
 },
 "hikaye": "Vardiya 22.00'de başlıyordu. Saat 22.47. Berkay Mez4'e koşarak giriyor ama Vardiya Müdürü kapıda bekliyor. Kolilerin arasından geç, forkliftlere ezilme, müdürün kafasına zıpla."
 },
