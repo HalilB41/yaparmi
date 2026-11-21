@@ -19,8 +19,12 @@
 
   $("ekGirisBtn").addEventListener("click", (e) => { e.stopPropagation(); window.scrollTo({ top: 0, behavior: "smooth" }); const t = $("authToggle"), p = $("authPanel"); if (t && p && p.hidden) t.click(); });
   if (typeof db === "undefined" || !db) { $("ekKapiYazi").textContent = "Şu an bağlı değil."; return; }
+  // Başarımlar cihaza bağlı: sadece kendi profilinde (ya da ?k= yokken) görünür
+  const bsGoster = (p) => { const b = $("basarim"); if (b) b.hidden = !!istenen && !(p && p.kullaniciAdi === istenen); };
+  bsGoster(null);
   window.YaparmiAuth.onChange((p) => {
     profile = p;
+    bsGoster(p);
     if (!p) { $("ekIcerik").hidden = true; $("ekKapi").hidden = false; $("ekKapiYazi").innerHTML = "Profilleri görmek için <b>giriş yap</b>."; $("ekGirisBtn").hidden = false; return; }
     $("ekKapi").hidden = true; $("ekIcerik").hidden = false;
     if (!basladi) { basladi = true; dinle(); }
@@ -92,7 +96,7 @@
     isimKutu.append(h);
     const rozetler = el("div", "pf-etiketler");
     rozetler.append(el("span", null, `🏅 ${sira}. zengin`), el("span", null, `🔥 ${c.seri || 0} gün seri`), el("span", null, "📅 " + new Date(c.olusturma || Date.now()).toLocaleDateString("tr-TR")));
-    if (profile && c.uid === profile.uid) rozetler.append(Object.assign(el("a", "link-btn", "🏆 Başarımlarım"), { href: "/basarimlar" }), Object.assign(el("a", "link-btn", "🎁 Yıl özetim"), { href: "/wrapped" }));
+    if (profile && c.uid === profile.uid) rozetler.append(Object.assign(el("a", "link-btn", "🏆 Başarımlarım"), { href: "#basarim" }), Object.assign(el("a", "link-btn", "🎁 Yıl özetim"), { href: "/wrapped" }));
     isimKutu.append(rozetler);
     baslik.append(avatar, isimKutu);
     ust.append(baslik);

@@ -141,8 +141,7 @@
   // HTML'inde sadece kendi içerikleri var.
   const NAV = [
     ["/", "Kâhin"], ["/spor", "Spor"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
-    ["/borsa", "Borsa"], ["/kumarhane", "Kumarhane"], ["/tahmin", "Tahmin"], ["/cark", "Çark"],
-    ["/topluluk", "Topluluk"], ["/soz", "Sözler"],
+    ["/borsa", "Borsa"], ["/kumarhane", "Kumarhane"], ["/cark", "Çark"], ["/topluluk", "Topluluk"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
   // Logo: içinde soru işareti olan konuşma balonu + sarı yıldız (renkler CSS'ten, .brand-mark)
@@ -178,7 +177,7 @@
     RENKLER.map(([k, ad, c]) => '<button type="button" data-renk="' + k + '" title="' + ad + '" aria-label="' + ad + '" style="--sw:' + c + '"><i></i><span>' + ad + "</span></button>").join("") +
     "</div>" +
     '<div class="tema-baslik">Bildirimler</div>' +
-    '<button type="button" class="tema-bildirim" id="bildirimBtn">🔔 Ahır bildirimlerini aç</button>' +
+    '<button type="button" class="tema-bildirim" id="bildirimBtn">🔔 Sohbet bildirimlerini aç</button>' +
     '<p class="tema-not" id="bildirimNot"></p>' +
     "</div></div>" +
     '<div class="auth-widget" id="authWidget"><button type="button" class="auth-toggle" id="authToggle">Giriş yap</button><div class="card auth-panel" id="authPanel" hidden></div></div>' +
@@ -189,13 +188,13 @@
   footer.className = "site-footer";
   footer.innerHTML =
     '<div class="site-footer-in"><span>yaparmi.com · sadece eğlence amaçlıdır, kimse alınmasın.</span><nav>' +
-    NAV.slice(1).concat([["/basarimlar", "Başarımlar"]]).map(([href, label]) => '<a href="' + href + '">' + label + "</a>").join("") + "</nav></div>";
+    NAV.slice(1).concat([["/profil", "Profil"]]).map(([href, label]) => '<a href="' + href + '">' + label + "</a>").join("") + "</nav></div>";
   document.body.appendChild(footer);
 
   // ---------------- Telefon: alt menü çubuğu + "Menü" sayfası ----------------
   // Sadece dar ekranda görünür (CSS: .alt-bar). Üstteki yatay menü telefonda gizlenir.
   const ALT = [["/", "🔮", "Kâhin"], ["/borsa", "📈", "Borsa"], ["/kumarhane", "🎰", "Kumar"], ["/cark", "🎡", "Çark"]];
-  const IKON = { "/": "🔮", "/spor": "🥊", "/sosyal": "🎭", "/galeri": "🖼️", "/borsa": "📈", "/kumarhane": "🎰", "/tahmin": "🎲", "/cark": "🎡", "/topluluk": "📊", "/soz": "🤝" };
+  const IKON = { "/": "🔮", "/spor": "🥊", "/sosyal": "🎭", "/galeri": "🖼️", "/borsa": "📈", "/kumarhane": "🎰", "/cark": "🎡", "/topluluk": "📊" };
   const altBar = document.createElement("nav");
   altBar.className = "alt-bar";
   altBar.setAttribute("aria-label", "Hızlı menü");
@@ -209,8 +208,8 @@
   altSayfa.innerHTML =
     '<div class="alt-sayfa-kart" role="dialog" aria-label="Bütün bölümler"><div class="alt-tutamac"></div>' +
     '<div class="alt-izgara">' +
-    NAV.concat([["/profil", "Profilim"], ["/basarimlar", "Başarımlar"]]).map(([href, ad]) =>
-      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || (href === "/profil" ? "👤" : "🏆")) + "</i><span>" + ad + "</span></a>").join("") +
+    NAV.concat([["/profil", "Profilim"], ["/topluluk#tahmin", "Tahmin"], ["/topluluk#soz", "Sözler"], ["/topluluk#itiraf", "İtiraflar"]]).map(([href, ad]) =>
+      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || ({ "/profil": "👤", "/topluluk#tahmin": "🎲", "/topluluk#soz": "🤝", "/topluluk#itiraf": "🤫" })[href] || "🏆") + "</i><span>" + ad + "</span></a>").join("") +
     "</div></div>";
   document.body.appendChild(altBar);
   document.body.appendChild(altSayfa);

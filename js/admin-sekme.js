@@ -79,7 +79,7 @@
   // ---- Sayılar: menü rozetleri → Genel bakış kutuları ve alt sekme rozetleri ----
   // admOneriSay: admin.js (galeri önerileri). admSiparisSay / admCarkSay: aşağıdaki hafif sorgular
   // (bölümler henüz açılmadan da sayı görünsün; sadece bekleyenler okunur).
-  const ALT_ROZET = { admSiparisSay: ["borsa", "market"], admCarkSay: ["cark", "sonuc"], admOneriSay: ["galeri", "oneri"] };
+  const ALT_ROZET = { admSiparisSay: ["borsa", "market"], admCarkSay: ["cark", "sonuc"], admOneriSay: ["galeri", "oneri"], admItirafSay: ["topluluk", "itiraf"] };
   function rozetYay(id) {
     const r = $(id); if (!r) return;
     const n = r.hidden ? 0 : Number(r.textContent) || 0;
@@ -101,6 +101,7 @@
     sayacBasladi = true;
     db.collection("borsa_siparis").where("durum", "==", "bekliyor").onSnapshot((s) => rozetYaz("admSiparisSay", s.size), () => {});
     db.collection("cark_sonuclari").where("istendi", "==", true).onSnapshot((s) => rozetYaz("admCarkSay", s.docs.filter((d) => !d.data().verildi).length), () => {});
+    db.collection("itiraf_bekleyen").onSnapshot((s) => rozetYaz("admItirafSay", s.size), () => {});
   }
   // Galeri önerileri sayacı (admin.js'in listesi değişince)
   const kuyruk = $("queueList"), oneriSay = $("admOneriSay");

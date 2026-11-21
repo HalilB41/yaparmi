@@ -41,7 +41,7 @@
         <span class="adm-menu-baslik">Site</span>
         <button type="button" role="tab" data-tab="kahin"><i>🔮</i><span>Kâhin</span></button>
         <button type="button" role="tab" data-tab="galeri"><i>🖼️</i><span>Galeri</span><span class="adm-say" id="admOneriSay" hidden></span></button>
-        <button type="button" role="tab" data-tab="topluluk"><i>📊</i><span>Topluluk</span></button>
+        <button type="button" role="tab" data-tab="topluluk"><i>📊</i><span>Topluluk</span><span class="adm-say" id="admItirafSay" hidden></span></button>
         <button type="button" role="tab" data-tab="icerik"><i>📝</i><span>İçerik</span></button>
         <button type="button" role="tab" data-tab="oyunlar"><i>🎮</i><span>Oyunlar</span></button>
         <a class="adm-menu-site" href="/">↩ Siteye dön</a>
@@ -53,6 +53,7 @@
           <a class="adm-kutu" href="#borsa/market" data-ayna="admSiparisSay"><i>📦</i><b>0</b><span>teslim bekleyen market siparişi</span></a>
           <a class="adm-kutu" href="#galeri/oneri" data-ayna="admOneriSay"><i>🖼️</i><b>0</b><span>onay bekleyen galeri fotoğrafı</span></a>
           <a class="adm-kutu" href="#cark/sonuc" data-ayna="admCarkSay"><i>🎡</i><b>0</b><span>ödülünü isteyen (çark)</span></a>
+          <a class="adm-kutu" href="#topluluk/itiraf" data-ayna="admItirafSay"><i>🤫</i><b>0</b><span>onay bekleyen itiraf</span></a>
         </div>
         <div class="panel card admin-section">
           <h2>⚡ Hızlı işlemler</h2>
@@ -410,7 +411,7 @@
             </section>
 
       <!-- ================= TOPLULUK ================= -->
-      <section class="adm-panel admin-grid" data-panel="topluluk" data-altlar="anket:🗳️ Anketler|sayac:🔢 Grup sayaçları|vardiya:🏭 Vardiya" hidden>
+      <section class="adm-panel admin-grid" data-panel="topluluk" data-altlar="anket:🗳️ Anketler|itiraf:🤫 İtiraflar|sayac:🔢 Grup sayaçları|vardiya:🏭 Vardiya" hidden>
         <div class="adm-intro wide" data-alt="anket"><b>📊 Topluluk</b> Günün sorusu / anket / haftanın rezili oluştur, grup sayaçlarını artır, vardiya kayıtlarını yönet. Hepsi <a href="/topluluk" target="_blank">topluluk sayfasında</a> görünür.</div>
 
         <div data-alt="anket" class="panel card admin-section">
@@ -423,6 +424,17 @@
             <button type="button" class="admin-btn publish" id="anketOlustur">➕ Oluştur ve aç</button>
           </div>
           <p class="suggest-status" id="anketOlusturDurum"></p>
+        </div>
+
+        <div data-alt="itiraf" class="panel card admin-section wide">
+          <h2>🤫 Onay bekleyen itiraflar</h2>
+          <p class="muted">Kimin yazdığı hiçbir yerde tutulmuyor (sen de göremezsin). Yayınlamadan önce metni düzeltebilirsin: isim ifşası, hakaret vs. varsa sil ya da reddet.</p>
+          <div id="itirafAdminBekleyen" class="it-admin-liste"><p class="muted">Yükleniyor…</p></div>
+        </div>
+        <div data-alt="itiraf" class="panel card admin-section wide">
+          <h2>📢 Yayındakiler</h2>
+          <p class="muted">Son 30 itiraf. Sorunlu olanı kaldırabilirsin.</p>
+          <div id="itirafAdminYayin" class="it-admin-liste"><p class="muted">Yükleniyor…</p></div>
         </div>
 
         <div data-alt="sayac" class="panel card admin-section">
@@ -620,5 +632,6 @@
   <script src="js/sosyal-editor.js"></script>
   <script src="js/spor-admin.js"></script>
   <script src="js/topluluk-admin.js"></script>
+  <script src="js/itiraf-admin.js"></script>
 </body>
 </html>

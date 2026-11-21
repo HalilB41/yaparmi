@@ -51,8 +51,8 @@
       if (not) not.textContent = "Tarayıcının site ayarlarından bildirim iznini aç.";
       return;
     }
-    btn.textContent = acikMi() ? "🔕 Ahır bildirimlerini kapat" : "🔔 Ahır bildirimlerini aç";
-    if (not) not.textContent = acikMi() ? "Ahır'a biri yazınca haber vereceğim (site açıkken ya da arka plandayken)." : "";
+    btn.textContent = acikMi() ? "🔕 Sohbet bildirimlerini kapat" : "🔔 Sohbet bildirimlerini aç";
+    if (not) not.textContent = acikMi() ? "Sohbete biri yazınca haber vereceğim (site açıkken ya da arka plandayken)." : "";
   }
   if (btn) {
     btn.addEventListener("click", async () => {
@@ -66,7 +66,7 @@
       if (izin === "granted") {
         try { localStorage.setItem(ANAHTAR, "1"); } catch { /* yok */ }
         if (window.Basarim) Basarim.say("bildirim");
-        goster("🔔 Bildirimler açık", "Ahır'a biri yazınca buradan haber vereceğim.");
+        goster("🔔 Bildirimler açık", "Sohbete biri yazınca buradan haber vereceğim.");
         dinle();
       }
       ciz();
@@ -100,7 +100,7 @@
           if (!d || typeof d.mesaj !== "string" || d.uid === user.uid || !acikMi()) return;
           const ahirAcik = !document.hidden && document.getElementById("panel-ahir") && !document.getElementById("panel-ahir").hidden;
           if (ahirAcik) return;
-          goster("🐴 Berkayın Ahırı", (d.kullaniciAdi || "?") + ": " + d.mesaj.slice(0, 140), "/#ahir");
+          goster("💬 Sohbet", (d.kullaniciAdi || "?") + ": " + d.mesaj.slice(0, 140), "/#sohbet");
         });
       }, () => { dinliyor = false; });
     });

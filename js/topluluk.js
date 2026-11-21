@@ -29,13 +29,15 @@
   function girisGerekli() { return !(profile && profile.kullaniciAdi); }
 
   // ---------------- Sayfa sekmeleri ----------------
-  const sekmeler = Array.from(document.querySelectorAll(".adm-tabs [data-tab]"));
-  const paneller = Array.from(document.querySelectorAll(".adm-panel"));
+  // Topluluk merkezinde başka bölümlerle aynı sayfada: sadece kendi bölümündeki sekmeler
+  const kokBolum = document.getElementById("toplulukSayfa");
+  const sekmeler = Array.from(kokBolum.querySelectorAll(".adm-tabs [data-tab]"));
+  const paneller = Array.from(kokBolum.querySelectorAll(".adm-panel"));
   function ac(ad) {
     if (!paneller.some((p) => p.dataset.panel === ad)) ad = "anket";
     sekmeler.forEach((b) => { const on = b.dataset.tab === ad; b.classList.toggle("active", on); b.setAttribute("aria-selected", String(on)); });
     paneller.forEach((p) => (p.hidden = p.dataset.panel !== ad));
-    if (location.hash.slice(1) !== ad) history.replaceState(null, "", "#" + ad);
+    if (!kokBolum.hidden && location.hash.slice(1) !== ad) history.replaceState(null, "", "#" + ad);
   }
   sekmeler.forEach((b) => b.addEventListener("click", () => ac(b.dataset.tab)));
   ac(location.hash.slice(1));

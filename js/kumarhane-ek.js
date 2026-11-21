@@ -410,7 +410,7 @@
       ust.append(b);
     }
     $("tuKatil").hidden = !!tu.ben; $("tuKatil").textContent = `🎟️ Katıl · ${tu.giris} BERKAY`;
-    $("tuOyna").hidden = !tu.ben; $("tuOyna").href = OYUN_LINK[tu.oyun] || "/oyun"; $("tuOyna").textContent = `🎮 ${OYUN_AD[tu.oyun] || ""} · oyna →`;
+    $("tuOyna").hidden = !tu.ben; $("tuOyna").href = OYUN_LINK[tu.oyun] || "/spor"; $("tuOyna").textContent = `🎮 ${OYUN_AD[tu.oyun] || ""} · oyna →`;
     // liste
     const l = $("tuListe"); l.textContent = "";
     if (!tu.liste.length) l.append(el("p", "muted", "Henüz kimse katılmadı. İlk sen ol!"));

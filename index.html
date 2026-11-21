@@ -26,14 +26,14 @@
         <p class="lead">Aklına ne gelirse sor. Kâhin dürüst cevap verir, genelde de kötü haber olur. Sıkılırsan aşağıdaki bölümlere bak.</p>
         <div class="hero-stats">
           <span class="hero-stat"><span>🧠</span><span><b>Yapay zekâ</b> cevaplıyor</span></span>
-          <span class="hero-stat"><span>🐴</span><span><b>Ahır</b>'da canlı sohbet</span></span>
+          <a class="hero-stat" href="#sohbet" id="sohbetKisayol"><span>💬</span><span><b>Sohbet</b>: siteye girenlerle canlı muhabbet</span></a>
         </div>
       </div>
 
       <div>
         <div class="view-switch" role="tablist" aria-label="Görünüm">
           <button type="button" class="active" data-view="trivia">🔮 Kâhine sor</button>
-          <button type="button" id="ahirBtn" data-view="ahir">🐴 Berkayın Ahırı</button>
+          <button type="button" id="ahirBtn" data-view="ahir">💬 Sohbet</button>
         </div>
 
         <div class="panel card oracle-card" id="panel-trivia">
@@ -77,7 +77,7 @@
 
         <div class="panel card ahir-card" id="panel-ahir" hidden>
           <div class="ahir-header">
-            <h2>🐴 Berkayın Ahırı<small>Siteye girenlerle canlı sohbet</small></h2>
+            <h2>💬 Sohbet<small>Siteye girenlerle canlı muhabbet</small></h2>
             <div class="ahir-user-info" id="ahirUserInfo" hidden>
               <span id="ahirUsernameDisplay"></span>
               <button type="button" id="ahirChangeNameBtn" class="link-btn">değiştir</button>
@@ -85,10 +85,10 @@
           </div>
 
           <div class="username-gate" id="usernameGate">
-            <p>Sohbete girmeden önce bir takma ad seç. Boşluksuz, en fazla 12 karakter; aynı adı iki kişi alamaz.</p>
+            <p class="sh-gate-yazi"><b>Sohbette görünecek adını seç.</b><br>Boşluksuz, en fazla 12 karakter. Aynı adı iki kişi alamaz.</p>
             <form id="usernameForm" autocomplete="off">
               <input id="usernameInput" type="text" maxlength="16" placeholder="takmaadin" required />
-              <button type="submit">Ahıra gir</button>
+              <button type="submit">Sohbete gir</button>
             </form>
             <p class="username-error" id="usernameError" aria-live="polite"></p>
           </div>
@@ -96,8 +96,8 @@
           <div class="ahir-chat" id="ahirChat" hidden>
             <div class="ahir-messages" id="ahirMessages"></div>
             <form id="ahirForm" autocomplete="off">
-              <input id="ahirInput" type="text" maxlength="300" placeholder="Bir şeyler yaz…" />
-              <button type="submit">Gönder</button>
+              <input id="ahirInput" type="text" maxlength="300" placeholder="Mesaj yaz…" enterkeyhint="send" />
+              <button type="submit" aria-label="Gönder">➤</button>
             </form>
           </div>
         </div>
@@ -122,7 +122,7 @@
         <a class="tile" href="/galeri" style="--tile: color-mix(in srgb, #2fa36b 20%, var(--surface))"><span class="tile-ico">🖼️</span><div><b>Galeri</b><span>En iyi kareler burada. Sen de fotoğraf öner.</span></div></a>
         <a class="tile" href="/borsa" style="--tile: color-mix(in srgb, #f5b82e 26%, var(--surface))"><span class="tile-ico">📈</span><div><b>Berkay Borsası</b><span>BERKAY al-sat, 20x kaldıraç, biriktir ve Berkay Market'ten ürün kap.</span></div></a>
         <a class="tile" href="/cark" style="--tile: color-mix(in srgb, #8b5cf6 20%, var(--surface))"><span class="tile-ico">🎡</span><div><b>Sınırsız Çark</b><span>Halil depoya gidince açılır. Çevir, ödülü kap, Maximus'u yakala.</span></div></a>
-        <a class="tile" href="/soz" style="--tile: color-mix(in srgb, #e8590c 20%, var(--surface))"><span class="tile-ico">🤝</span><div><b>Söz defteri</b><span>Verilen sözler, kaybedilen iddialar ve gün gün sayılan borçlar.</span></div></a>
+        <a class="tile" href="/topluluk" style="--tile: color-mix(in srgb, #e8590c 20%, var(--surface))"><span class="tile-ico">📊</span><div><b>Topluluk</b><span>Anketler, tahmin pazarı, söz defteri ve anonim itiraflar.</span></div></a>
     </div>
   </main>
 
@@ -156,5 +156,6 @@
   <script src="js/sayac.js"></script>
   <script src="js/script.js"></script>
   <script src="js/bot-gorunum.js"></script>
+  <script src="js/sohbet.js"></script>
 </body>
 </html>

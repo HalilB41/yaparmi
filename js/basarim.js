@@ -11,7 +11,7 @@
   "use strict";
 
   const KATEGORILER = [
-    ["kahin", "🔮", "Kâhin ve Ahır"],
+    ["kahin", "🔮", "Kâhin ve Sohbet"],
     ["spor", "🥊", "Spor"],
     ["grup", "🤝", "Grup"],
     ["diger", "📚", "Sosyal hayat, galeri"],
@@ -22,8 +22,8 @@
     { id: "ilk_soru", k: "kahin", ikon: "🔮", ad: "Merak kedisi", acik: "Kâhine ilk soruyu sor.", sayac: "kahin", hedef: 1 },
     { id: "kahin_10", k: "kahin", ikon: "🌧️", ad: "Soru yağmuru", acik: "Kâhine 10 soru sor.", sayac: "kahin", hedef: 10 },
     { id: "kahin_50", k: "kahin", ikon: "🧙", ad: "Kâhinin müdavimi", acik: "Kâhine 50 soru sor.", sayac: "kahin", hedef: 50 },
-    { id: "ahir_ilk", k: "kahin", ikon: "🐴", ad: "Ahıra hoş geldin", acik: "Berkayın Ahırı'na ilk mesajını yaz.", sayac: "ahir", hedef: 1 },
-    { id: "ahir_20", k: "kahin", ikon: "📣", ad: "Ahırın sesi", acik: "Ahır'a 20 mesaj yaz.", sayac: "ahir", hedef: 20 },
+    { id: "ahir_ilk", k: "kahin", ikon: "💬", ad: "Sohbete hoş geldin", acik: "Sohbete ilk mesajını yaz.", sayac: "ahir", hedef: 1 },
+    { id: "ahir_20", k: "kahin", ikon: "📣", ad: "Sohbetin sesi", acik: "Sohbete 20 mesaj yaz.", sayac: "ahir", hedef: 20 },
 
     { id: "boks_ilk", k: "spor", ikon: "🥊", ad: "İlk yumruk", acik: "Torbaya ilk kez vur.", sayac: "boks_vurus", hedef: 1 },
     { id: "boks_50", k: "spor", ikon: "💪", ad: "Torba düşmanı", acik: "Torbaya toplam 50 kez vur.", sayac: "boks_vurus", hedef: 50 },
@@ -45,7 +45,7 @@
     { id: "davet_3", k: "grup", ikon: "👥", ad: "Grup kurucusu", acik: "Davet linkinle 3 arkadaşın kayıt olsun.", sayac: "davet", hedef: 3 },
     { id: "lider", k: "grup", ikon: "🥇", ad: "Rekortmen", acik: "Bir spor oyununun grup rekor tablosunda 1. ol.", sayac: "lider_x", hedef: 1 },
     { id: "paylas", k: "grup", ikon: "📤", ad: "Yayıncı", acik: "Kâhinin bir cevabını paylaş.", sayac: "paylas", hedef: 1 },
-    { id: "bildirim", k: "grup", ikon: "🔔", ad: "Haberim olsun", acik: "Ahır bildirimlerini aç.", sayac: "bildirim", hedef: 1 },
+    { id: "bildirim", k: "grup", ikon: "🔔", ad: "Haberim olsun", acik: "Sohbet bildirimlerini aç.", sayac: "bildirim", hedef: 1 },
     { id: "uygulama", k: "grup", ikon: "📲", ad: "Cebimde", acik: "yaparmi.com'u uygulama olarak yükle.", sayac: "uygulama", hedef: 1 },
 
     { id: "son_ilk", k: "diger", ikon: "🏁", ad: "Kader çizildi", acik: "Sosyal hayat hikâyesinde bir sona ulaş.", sayac: "son", hedef: 1 },
@@ -84,7 +84,7 @@
     gosteriliyor = true;
     const t = document.createElement("a");
     t.className = "bs-toast";
-    t.href = "/basarimlar";
+    t.href = "/profil#basarim";
     t.setAttribute("role", "status");
     t.innerHTML = '<span class="bs-toast-ikon"></span><span class="bs-toast-yazi"><small>Başarım açıldı</small><b></b></span>';
     t.querySelector(".bs-toast-ikon").textContent = b.ikon;
@@ -156,8 +156,8 @@
     if (!yer || document.getElementById("bsBtn")) return;
     const a = document.createElement("a");
     a.id = "bsBtn";
-    a.className = "icon-btn bs-btn" + (location.pathname.replace(/\.html$/, "").replace(/\/+$/, "") === "/basarimlar" ? " on" : "");
-    a.href = "/basarimlar";
+    a.className = "icon-btn bs-btn" + (location.pathname.replace(/\.html$/, "").replace(/\/+$/, "") === "/profil" ? " on" : "");
+    a.href = "/profil#basarim";
     a.title = "Başarımlar";
     a.setAttribute("aria-label", "Başarımlar");
     a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="bs-sayi" id="bsSayi"></span>';

@@ -2018,6 +2018,71 @@ async function adminIslem(db, kim, govde, now) {
   }, sym, def);
 }
 
+// ---------------- İtiraf duvarı ----------------
+// Anonim: itirafta yazanın uid'si TUTULMAZ. Sadece günlük sınır için gizli anahtarla üretilmiş, geri
+// çevrilemeyen bir kısa iz (hash) kullanılır; admin dahil kimse kimin yazdığını göremez.
+// itiraf_bekleyen (admin okur) → onaylanınca itiraf_yayin (herkes okur).
+const ITIRAF = { MIN: 5, MAX: 280, GUNLUK: 3, TEPKILER: ["😂", "💀", "😳", "🔥", "🤡", "❤️"] };
+const ITIRAF_ISLEMLERI = ["itirafGonder", "itirafTepki", "adminItiraf"];
+function itirafIz(uid) { return createHmac("sha256", crashGizli()).update("itiraf:" + uid).digest("hex").slice(0, 16); }
+async function itirafIslem(db, kim, govde, now) {
+  const tur = govde.islem;
+  const iz = itirafIz(kim.uid);
+  if (tur === "itirafGonder") {
+    const metin = String(govde.metin || "").replace(/\s+/g, " ").trim();
+    if (metin.length < ITIRAF.MIN) throw new Hata("Biraz daha yaz, en az 5 karakter.");
+    if (metin.length > ITIRAF.MAX) throw new Hata(`En fazla ${ITIRAF.MAX} karakter.`);
+    const limRef = db.collection("itiraf_limit").doc(iz);
+    const gun = gunAnahtari(now);
+    return db.runTransaction(async (tx) => {
+      const l = await tx.get(limRef);
+      const v = l.exists && l.data().g === gun ? l.data() : { g: gun, n: 0 };
+      if (v.n >= ITIRAF.GUNLUK) throw new Hata(`Günde en fazla ${ITIRAF.GUNLUK} itiraf. Yarın gel 🤐`);
+      tx.set(limRef, { g: gun, n: v.n + 1 });
+      tx.set(db.collection("itiraf_bekleyen").doc(), { metin, t: now });
+      return { ok: true, kalan: ITIRAF.GUNLUK - v.n - 1 };
+    });
+  }
+  if (tur === "itirafTepki") {
+    const emoji = String(govde.emoji || "");
+    if (!ITIRAF.TEPKILER.includes(emoji)) throw new Hata("Bilinmeyen tepki.");
+    const ref = db.collection("itiraf_yayin").doc(String(govde.id || "-"));
+    return db.runTransaction(async (tx) => {
+      const s = await tx.get(ref);
+      if (!s.exists) throw new Hata("İtiraf bulunamadı.");
+      const d = s.data();
+      const veren = { ...(d.veren || {}) }, tepki = { ...(d.tepki || {}) };
+      const eski = veren[iz];
+      if (eski) tepki[eski] = Math.max(0, (tepki[eski] || 0) - 1);
+      if (eski === emoji) delete veren[iz]; // aynı tepkiye tekrar basınca geri al
+      else { veren[iz] = emoji; tepki[emoji] = (tepki[emoji] || 0) + 1; }
+      for (const k of Object.keys(tepki)) if (!tepki[k]) delete tepki[k];
+      tx.update(ref, { tepki, veren });
+      return { ok: true, tepki, benim: veren[iz] || null };
+    });
+  }
+  if (tur === "adminItiraf") {
+    if (!kim.admin) throw new Hata("Bu işlem sadece admin içindir.", 403);
+    const id = String(govde.id || "-"), karar = String(govde.karar || "");
+    if (karar === "onayla" || karar === "reddet") {
+      const bRef = db.collection("itiraf_bekleyen").doc(id);
+      return db.runTransaction(async (tx) => {
+        const s = await tx.get(bRef);
+        if (!s.exists) throw new Hata("Bekleyen itiraf bulunamadı (başka admin karar vermiş olabilir).");
+        if (karar === "onayla") {
+          const metin = String(govde.metin || s.data().metin).replace(/\s+/g, " ").trim().slice(0, ITIRAF.MAX); // admin küçük düzeltme yapabilir
+          tx.set(db.collection("itiraf_yayin").doc(id), { metin, t: s.data().t, yayin: now, tepki: {}, veren: {} });
+        }
+        tx.delete(bRef);
+        return { ok: true };
+      });
+    }
+    if (karar === "sil") { await db.collection("itiraf_yayin").doc(id).delete(); return { ok: true }; }
+    throw new Hata("Bilinmeyen karar.");
+  }
+  throw new Hata("Bilinmeyen işlem.");
+}
+
 // ---------------- Giriş noktası ----------------
 const profilOnbellek = new Map();
 export default async function handler(req, res) {
@@ -2056,7 +2121,9 @@ export default async function handler(req, res) {
     const kim = { uid: karar.uid, ad: p.ad, admin: p.admin };
 
     let sonuc;
-    if (KUMAR_ISLEMLERI.includes(tur)) {
+    if (ITIRAF_ISLEMLERI.includes(tur)) {
+      sonuc = await itirafIslem(db, kim, govde, now);
+    } else if (KUMAR_ISLEMLERI.includes(tur)) {
       sonuc = await kumarIslem(db, kim, govde, now);
     } else if (EKONOMI_ISLEMLERI.includes(tur)) {
       sonuc = await ekonomiIslem(db, kim, govde, now);
@@ -2084,4 +2151,4 @@ export default async function handler(req, res) {
 }
 
 // Testler için dışa açık matematik
-export const _ic = { ruletAn, ruletSonuc, ruletCarpan, slotDegerlendir, SLOT_SEMBOL, SLOT_AGIRLIK, turnuvaOyunu, TURNUVA, minesCarpan, minesBombalar, bjToplam, bjDeste, PLINKO, oyuncuOlay, seviyeHesap, gunGorevleri, haftaAnahtari, GOREVLER, kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
+export const _ic = { itirafIslem, itirafIz, ruletAn, ruletSonuc, ruletCarpan, slotDegerlendir, SLOT_SEMBOL, SLOT_AGIRLIK, turnuvaOyunu, TURNUVA, minesCarpan, minesBombalar, bjToplam, bjDeste, PLINKO, oyuncuOlay, seviyeHesap, gunGorevleri, haftaAnahtari, GOREVLER, kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
