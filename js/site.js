@@ -184,6 +184,39 @@
     "</div></div>";
   document.body.insertBefore(topbar, document.body.firstChild);
 
+  // ---------------- Duyuru bandı ----------------
+  // ayarlar/duyuru { aktif, metin, link, tur, id } → admin yayınlayınca her sayfada en üstte görünür.
+  // Canlı dinlenir (1 okuma + sadece değişince). Kullanıcı ✕ ile kapatırsa o duyuru bir daha çıkmaz.
+  (function duyuruBandi() {
+    const bant = document.createElement("div");
+    bant.className = "duyuru-bant"; bant.hidden = true; bant.setAttribute("role", "status");
+    topbar.insertBefore(bant, topbar.firstChild);
+    const IKON = { bilgi: "📢", uyari: "⚠️", kutlama: "🎉", acil: "🚨" };
+    function goster(d) {
+      let kapali = null;
+      try { kapali = localStorage.getItem("duyuru_kapali"); } catch { /* yok */ }
+      if (!d || !d.aktif || !d.metin || (d.tur !== "acil" && kapali === String(d.id))) { bant.hidden = true; return; }
+      bant.textContent = "";
+      bant.dataset.tur = IKON[d.tur] ? d.tur : "bilgi";
+      const ic = document.createElement("div"); ic.className = "duyuru-ic";
+      const ikon = document.createElement("span"); ikon.className = "duyuru-ikon"; ikon.textContent = IKON[bant.dataset.tur];
+      const yazi = document.createElement(d.link ? "a" : "span"); yazi.className = "duyuru-yazi"; yazi.textContent = String(d.metin).slice(0, 300);
+      if (d.link && /^(https?:\/\/|\/)/.test(d.link)) { yazi.href = d.link; if (/^https?:/.test(d.link)) { yazi.target = "_blank"; yazi.rel = "noopener"; } }
+      ic.append(ikon, yazi);
+      if (d.tur !== "acil") {
+        const x = document.createElement("button"); x.type = "button"; x.className = "duyuru-kapat"; x.setAttribute("aria-label", "Duyuruyu kapat"); x.textContent = "✕";
+        x.addEventListener("click", () => { try { localStorage.setItem("duyuru_kapali", String(d.id)); } catch { /* yok */ } bant.hidden = true; });
+        ic.append(x);
+      }
+      bant.append(ic); bant.hidden = false;
+    }
+    let deneme = 0;
+    (function bagla() {
+      if (typeof db === "undefined" || !db) { if (++deneme < 20) setTimeout(bagla, 250); return; }
+      db.collection("ayarlar").doc("duyuru").onSnapshot((snap) => goster(snap.exists ? snap.data() : null), () => { bant.hidden = true; });
+    })();
+  })();
+
   const footer = document.createElement("footer");
   footer.className = "site-footer";
   footer.innerHTML =

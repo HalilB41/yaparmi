@@ -56,6 +56,19 @@
           <a class="adm-kutu" href="#topluluk/itiraf" data-ayna="admItirafSay"><i>🤫</i><b>0</b><span>onay bekleyen itiraf</span></a>
         </div>
         <div class="panel card admin-section">
+          <h2>📢 Duyuru</h2>
+          <p class="muted" style="font-size:.85rem;margin-top:-4px">Yayınlayınca sitedeki herkesin ekranının en üstünde çıkar (açık olan sayfalarda da anında). İnsanlar ✕ ile kapatabilir; 🚨 Acil olanlar kapatılamaz.</p>
+          <div class="tpl-form adm-form">
+            <label style="grid-column:1/-1">Duyuru metni <textarea id="duyuruMetin" maxlength="300" rows="2" placeholder="ör. Bu akşam 22:00'de halısaha var, satan Salih'e 100 BERKAY ceza"></textarea></label>
+            <label>Tür <select id="duyuruTur"><option value="bilgi">📢 Bilgi</option><option value="kutlama">🎉 Kutlama</option><option value="uyari">⚠️ Uyarı</option><option value="acil">🚨 Acil (kapatılamaz)</option></select></label>
+            <label>Bağlantı (isteğe bağlı) <input type="text" id="duyuruLink" placeholder="ör. /macera ya da https://…" /></label>
+            <button type="button" class="admin-btn publish" id="duyuruYayinla">📢 Yayınla</button>
+            <button type="button" class="admin-btn reject" id="duyuruKaldir">🗑️ Kaldır</button>
+          </div>
+          <div class="duyuru-onizle" id="duyuruSimdi"></div>
+          <p class="suggest-status" id="duyuruDurum"></p>
+        </div>
+        <div class="panel card admin-section">
           <h2>⚡ Hızlı işlemler</h2>
           <div class="adm-hizli">
             <a href="#borsa/genel"><i>📰</i><b>Son dakika yayınla</b><span>Haber yaz, coin fiyatı oynasın</span></a>
@@ -637,6 +650,7 @@
   <script src="js/admin.js"></script>
   <script src="js/kahin-paylas.js"></script>
   <script src="js/kahin-ayar-admin.js"></script>
+  <script src="js/duyuru-admin.js"></script>
   <script src="js/sayac.js"></script>
   <script src="js/cark-ciz.js"></script>
   <script src="js/cark-admin.js"></script>

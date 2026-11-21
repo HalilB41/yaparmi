@@ -303,6 +303,19 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 }
 
 /* ---------------- Üst bar ---------------- */
+.duyuru-bant { --d1: #4f46e5; --d2: #7c3aed; background: linear-gradient(90deg, var(--d1), var(--d2)); color: #fff; font-weight: 700; font-size: .95rem; }
+.duyuru-bant[data-tur="uyari"] { --d1: #d97706; --d2: #ea580c; }
+.duyuru-bant[data-tur="kutlama"] { --d1: #db2777; --d2: #9333ea; }
+.duyuru-bant[data-tur="acil"] { --d1: #dc2626; --d2: #991b1b; animation: duyuruNabiz 1.6s ease-in-out infinite; }
+@keyframes duyuruNabiz { 50% { filter: brightness(1.18); } }
+.duyuru-ic { max-width: var(--wrap); margin: 0 auto; padding: 9px 24px; display: flex; align-items: center; gap: 10px; }
+.duyuru-ikon { font-size: 1.15rem; flex: none; }
+.duyuru-yazi { flex: 1; min-width: 0; color: inherit; text-decoration: none; line-height: 1.35; overflow-wrap: anywhere; }
+a.duyuru-yazi { text-decoration: underline; text-underline-offset: 3px; }
+.duyuru-kapat { flex: none; border: 0; background: rgba(255,255,255,.18); color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: 900; }
+.duyuru-kapat:hover { background: rgba(255,255,255,.32); }
+@media (max-width: 640px) { .duyuru-ic { padding: 8px 12px; font-size: .88rem; } }
+.duyuru-onizle { border-radius: 14px; overflow: hidden; margin-top: 12px; }
 .topbar {
   position: sticky;
   top: 0;

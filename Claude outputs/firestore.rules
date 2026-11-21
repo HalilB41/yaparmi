@@ -246,9 +246,13 @@ service cloud.firestore {
 
 
     // Site ayarları: ayarlar/kahin { sinirsizBot } → ana sayfadaki "Sınırsız bot" düğmesi görünsün mü.
+    // ayarlar/duyuru { aktif, metin, link, tur, id } → her sayfanın en üstündeki duyuru bandı.
     match /ayarlar/{docId} {
       allow read: if true;
       allow write: if isAdmin() && docId == 'kahin';
+      allow write: if isAdmin() && docId == 'duyuru'
+        && request.resource.data.keys().hasOnly(['aktif', 'metin', 'link', 'tur', 'id', 'kim'])
+        && request.resource.data.metin is string && request.resource.data.metin.size() <= 300;
     }
 
     // Sınırsız Çark ayarları (açık/kapalı, tur, hak, dilimler).
