@@ -1137,9 +1137,9 @@
         }
         o.girdi++;
         if (o.girdi >= o.sira.length) {
-          if (o.sira.length >= 9) { s.mesaj = { yazi: "🌀 LABANZUBU! Kubizm akımı onaylandı", t: 2.5 }; return bitir(); }
+          if (o.sira.length >= 4) { o.tamam = 4; s.mesaj = { yazi: "🌀 LABANZUBU! Kubizm akımı onaylandı", t: 2.5 }; return bitir(); }
           o.sira.push(Math.floor(Math.random() * 4)); o.faz = "bekle"; o.t = 0; SES.burger();
-          if (o.sira.length === 5) soyle("Lababazubu", 1.4);
+          if (o.sira.length === 3) soyle("Lababazubu", 1.4);
         }
         s.konus = { x: 110, y: 400 };
       },
@@ -1156,8 +1156,8 @@
         for (let i = 0; i < 3; i++) emoji(i < o.can ? "❤️" : "🖤", 826 + i * 34, 310, 26);
         berkayCiz(110, 540, 120);
       },
-      skor: (o) => `🌀 ${o.sira.length - 1}/9`,
-      gorev: (o) => `Yanan sırayı tekrarla: ← / Boşluk / → / Z (ya da dokun) · 9 tur · ${o.can} hak`,
+      skor: (o) => `🌀 ${o.tamam || o.sira.length - 1}/4`,
+      gorev: (o) => `Yanan sırayı tekrarla: ← / Boşluk / → / Z (ya da dokun) · 4 tur · ${o.can} hak`,
     },
 
     // ---- 16) Kayalıklardan atlama: suya düş ----
