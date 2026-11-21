@@ -2701,3 +2701,109 @@ a.hero-stat:hover { box-shadow: 0 0 0 2px var(--accent-soft); }
 .mk-bolum { scroll-margin-top: 150px; }
 @media (max-width: 760px) { .hr-sahne, .mk-bolum { scroll-margin-top: 130px; } .hr-arac { top: 10px; right: 10px; } .hr-arac .btn { padding: 8px 12px; font-size: .85rem; } }
 .km-fis.f500 { background: #ca8a04; } .km-fis.f1000 { background: #be123c; } .km-fis.f5000 { background: linear-gradient(135deg, #f5b82e, #b7791f); color: #2b1a00; font-size: .72rem; }
+
+/* ===== Berkay: The Game ===== */
+.mc-giris-not { padding: 12px 16px; margin-bottom: 14px; font-weight: 700; }
+.mc-bolumler { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+.mc-bolum { position: relative; display: grid; gap: 4px; justify-items: start; padding: 18px; min-height: 170px; text-align: left; font: inherit; color: #fff; cursor: pointer; border: 0; overflow: hidden; transition: transform .15s, box-shadow .15s; }
+.mc-bolum:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 18px 30px -18px rgba(0,0,0,.6); }
+.mc-bolum[data-tema="depo"] { background: linear-gradient(150deg, #1e2433, #5b4a3a); }
+.mc-bolum[data-tema="yol"] { background: linear-gradient(150deg, #c2410c, #ffb070); }
+.mc-bolum[data-tema="sinav"] { background: linear-gradient(150deg, #0369a1, #65a30d); }
+.mc-bolum[data-tema="kutuphane"] { background: linear-gradient(150deg, #2e1a47, #7c3f1d); }
+.mc-bolum.kilit { filter: grayscale(.85) brightness(.75); cursor: not-allowed; }
+.mc-bolum-ikon { font-size: 2.4rem; line-height: 1; margin-bottom: 6px; }
+.mc-bolum small { font-weight: 800; letter-spacing: .1em; font-size: .68rem; opacity: .85; }
+.mc-bolum b { font: 800 1.25rem var(--display); }
+.mc-bolum-alt { font-size: .78rem; opacity: .9; margin-top: auto; }
+.mc-bolum-lider { font-size: .78rem; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: rgba(0,0,0,.3); }
+.mc-siralama-kart { padding: 20px; }
+.mc-siralama-kart h2 { margin: 0 0 12px; }
+.mc-siralama { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.mc-sira h3 { margin: 0 0 8px; font-size: .95rem; }
+.mc-sira ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.mc-sira li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; background: var(--surface-2); font-size: .86rem; }
+.mc-sira li.ben { box-shadow: 0 0 0 2px var(--accent); }
+.mc-sira-sure { margin-left: auto; font-family: var(--mono); }
+.mc-alt-not { font-size: .82rem; margin-top: 12px; }
+.mc-oyun { margin-bottom: 20px; }
+.mc-sahne { position: relative; width: 100%; aspect-ratio: 960 / 560; border-radius: 18px; overflow: hidden; background: #111; box-shadow: 0 24px 50px -24px rgba(0,0,0,.6); touch-action: none; user-select: none; -webkit-user-select: none; }
+.mc-oyun:fullscreen { background: #000; display: grid; place-items: center; }
+.mc-oyun:fullscreen .mc-sahne { width: min(100vw, calc(100vh * 960 / 560)); border-radius: 0; }
+#mcTuval { width: 100%; height: 100%; display: block; image-rendering: auto; }
+.mc-ust { position: absolute; top: 60px; right: 12px; display: flex; gap: 6px; z-index: 3; }
+.mc-ust button { width: 38px; height: 38px; border-radius: 10px; border: 0; background: rgba(0,0,0,.45); color: #fff; font-size: 1.05rem; cursor: pointer; }
+.mc-katman { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10,10,20,.55); backdrop-filter: blur(3px); z-index: 4; padding: 14px; }
+.mc-ekran-kart { width: min(520px, 100%); max-height: 100%; overflow: auto; background: var(--surface); color: var(--ink); border-radius: 20px; padding: 22px 24px; box-shadow: 0 24px 50px -20px rgba(0,0,0,.7); animation: mc-gir .3s cubic-bezier(.2,.8,.2,1); }
+@keyframes mc-gir { from { transform: translateY(16px) scale(.97); opacity: 0; } }
+.mc-ekran-kart h2 { margin: 4px 0 10px; font: 800 1.6rem var(--display); }
+.mc-ekran-kart p { margin: 0 0 12px; line-height: 1.5; }
+.mc-etiket { font-weight: 800; letter-spacing: .12em; font-size: .7rem; color: var(--accent); }
+.mc-ipucu { font-size: .85rem; color: var(--muted); }
+.mc-ist { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.mc-ist > div { display: grid; padding: 10px; border-radius: 12px; background: var(--surface-2); text-align: center; }
+.mc-ist small { font-size: .7rem; color: var(--muted); font-weight: 800; }
+.mc-ist b { font: 800 1.2rem var(--mono); }
+.mc-rekor { font-weight: 800; color: #ca8a04; }
+.mc-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.mc-btn { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 12px; padding: 10px 14px; font: inherit; font-weight: 800; cursor: pointer; }
+.mc-btn.ana { background: var(--accent); color: #fff; border-color: transparent; }
+.mc-kontrol { position: absolute; inset: auto 0 0 0; display: none; justify-content: space-between; align-items: flex-end; padding: 12px; z-index: 2; pointer-events: none; }
+.mc-kontrol-sol { display: flex; gap: 10px; }
+.mc-kontrol button { pointer-events: auto; width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); background: rgba(0,0,0,.35); color: #fff; font-size: 1.5rem; touch-action: none; }
+.mc-kontrol button.on { background: rgba(255,255,255,.35); }
+.mc-kontrol .mc-zipla { width: 78px; height: 78px; font-size: 1.8rem; }
+@media (pointer: coarse) { .mc-kontrol { display: flex; } }
+@media (max-width: 900px) { .mc-bolumler, .mc-siralama { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .mc-sahne { border-radius: 12px; }
+  .mc-ust { top: 46px; right: 6px; } .mc-ust button { width: 32px; height: 32px; font-size: .9rem; }
+  .mc-kontrol button { width: 52px; height: 52px; font-size: 1.2rem; } .mc-kontrol .mc-zipla { width: 62px; height: 62px; }
+  .mc-ekran-kart { padding: 16px; } .mc-ekran-kart h2 { font-size: 1.25rem; } .mc-ekran-kart p { font-size: .88rem; }
+}
+body.mc-oynuyor .mc-oyun { scroll-margin-top: 70px; }
+
+/* ===== Berkay Evreni ===== */
+.ev-sayfa { max-width: 1280px; }
+.ev-bas { margin-bottom: 14px; }
+.ev-giris { padding: 12px 16px; font-weight: 700; margin-bottom: 12px; }
+.ev-yerlesim { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; align-items: start; }
+.ev-sahne { position: relative; height: min(72vh, 680px); min-height: 380px; border-radius: 20px; overflow: hidden; background: #3f6212; box-shadow: 0 24px 50px -24px rgba(0,0,0,.6); touch-action: none; }
+#evTuval { width: 100%; height: 100%; display: block; cursor: pointer; }
+.ev-kapi { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; border-radius: 999px; background: rgba(17,17,24,.85); color: #fff; font-weight: 800; box-shadow: 0 10px 24px -10px rgba(0,0,0,.6); white-space: nowrap; }
+.ev-kapi .btn { padding: 6px 14px; }
+.ev-kapi small { color: rgba(255,255,255,.6); }
+.ev-emojiler { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: grid; gap: 6px; }
+.ev-emojiler button { width: 40px; height: 40px; border-radius: 12px; border: 0; background: rgba(255,255,255,.85); font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 10px -4px rgba(0,0,0,.4); }
+.ev-emojiler button:active { transform: scale(.9); }
+.ev-form { position: absolute; left: 12px; right: 62px; bottom: 12px; display: flex; gap: 8px; }
+.ev-form input { flex: 1; min-width: 0; border-radius: 999px; padding: 11px 16px; border: 0; box-shadow: 0 6px 16px -6px rgba(0,0,0,.5); }
+.ev-form button { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 1.1rem; cursor: pointer; flex: none; }
+.ev-panel { padding: 16px; display: grid; gap: 10px; max-height: min(72vh, 680px); overflow: auto; }
+.ev-panel-ust { display: flex; align-items: baseline; justify-content: space-between; }
+.ev-panel h2 { margin: 0; font-size: 1.05rem; }
+.ev-panel h3 { margin: 6px 0 0; font-size: .85rem; color: var(--muted); }
+.ev-liste { display: grid; gap: 6px; }
+.ev-kisi { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 12px; background: var(--surface-2); cursor: pointer; font-size: .9rem; }
+.ev-kisi.ben { box-shadow: 0 0 0 2px var(--accent); cursor: default; }
+.ev-kisi span { font-size: 1.2rem; }
+.ev-durum { margin-left: auto; font-size: .7rem; color: var(--muted); }
+.ev-yalniz { font-size: .82rem; margin: 0; }
+.ev-avatarlar { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.ev-avatarlar button { aspect-ratio: 1; border-radius: 10px; border: 2px solid transparent; background: var(--surface-2); font-size: 1.1rem; cursor: pointer; padding: 0; }
+.ev-avatarlar button.on { border-color: var(--accent); background: var(--accent-soft); }
+.ev-log { height: 150px; overflow: auto; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); font-size: .82rem; line-height: 1.45; }
+.ev-log b { color: var(--accent); }
+.ev-ipucu { font-size: .72rem; margin: 0; }
+@media (max-width: 900px) {
+  .ev-yerlesim { grid-template-columns: 1fr; }
+  .ev-sahne { height: 62vh; border-radius: 14px; }
+  .ev-panel { max-height: none; }
+  .ev-log { height: 110px; }
+  .ev-emojiler { grid-template-columns: repeat(4, 1fr); top: auto; bottom: 66px; transform: none; right: 10px; }
+  .ev-emojiler button { width: 36px; height: 36px; font-size: 1rem; }
+  .ev-form { right: 12px; }
+}
+/* 10 bağlantılı üst menü orta genişliklerde sığsın */
+@media (max-width: 1240px) and (min-width: 901px) { .mainnav a { padding: 7px 8px; font-size: .86rem; } }
+@media (max-width: 1120px) and (min-width: 901px) { .mainnav a { padding: 6px 6px; font-size: .8rem; } }
