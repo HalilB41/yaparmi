@@ -971,13 +971,14 @@
           o.faz = "karis"; o.t = 0;
           const n = 4 + o.tur * 2; o.takas = [];
           for (let i = 0; i < n; i++) { const a = Math.floor(Math.random() * 3); let b = Math.floor(Math.random() * 2); if (b >= a) b++; o.takas.push([a, b]); }
-          o.hiz = 0.42 - o.tur * 0.05; o.adim = 0;
+          o.hiz = Math.max(0.3, 0.62 - o.tur * 0.07); o.adim = 0; o.t = -0.5; // kapaklar kapandıktan sonra yarım saniye bekle
         } else if (o.faz === "karis") {
+          // takas animasyonu bitince yerler değişir: iki kutu birbirinin yerine kayarak geçer
           if (o.t >= o.hiz) {
             o.t = 0; const [a, b] = o.takas[o.adim];
             const ia = o.yer.indexOf(a), ib = o.yer.indexOf(b); [o.yer[ia], o.yer[ib]] = [o.yer[ib], o.yer[ia]];
-            o.adim++; bip(400, 500, 0.04, "triangle", 0.05);
-            if (o.adim >= o.takas.length) { o.faz = "sec"; o.t = 0; }
+            o.adim++;
+            if (o.adim >= o.takas.length) { o.faz = "sec"; o.t = 0; } else bip(400, 500, 0.04, "triangle", 0.05);
           }
         } else if (o.faz === "sec") {
           if (solBasildi) o.imlec = Math.max(0, o.imlec - 1);
@@ -1000,15 +1001,23 @@
       },
       ciz(s, o) {
         ctx.fillStyle = "#3b0764"; ctx.fillRect(0, 0, VW, VH); ctx.fillStyle = "#7c2d12"; ctx.fillRect(160, 420, 640, 40);
-        const anim = o.faz === "karis" ? Math.min(1, o.t / o.hiz) : 1;
+        const p = o.faz === "karis" ? Math.max(0, Math.min(1, o.t / o.hiz)) : 0, e = p * p * (3 - 2 * p);
+        const takas = o.faz === "karis" && o.t >= 0 && o.adim < o.takas.length ? o.takas[o.adim] : null;
+        const acik = o.faz === "goster" || o.faz === "sonuc";
+        const kutuX = (k) => {
+          const pos = o.yer.indexOf(k);
+          if (takas && (k === takas[0] || k === takas[1])) { const diger = k === takas[0] ? takas[1] : takas[0], hedef = o.yer.indexOf(diger); return { x: 310 + (pos + (hedef - pos) * e) * 180, y: Math.sin(e * Math.PI) * 46 * (k === takas[0] ? -1 : 1) }; }
+          return { x: 310 + pos * 180, y: 0 };
+        };
         for (let k = 0; k < 3; k++) {
-          const pos = o.yer.indexOf(k); let x = 310 + pos * 180;
-          if (o.faz === "karis" && o.adim < o.takas.length) { /* yumuşak geçiş için küçük zıplama */ }
-          const acik = o.faz === "goster" || o.faz === "sonuc";
+          const { x } = kutuX(k);
           if (acik && k === o.hedef) emoji("🎁", x, 400, 60);
           if (acik && k !== o.hedef && o.faz === "sonuc") emoji("🍜", x, 400, 50);
-          ctx.save(); ctx.translate(x, acik ? 300 : 360 - (o.faz === "karis" ? Math.sin(anim * Math.PI) * 14 : 0)); emoji("🥡", 0, 0, 120); ctx.restore();
-          if (o.faz === "sec" && pos === o.imlec) { ctx.strokeStyle = "#facc15"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, 360, 76, 0, 7); ctx.stroke(); }
+        }
+        for (let k = 0; k < 3; k++) {
+          const { x, y } = kutuX(k), pos = o.yer.indexOf(k);
+          ctx.save(); ctx.translate(x, (acik ? 300 : 370) + y); emoji("🥡", 0, 0, 120); ctx.restore();
+          if (o.faz === "sec" && pos === o.imlec) { ctx.strokeStyle = "#facc15"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, 370, 76, 0, 7); ctx.stroke(); }
         }
         if (o.sonuc) yazi(o.sonuc, 480, 180, "900 40px sans-serif", o.sonuc.startsWith("🎁") ? "#4ade80" : "#fca5a5");
         if (o.faz === "sec") yazi("Hediye hangisinde?", 480, 180, "900 30px sans-serif");
