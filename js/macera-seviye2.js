@@ -1,0 +1,286 @@
+// macera-seviye2.js — 31-50. bölümler + ilk 30 bölüme oyun içi anlatım satırları.
+// Hikâyeler grup sohbetinden. "anlat": ilk 2 satır bölüm başlarken ekranın ortasında, kalanı oyun sırasında arka planda yazılır.
+(function () {
+  const SEV = window.MACERA_SEVIYELER || (window.MACERA_SEVIYELER = []);
+
+  // ---- 1-30: hikâyeye ek, oyun sırasında yazılacak satırlar ----
+  const EK = {
+    1: ["Kurban kenarda video çekiyor: 'İzliyoz biz yevmiyeciyiz, kölem nasıl beğendin mi?'", "Görevliler sayıyı yanlış yazmış. Aynı kolileri 3. kez indiriyorsun. Feleğin sikiliyor."],
+    2: ["İbo'nun motoru 50 görünümlü 125'lik. Bayır aşağı 200 görüyormuş.", "Salih çoktan uyarmıştı: 'Motoru son görüşün, Berkay'ı da son görüşümüz.'"],
+    3: ["İbo yazılıdan ilk seferde kaldı. Berkay 100 aldı ve bunu hiç unutturmadı.", "İddia ortada: tekte geçersen büyük boy patates ve kolalı Salon Burger. Kurban çoktan 'Aldım ss' dedi."],
+    4: ["Şarj %1. 'Kapanacak tel, Kubiyle gelirim' diyecek kimse de yok.", "Sonra bir kafede 20 dakika uyanık kaldı. Sonra yine uyudu."],
+    5: ["Kurban gece yazdı: 'Kerpe'ye 5:15'te çıkıyoz.' Şaka yapmış, ama Berkay çoktan kalkmıştı.", "İbo soruyor: 'Tepeden atlıcaz mı?' Berkay: 'Güzel ülkem izin vermiyor.'"],
+    6: ["Kurban 18:00-19:00 saatini aldı. Burger: '6-7'yi en son 12 yaşımda aldım.'", "Salih 'forvetamcığım tuttu' diyor ama bugün kalede o var."],
+    7: ["Alihan gelmedi: 'LoL'ü oynayanı...' Takım 4 kişi kaldı.", "Exhaust hâlâ hazır. Bu sefer menzildesin."],
+    8: ["Tarih 27/27. Ama İbo sorunca Sarıkamış'ın sorumlusu 'Atatürk olması lazım.'", "Kurban: 'Bükemediğin eli öpeceksin, hedef Berkay leveli.'"],
+    9: ["İbo: 'Çorbacılar her zaman kazanır.' Alihan: 'Sattırdın, mal tavan attı yine.'", "Kurban gizli satışla yakalandı. Savunması hazır: 'Ben bankayım zaten.'"],
+    10: ["Uçak bileti hâlâ 16 bin. Arcus airdrop'tan haber yok.", "Burger aşağıdan bağırıyor: 'Viking baba siker!'"],
+    11: ["Alihan müşteriyi bekledi bekledi, ağaç oldu: 'Ekmeğini yicem bunun.'", "Volta 30 km yapıyor. Fren tutmuyor, Alihan'a göre 'tren tutmadı.'"],
+    12: ["İbo tren garına gitmiş. Alihan: 'Otogardan bincez İbo!'", "Otobüste yemek yemeye kalkan İbo'ya Alihan: 'Otobüste yasak şimdi, yeme.'"],
+    13: ["Burger gece 03:20'ye kadar grupta yazdı, 7'de kalktı. '3,5 saat uyku yeter, biz ameleyiz.'", "Okuldan sonra kütüp sefası var. Gelen var mı?"],
+    14: ["Çarşamba, Cuma, Cumartesi. 16:00-21:00. Günlük 1.000 TL.", "Burger arkadan izliyor: 'Kardeşim yapamaz.'"],
+    15: ["Rüzgar Salih'in sınav kâğıdını uçurmuştu. Şimdi sıra sende.", "Pistin sonu göründü. Salih hazırlanıyor: 'Helal la Beko.'"],
+    16: ["Salih'in teklifi: 'Belediyede iş var yerime mutfakta, oturuyon bütün gün.'", "İbo da yan tarafta 5 aylık ücretsiz stajda. O da 1 saattir boş oturuyor."],
+    17: ["Şarkının adı bile yok. Nakaratı yenge yazmış.", "Salih: 'Cem bize de beat yap.' Cem: 'Söylicen mi?'"],
+    18: ["Kurban İbo'yu vizyonsuz ilan etti: PC aldı, hâlâ Zula oynuyor.", "Alpaslan herkese bedava kahve alacakmış. Önce arenadan sağ çık."],
+    19: ["Kurban karşı saldırıda: 'Salih'in ifşasını raftan çıkartalım o zaman.'", "Saat 03:12. Berkay gruba çıkartma bombardımanı başlattı."],
+    20: ["Salih: 'Oğlum ben gelemiyorum, izinler iptal.' Alihan: 'Haftaya tarla yapıcaz.'", "Berkay umutlu: 'Cem gelir belki la.' Cem: 'Fiyat neydi?'"],
+    21: ["'Obez gibi yiyioz ama fizik hâlâ sağlam' mentalitesi.", "Aquapark parası nerede? 'Tüm para gitti alkole.'"],
+    22: ["Servis güzergahı dolu çıkarsa yine alınmazsın.", "İbo hesapladı: 1 gün gitmezsen 4.000 TL devamsızlık primi gider."],
+    23: ["Paket geldi. Kurban: 'Ya İbo senin alacağın hediyeyi, bu ne?'", "Bu arada Alpaslan'a harçlık anketi açıldı: 10, 100, 1000, 0."],
+    24: ["Kurban: 'Alihan Pecado'daki evden çıkarsa atıcam.' Alihan: 'Siksen gelmem.'", "8x dürbün takılı. Scoot zamanı."],
+    25: ["Alpaslan öğlen 11:47'de yazdı: 'Lan Alihan, Berkay, gitmediniz mi ameleliğe?'", "Depo şefi Alpaslan'ı övmüş. Sıra sende."],
+    26: ["Aquapark çağrısı yine geldi. Cevap yine: 'Lababazubu.'", "Kubi haklı çıktığı mesajın altına sadece '.' koyar. Kazandım demek."],
+    27: ["Kurban dalga geçiyor: 'Su nasıl kaldırsın 100 kiloyu?'", "Bu sefer kayalara değil, suya."],
+    28: ["'Çok iyi aq yapay zekası, 50 tane video ürettim, hepsini tek tek izledim.'", "Galileo İbo lakabını da o buldu: 'Kardeşim yapamaz.'"],
+    29: ["Berkay'ın tavsiyesi: 'Poğaça ye yeter.' Yemek masrafı sıfır.", "İbo'nun iki aylık 'acilen Aquapark' mesajları sonunda işe yaradı."],
+    30: ["İbo 4'lü masayı tuttu, kitapları dümenden koydu.", "Kurban: 'Alev Atlı'ya gidek dedim, duyduğunu da anlamıyor.'", "Bu daha ilk perde. Asıl Halil 50. bölümde bekliyor."],
+  };
+  SEV.forEach((sv, i) => { if (EK[i + 1]) sv.anlatEk = EK[i + 1]; });
+  if (SEV[29]) { SEV[29].ad = "05:17 Alarmı"; SEV[29].hikaye = SEV[29].hikaye.replace(" Son bölüm.", ""); }
+
+  // ---- 31-50 ----
+  SEV.push(
+    {
+      ad: "Sayım Hatası", kim: "Berkay & Kurban", tema: "depo", mini: "sayim", ikon: "🔢", muzik: "depo",
+      ipucu: "Sayma: bant akarken istenen eşyayı say. Sonra ← → ile sayıyı ayarla, Boşluk / Z / TAMAM ile onayla. 6 tur, 3 hata hakkı.",
+      anlat: [
+        "Hepsiburada deposu, tır boşaltma vardiyası. Berkay ve Kurban yan yana.",
+        "Görevliler kâğıda sayıyı yanlış yazınca aynı kolileri 3 kez indirip tekrar dizdiler.",
+        "Bu sefer saymayı Berkay yapacak. Banttan geçenleri tek tek say.",
+        "Kurban kenarda video çekiyor. Görevli de bağırıyor, ama onun sayılarına güvenme.",
+        "Berkay'ın yorumu kısa: 'Feleğim sikildi.'",
+      ],
+      sozler: ["Feleğim sikildi", "Kaç tane oldu aq", "Görevli yine yanlış yazdı", "Has amele"], bitisSoz: ["Sayım tuttu, eve gidiyoz", "Bu sefer 1 kere indirdik"],
+    },
+    {
+      ad: "Lahmacun Sonrası", kim: "Berkay & Kurban", tema: "kutuphane", mini: "gaz", ikon: "💨", muzik: "kutuphane",
+      ipucu: "Gizlilik: basınç dolunca basılı tut (Boşluk / ⬆ / ekrana bas) ve gazı bırak. Kurban bakarken bırakma! 1 saniyeden uzun tutarsan herkes duyar. 45 sn dayan.",
+      anlat: [
+        "Öğlen lahmacun yendi. Akşam kütüphane, matematik çalışılıyor.",
+        "Kurban yanında soru çözüyor. Berkay'ın midesi ise başka bir şey çözüyor.",
+        "Kurban sonradan anlatacak: 'Öyle bir osurdu ki burnumun direği sikildi.'",
+        "Kütüphane kapanana kadar dayanman lazım. Kurban dönüp bakarsa yandın.",
+        "Alihan gruba yazdı: 'Kim osurdu?' Bilmiyorlar. Henüz.",
+      ],
+      sozler: ["Lahmacun dokundu aq", "Ben değilim", "Tamam gidiyom ben eve", "Sessiz olun la"], bitisSoz: ["Kimse anlamadı", "Lahmacun bir daha yok"],
+    },
+    {
+      ad: "4'lü Masa", kim: "İbo", tema: "kutuphane", mini: "labirent", ikon: "🪑", muzik: "gece",
+      ipucu: "Labirent: ↑ ↓ ← → (ya da WASD / ekrana dokun) ile gez. 4 sandalyeye kitap koy. Görevliye yakalanma. ☕ alınca 5 saniye görevliler senden kaçar.",
+      anlat: [
+        "Saat 05:17. İbo grupta: 'Kalksanıza, kim kütüphane geliyor?'",
+        "Kimse cevap vermiyor. İbo sırada tek başına. Hedef: 4'lü masa.",
+        "Kurban'ın taktiği: '4'lü yeri tut, kitap koy dümenden.'",
+        "Görevli 'sessiz ol' diye dolaşıyor. Alihan 'kim osurdu' diye arıyor.",
+        "Kahve hakları Alihan'ın. Ama İbo onları çoktan kendi hesabına aktardı.",
+      ],
+      sozler: ["Kalksanıza amına koduklarım", "4'lü yer lazım", "Kitap koy dümenden", "Belsa kütüphane gelen?"], bitisSoz: ["4'lü masa bizim", "Mekan bizim olm, çek bir sıcak çikolata"],
+    },
+    {
+      ad: "Tuzla Lunapark", kim: "Berkay & İbo", tema: "yol", mini: "gokart", ikon: "🏎️", muzik: "yol",
+      ipucu: "Go-kart: gaz otomatik, ← → ile direksiyon. Çimde yavaşlarsın, ⚡ üstünden geçince hızlanırsın. İbo'dan önce 3 tur at.",
+      anlat: [
+        "İbo: 'Tuzla'daki lunapark 800 TL, gün boyu sınırsız.'",
+        "Berkay: 'Sınırsız deme, dayanamam. Hemen gongonlarım oraya.'",
+        "Yıllardır aynı cümle: 'Go kart lazım.' Bugün o gün.",
+        "İbo yanındaki kartta. Kaybeden Salon Burger ısmarlıyor.",
+        "Son tur. 3. lig topçusu pistte de 3. olmamalı.",
+      ],
+      sozler: ["Go kart lazım", "Sınırsız deme dayanamam", "Trafiği kapatın", "Araba hızlı evet, gövde etten"], bitisSoz: ["Go kart hayali gerçek oldu", "İbo Salon Burger ısmarlıyor"],
+    },
+    {
+      ad: "30 Gün Hepsiburada", kim: "Berkay", tema: "depo", mini: "dayanik", ikon: "📅", muzik: "depo",
+      ipucu: "Hayatta kalma: her olayda bir seçim yap (← → + Boşluk, 1-3 ya da dokun). Enerji ya da motivasyon biterse oyun biter. 30. güne ulaş.",
+      anlat: [
+        "İbo grupta anket açtı: 'Berkay Hepsiburada deposunda 30 günde en fazla kaç gün dayanır?'",
+        "Berkay iddialı: 'Götüm delinene kadar çalışıcam. 70k alıp kaçıcam bi anda.'",
+        "Her gün 04:50 servis, tır, sayım, mola. Her seçim enerjiyi ve motivasyonu değiştiriyor.",
+        "Ankette en çok oy alan şık: '3 gün.'",
+        "Yarı yol geçildi. Grupta kimse inanmıyor.",
+      ],
+      girisSatir: 2,
+      sozler: ["Götüm delinene kadar çalışıcam", "70k alıp kaçıcam", "Ücretsiz izne çıkıyom", "26k napiyim aq"], bitisSoz: ["30 gün doldu, anket yalan çıktı", "70k alıp kaçıyorum"],
+    },
+    {
+      ad: "Halısaha 22:00", kim: "Berkay", tema: "halisaha", mini: "kadro", ikon: "📞", muzik: "sinav",
+      ipucu: "Kadro: herkesin 'gelcem' çubuğu azalır. Azalanı ara (1-8, dokun ya da ← → + Boşluk). Çubuğu dolu olanı arama, 'Aramayın amk' der. Maç saatine kadar en az 6 kişi kalsın.",
+      anlat: [
+        "Berkay halısaha ayarladı. Saat 22:00. Şimdi tek sorun var: adam.",
+        "Herkes 'gelcem' dedi. Bu grupta 'gelcem' yarım saat sonra 'satma' demek.",
+        "Salih'e mangal çıkabilir. Erdem yağmurda gelmez. Kurban telefonu açmaz: 'Aramayın amk.'",
+        "Berkay maç öncesi söz verdi: 10 gol. Ama önce kadro lazım.",
+        "21:45. Satanlara selam olsun.",
+      ],
+      sozler: ["Satanlara selam olsun", "10 gol atacam bugün", "Gelen var mı la", "Rıdo'nun topunu getirin"], bitisSoz: ["Kadro tamam, 10 gol geliyor", "Satanlar utansın"],
+    },
+    {
+      ad: "Bannerlord", kim: "Berkay", tema: "gece", mini: "kilic", ikon: "⚔️", muzik: "boss",
+      ipucu: "Kılıç düellosu: saldırı hangi yönden geliyorsa o yöne savun (← ⬆ →). Son anda savunursan karşı taraf açılır, Z ile vur. Boşta da Z ile saldırabilirsin.",
+      anlat: [
+        "Berkay Bannerlord'un online moduna fena sardı.",
+        "Grupta tek bir mesaj: 'Kafanızı kesicem.'",
+        "Kurban gaz vermek için meşhur mezarcı flood'unu gruba yapıştırdı.",
+        "Sıradaki rakip daha hızlı. Sahte saldırılara dikkat.",
+        "Son rakip atlı. Kalkanını sağlam tut.",
+      ],
+      sozler: ["Kafanızı kesicem", "Gel gel", "Blok aq blok", "Bu oyun benim"], bitisSoz: ["Kafalar kesildi", "Bannerlord kralı"],
+    },
+    {
+      ad: "İkinci El Kol", kim: "İbo", tema: "zula", mini: "kol", ikon: "🎮", muzik: "neon",
+      ipucu: "Bozuk kol: yön tuşları karışık çalışıyor, her kelimede başka türlü. Önce dene, öğren. Boşluk / Enter (telefonda ekrandaki A tuşu) ile harfi seç. 3 kelimeyi yaz.",
+      anlat: [
+        "İbo 13 bin TL'lik ikinci el Xbox'a bakıyor. Berkay: 'PS5 alsana aq.'",
+        "Kol geldi ama tuhaf: menüde yukarı basınca aşağı gidiyor.",
+        "Bir de 'RT ile büyük yaz' diyor, ama RB'ye basınca büyük yazıyor.",
+        "Her kelimede tuşlar yine karışıyor. Önce dene, sonra öğren.",
+        "Son kelime. İbo'nun sabrı da kolun pili gibi bitmek üzere.",
+      ],
+      sozler: ["PS5 alsana aq", "Yukarı basıyom aşağı gidiyor", "RB mi RT mi aq", "Xbox Series X var çok iyi"], bitisSoz: ["Kol çözüldü", "30k'lık konsol bekleyebilir"],
+    },
+    {
+      ad: "Ağır Bakım", kim: "Cem", tema: "sanayi", mini: "tamir", ikon: "🔧", muzik: "depo",
+      ipucu: "Kablo bulmacası: parçaları döndür (tıkla / dokun, ya da ok tuşlarıyla gez + Boşluk). Aküden fara elektrik gitsin. 3 motor, her biri 50 sn.",
+      anlat: [
+        "Cem motor fotoğrafı attı: 'Beko, senin göt gibi oldu.' Kaza yapmıştı.",
+        "Ustaya gitmez Cem. Ağır bakımlarını kendisi yapar.",
+        "Gruba öğüdü hep aynı: 'Siktir edin depoyu, zanaat öğrenin, gidin sanayiye.'",
+        "Aküden fara giden kabloları birleştir, motor çalışsın.",
+        "Ehliyetin 1 yılı dolunca Getir kurye olacak: 'Amele seviye atlayacak.'",
+      ],
+      sozler: ["Ağır bakımlarını yaptım", "Zanaat öğrenin", "Trafiği kapatın", "Motorcunun yanındayım"], bitisSoz: ["Motor çalıştı", "Amele seviye atladı"],
+    },
+    {
+      ad: "8K Ceket", kim: "Alihan", tema: "gece", mini: "fark", ikon: "🧥", muzik: "gece",
+      ipucu: "Farkı bul: iki resim arasındaki 5 farkı tıkla (ya da ok tuşlarıyla gez + Boşluk). Yanlış tıklama 4 saniye götürür. 3 tur.",
+      anlat: [
+        "Alihan hep aynı ceketi giyiyor. Berkay: 'Sanki 8k ceket giyiyor sürekli üstünde.'",
+        "Burger King ince ince gönderme yaptı: 'Bir ceket buldum, hem de 8k değil.'",
+        "Kurban'ın gece planı: 'Nargile yaparız, bu sefer de ceketini yakarız Alihan'ın.'",
+        "Gardırop da masa da plaj da aynı görünüyor. Ama bir şeyler değişmiş.",
+        "Son tur. Ceket hâlâ aynı mı?",
+      ],
+      sozler: ["8k ceket bu", "Aynı ceket aq", "Farkı gördüm", "Ceketi yakarız"], bitisSoz: ["Ceket gerçekten 8k'ymış", "Farklar bulundu"],
+    },
+    {
+      ad: "Fren Tutmadı", kim: "Alihan & Berkay", tema: "yol", mini: "tepe", ikon: "🛵", muzik: "yol",
+      ipucu: "Tepe sürüşü: → gaz, ← fren/geri. Havadayken → burnu kaldırır, ← indirir. Ters düşersen takla atarsın. Yokuş aşağı fren az tutar! Teslimata 45 sn içinde ulaş.",
+      anlat: [
+        "Alihan kuryelikte Volta kullanıyor. Övünüyor: 'Bayır aşağı uçuyor.'",
+        "Bir mesajında 'fren' yerine 'tren' yazdı: 'Tren tutmadı mı, baya sarıyo.'",
+        "Bugün Berkay da arkada. Köfte ekmeği müşteriye götürmek lazım.",
+        "Yarı yol. Müşteri hâlâ bekliyor. Alihan ise ekmeği yemeyi düşünüyor.",
+        "Son yokuş. Fren yok, tren yok, sadece dua var.",
+      ],
+      sozler: ["Tren tutmadı aq", "Bayır aşağı uçuyoruz", "Offf bebeğim gibi inerim", "Kask yok yine"], bitisSoz: ["Köfte ekmek teslim", "Volta yaşıyor"],
+    },
+    {
+      ad: "Aldım SS", kim: "Kurban", tema: "gece", mini: "ss", ikon: "📸", muzik: "gece",
+      ipucu: "Ekran görüntüsü: Kubi'nin şüpheli mesajı silinmeden SS al (Boşluk / Z / ekrana dokun). Şüpheli mesaj yokken basarsan boş SS olur. 12 SS topla, 4 hata hakkı.",
+      anlat: [
+        "Kurban'ın bilinen alışkanlığı: yazar, sonra hemen siler. 'Bu mesaj silindi.'",
+        "Ama bu grupta kanıt her şeydir. İbo 'Herkese Magnum' dediğinde Kurban anında yazmıştı: 'Aldım ss.'",
+        "Şimdi sıra Kurban'da. Gizli satış, saklanan 30k, Belgrad parası…",
+        "Kubi hızlandı. Mesajlar daha çabuk siliniyor.",
+        "Bir SS daha, Kubizm çöker.",
+      ],
+      sozler: ["Aldım ss", "Sildin ama gördüm", "Kubi yakalandın", "Bu mesaj silinmedi kardeşim"], bitisSoz: ["Tüm kanıtlar bende", "Kubi'nin arşivi tamam"],
+    },
+    {
+      ad: "Alsas-Loren", kim: "Kurban & Alihan", tema: "borsa", mini: "hoi", ikon: "🗺️", muzik: "borsa",
+      ipucu: "Strateji: kendi bölgene, sonra hedefe dokun (ya da numaraları bas, ← → + Boşluk). Askerlerin yarısı gider. Alsas-Loren dahil 7 bölgeyi al ya da Fransa'yı sil.",
+      anlat: [
+        "Kurban sınav yaptı: 'Hangi maden yataklarını aldıktan sonra Almanya kuruluyor?'",
+        "Alihan bocaladı, sonra toparladı: 'Alsas-Loren'i mi diyon olm, bunu bilmeyen yok.'",
+        "Kurban'ın hükmü: 'Bilemedin demek ki HOI4 oynaman lazım.'",
+        "İbo ekledi: Alihan 5 yıldır HOI4'te donanma kurmayı bilmiyor.",
+        "Alsas-Loren düşerse Almanya kurulur. Fransa direniyor.",
+      ],
+      sozler: ["Alsas-Loren bizim", "HOI4 oyna", "Donanma yok ama ordu var", "Paris'e yürüyoz"], bitisSoz: ["Almanya kuruldu", "Kurban haklıydı"],
+    },
+    {
+      ad: "Gerinme.apk", kim: "Burger", tema: "halisaha", mini: "esneme", ikon: "🧘", muzik: "sinav",
+      ipucu: "Esneme: basılı tut (Boşluk / ⬆ / ekrana bas) yeşil çubuk yükselir, bırakınca düşer. 🦵 çubuğun içinde kalsın, ilerleme dolsun. 5 gün.",
+      anlat: [
+        "Halısaha öncesi Burger gruba bir dosya attı: Gerinme Egzersizleri.apk",
+        "'14 günlük bacak açma programı. Ben yaptığım dönem artıyordu.'",
+        "Alihan: 'Android'lere özel ısınma programı, iOS'lar…' Gerisini yazmayalım.",
+        "Gün geçtikçe bacak daha da direniyor.",
+        "14. gün. Berkay'ın 10 golü bu esnemeye bağlı.",
+      ],
+      sozler: ["Esne esne", "Ben yaptığım dönem artıyordu", "Bacak açıldı", "1. gün"], bitisSoz: ["14 gün tamam", "Bacak açıldı, gol gelir"],
+    },
+    {
+      ad: "Hain Kim", kim: "İbo", tema: "zula", mini: "amongus", ikon: "🔪", muzik: "neon",
+      ipucu: "Gözlem: kameraları izle. Birisi birini haklayıp havalandırmadan kaçacak. Süre bitince oylamada haini seç (← → + Boşluk, 1-7 ya da dokun). 3 tur, 2 hata hakkı.",
+      anlat: [
+        "Akşam İbo grupta: 'Amongudss girek.'",
+        "Kurban bilgisayardan değil telefondan geliyor. Burger PC'de yer açmak için Fall Guys'ı sildi.",
+        "Berkay güvenlik kamerasının başında. Gözünü odalardan ayırma.",
+        "Bir ceset bulundu. Kimdi o odada?",
+        "Son tur. Hain hâlâ aramızda.",
+      ],
+      sozler: ["Amongudss girek", "Ben gördüm", "Vent attı aq", "Kubi sus"], bitisSoz: ["Hain bulundu", "Kamera yalan söylemez"],
+    },
+    {
+      ad: "BTD 6", kim: "Kurban & Burger", tema: "zula", mini: "btd", ikon: "🎈", muzik: "mutfak",
+      ipucu: "Kule savunması: boş bir yuvaya dokun (ya da ← → + Boşluk, 1-8) ve 🐒 kur. Kurulu kuleye dokununca güçlenir. Balonları geçirme, 8 dalga.",
+      anlat: [
+        "Kurban rest çekti: 'Ben LoL gelmem. Burger'le BTD 6 ve Warband oynayacağız.'",
+        "Balonlar yolda. Maymunları yerleştir, Burger'in burgerleri patlatsın.",
+        "Para az. Her yuvayı aynı anda kuramazsın, nereye koyacağını seç.",
+        "Dalgalar sıklaşıyor. Mavi, yeşil, sarı…",
+        "Son dalga: İbo balonu geliyor. Kocaman.",
+      ],
+      sozler: ["Ben LoL gelmem", "Pop pop pop", "Maymun koy oraya", "Burger at burger"], bitisSoz: ["Tüm balonlar patladı", "Kurban ve Burger kazandı"],
+    },
+    {
+      ad: "D100 Geçişi", kim: "Alihan", tema: "gece", mini: "d100", ikon: "🛣️", muzik: "gece",
+      ipucu: "Karşıya geç: ↑ ↓ ← → (WASD ya da ekrana dokun) ile birer adım. Arabalara çarpma, denizde botların üstünde kal. 3 kapının hepsine bir kişi götür.",
+      anlat: [
+        "Alihan maç izlemeye çağırdı: '10:30 gibi bizde olun. Gelirken cips kola alın.'",
+        "'Erken gelirseniz evi temizlersiniz.' Kimse erken gelmedi.",
+        "Alihan sinirli: '1 saatte Kuruçeşme'den Yenidoğan'a gelemediniz, maç başlayacak!'",
+        "Önce D100, sonra deniz. Berkay da 'Sizin evde botu şişircem' demişti, botlar burada.",
+        "Bir kişi kaldı. Maç başlamak üzere.",
+      ],
+      sozler: ["Maç başlıyor la", "Cips kola aldık", "Botu şişircem", "D100 çok kalabalık aq"], bitisSoz: ["Herkes Alihan'da", "Maç başladı, cipsler açıldı"],
+    },
+    {
+      ad: "1 Ekmek Sattım", kim: "Salih", tema: "mutfak", mini: "parausti", ikon: "💵", muzik: "mutfak",
+      ipucu: "Para üstü: doğru para üstünü ver. 1-6 tuşları (ya da dokun) 1, 5, 10, 20, 50, 100 TL ekler. ← geri alır, Boşluk / ⬆ / VER ile verirsin. 10 müşteri, 3 hata hakkı.",
+      anlat: [
+        "Salih'in efsane cümlesi: 'Sabah 8'den beri 1 ekmek sattım.'",
+        "Ama bugün öğle saati. Kuyruk kapıya kadar.",
+        "Alihan çorba içmeye geldi. Kendi davetinde bile 'ben ısmarlayamam, 70 TL verirsin' demişti.",
+        "Müşteriler sabırsızlanıyor. Para üstünü yanlış verirsen kasa açık verir.",
+        "Son müşteri. Sonra 6 saatlik mola.",
+      ],
+      sozler: ["Sabah 8'den beri 1 ekmek sattım", "Buyur abi", "Para üstü tamam", "Ben belediyedeyim ihtiyar"], bitisSoz: ["Kasa tuttu", "Bugün 10 ekmek sattım, rekor"],
+    },
+    {
+      ad: "İlk 30 Madde", kim: "Halil (İbo)", tema: "sabah", mini: "tugla", ikon: "📜", muzik: "final",
+      ipucu: "Tuğla kırma: ← → (ya da sürükle) ile raketi gezdir, Boşluk / dokun ile topu at. 30 maddeyi kır. 3 topun var. 🍔 çoklu top, ☕ geniş raket.",
+      anlat: [
+        "Her şey 30 maddeyle başladı. İbo, Berkay'ın sorumsuzluklarını alt alta yazdı.",
+        "Para biriktiremez. Erken uyanamaz. Fatura yatırmaz. Ajanda kullanmaz…",
+        "Alihan okuyunca yazdı: 'Boğuluyodum, yarıldım.'",
+        "Berkay'ın cevabı: 'Benim saf bir kalbim var.' Ve topu aldı.",
+        "Liste bitince İbo durmayacak. 30 madde, 100 olacak.",
+      ],
+      sozler: ["Benim saf bir kalbim var", "Bu madde yalan", "Ajanda ne aq", "Özele giriyor"], bitisSoz: ["30 madde kırıldı", "Sırada 100 madde var…"],
+    },
+    {
+      ad: "FİNAL: Halil", kim: "Halil (İbo)", tema: "sabah", mini: "final", ikon: "🤓", muzik: "boss",
+      ipucu: "SON BOSS, ÇOK ZOR. Ok tuşları / WASD ile kaç (telefonda parmağını sürükle). Burger otomatik atılır. Z (🍔 tuşu) bomba: mermileri siler, her canda 2 tane. Kırmızı nokta senin vuruş alanın. 4 aşama, her aşama kayıt noktası.",
+      anlat: [
+        "Bu grubun kurucusu, yaparmi.com'un sahibi, 100 maddelik listenin yazarı.",
+        "Halil B. Namıdiğer İbo. Sabah 05:17'de uyanır, kimseye rahat vermez.",
+        "1. AŞAMA: 100 MADDE. Her madde bir mermi.",
+      ],
+      girisSatir: 3,
+      sozler: ["BERKAY YAPAMAZ", "100 madde az bile", "Kalksanıza!", "Acilen Aquapark", "Yaparmı? Yapamaz.", "Has amele"],
+      bitisSoz: ["Halil yenildi. Grupta kimse inanmıyor.", "101. madde: Berkay yaptı."],
+    }
+  );
+})();
