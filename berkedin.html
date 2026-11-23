@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>BerkedIn · yaparmi.com</title>
+  <meta name="description" content="BerkedIn: grubun profesyonel ağı. Yetenek onayla, tavsiye yaz, iş ilanı ver." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#eceefa" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0a0c1b" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/ikon-192.png" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema"),r=localStorage.getItem("yaparmi_renk");if(t)document.documentElement.dataset.theme=t;if(r)document.documentElement.dataset.renk=r}catch(e){}</script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/images/ikon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bi-body">
+  <main class="page bi-page">
+    <header class="bi-ust">
+      <span class="bi-logo">Berked<b>In</b></span>
+      <nav class="bi-sekmeler">
+        <button type="button" data-sekme="profil" class="on">👤 Profiller</button>
+        <button type="button" data-sekme="ilan">💼 İş İlanları <span id="biIlanSay"></span></button>
+      </nav>
+    </header>
+    <div class="bi-izgara" id="biProfilBolum">
+      <aside class="bi-yan card" id="biKisiler"></aside>
+      <section class="bi-profil" id="biProfil"></section>
+    </div>
+    <section id="biIlanBolum" hidden>
+      <div class="card bi-kart">
+        <h2>📣 İlan ver</h2>
+        <p class="muted" id="biIlanGiris">İlan vermek için giriş yap.</p>
+        <form class="bi-form" id="biIlanForm" hidden>
+          <input id="biIlanBaslik" maxlength="80" placeholder="Pozisyon (ör. Tekel bayisi dolap dizici)" required />
+          <input id="biIlanSirket" maxlength="60" placeholder="Şirket (ör. Köfteci Yusuf)" required />
+          <input id="biIlanMaas" maxlength="40" placeholder="Maaş (ör. günlük 1.000 TL / 26K napiyim)" />
+          <textarea id="biIlanAciklama" maxlength="400" rows="3" placeholder="Açıklama (ör. Berkay başvurmasın)"></textarea>
+          <button type="submit" class="btn">İlanı yayınla</button>
+        </form>
+      </div>
+      <div id="biIlanlar" class="bi-ilanlar"></div>
+    </section>
+    <p class="suggest-status" id="biDurum"></p>
+  </main>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/berkedin-veri.js"></script>
+  <script src="js/berkedin.js"></script>
+</body>
+</html>

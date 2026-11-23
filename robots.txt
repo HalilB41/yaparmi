@@ -3,5 +3,6 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 Disallow: /belgesel
+Disallow: /telefon
 
 Sitemap: https://yaparmi.com/sitemap.xml

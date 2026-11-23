@@ -2093,6 +2093,129 @@ async function adminIslem(db, kim, govde, now) {
 // çevrilemeyen bir kısa iz (hash) kullanılır; admin dahil kimse kimin yazdığını göremez.
 // itiraf_bekleyen (admin okur) → onaylanınca itiraf_yayin (herkes okur).
 const ITIRAF = { MIN: 5, MAX: 280, GUNLUK: 3, TEPKILER: ["😂", "💀", "😳", "🔥", "🤡", "❤️"] };
+
+// =====================================================================
+// KOLEKSİYON KARTLARI — paket aç (BERKAY kasaya gider), fazlaları boz, arkadaşla takas et.
+//   kart_koleksiyon/{uid} { uid, ad, kartlar: {id: adet}, acilan, setOdul: {set: true} }  (sadece sunucu yazar)
+//   kart_teklif/{id} { veren, verenAd, alan, alanAd, ver, iste, durum, t }                (sadece sunucu yazar)
+// Görsel katalog js/kart-katalog.js'de; buradaki liste sadece id → nadirlik ve setler (ikisi aynı kaynaktan üretildi).
+// =====================================================================
+const KART_NADIR = {"85": "efsanevi", "qr": "epik", "3lig": "nadir", "izmir": "nadir", "popeyes": "siradan", "izin": "siradan", "26k": "nadir", "kule": "siradan", "12tl": "efsanevi", "corbaci": "epik", "labanzubu": "nadir", "bayburt": "siradan", "kpss91": "siradan", "cekran": "siradan", "0517": "epik", "100madde": "efsanevi", "aquapark": "nadir", "durum": "siradan", "hasamele": "nadir", "galileo": "siradan", "35saat": "nadir", "201": "siradan", "awuaqoark": "epik", "50video": "siradan", "enver": "nadir", "1ekmek": "efsanevi", "6saat": "nadir", "gelcem": "epik", "kadayif": "siradan", "baskin": "nadir", "8kceket": "epik", "kofteekmek": "nadir", "depoyatma": "siradan", "zanaat": "nadir", "beat": "epik", "zula600": "nadir", "iban": "siradan"};
+const KART_SET = {"berkay": ["85", "qr", "3lig", "izmir", "popeyes", "izin", "26k", "kule"], "kurban": ["12tl", "corbaci", "labanzubu", "bayburt", "kpss91", "cekran"], "halil": ["0517", "100madde", "aquapark", "durum", "hasamele", "galileo"], "burger": ["35saat", "201", "awuaqoark", "50video", "enver"], "salih": ["1ekmek", "6saat", "gelcem", "kadayif", "baskin"], "alihan": ["8kceket", "kofteekmek", "depoyatma"], "cem": ["zanaat", "beat"], "alpaslan": ["zula600", "iban"]};
+const KART_PAKET = {
+  normal: { fiyat: 50, adet: 4, agirlik: { siradan: 62, nadir: 28, epik: 8.5, efsanevi: 1.5 }, garanti: null },
+  altin: { fiyat: 250, adet: 4, agirlik: { siradan: 30, nadir: 45, epik: 20, efsanevi: 5 }, garanti: "epik" },
+};
+const KART_BOZ = { siradan: 5, nadir: 15, epik: 60, efsanevi: 300 };
+const KART_SET_ODUL = 200;
+const KART_ISLEMLERI = ["kartPaket", "kartBoz", "kartTeklif", "kartKabul", "kartReddet", "kartIptal"];
+function kartCek(agirlik, enAz) {
+  const sira = ["siradan", "nadir", "epik", "efsanevi"];
+  let havuz = sira.filter((n) => !enAz || sira.indexOf(n) >= sira.indexOf(enAz));
+  const top = havuz.reduce((t, n) => t + agirlik[n], 0);
+  let r = randomInt(0, 1_000_000) / 1_000_000 * top, nadir = havuz[havuz.length - 1];
+  for (const n of havuz) { if (r < agirlik[n]) { nadir = n; break; } r -= agirlik[n]; }
+  const adaylar = Object.keys(KART_NADIR).filter((id) => KART_NADIR[id] === nadir);
+  return adaylar[randomInt(0, adaylar.length)];
+}
+function kartSetKontrol(kol) {
+  // yeni tamamlanan setler için ödül (bir kez)
+  kol.setOdul = kol.setOdul || {};
+  const yeni = [];
+  for (const [set, idler] of Object.entries(KART_SET)) if (!kol.setOdul[set] && idler.every((id) => (kol.kartlar[id] || 0) > 0)) { kol.setOdul[set] = true; yeni.push(set); }
+  return yeni;
+}
+async function kartIslem(db, kim, govde, now) {
+  const tur = govde.islem;
+  const cuzRef = db.collection("borsa_cuzdan").doc(kim.uid);
+  const kolRef = db.collection("kart_koleksiyon").doc(kim.uid);
+  const kumarRef = db.collection("borsa").doc("kumar");
+  const kasaYaz = (tx, x) => { if (x) tx.set(kumarRef, { bekleyen: FieldValue.increment(r6(x)) }, { merge: true }); };
+  const logYaz = (tx, detay, bkc) => tx.set(db.collection("borsa_log").doc(), { coin: ANA, uid: kim.uid, ad: kim.ad, tur: "kart", detay, bkc: r6(bkc), btl: 0, ms: now, tarih: FieldValue.serverTimestamp() });
+  const kolBos = () => ({ uid: kim.uid, ad: kim.ad, kartlar: {}, acilan: 0, setOdul: {} });
+
+  if (tur === "kartPaket") {
+    const P = KART_PAKET[govde.tip] || KART_PAKET.normal, tip = KART_PAKET[govde.tip] ? govde.tip : "normal";
+    return db.runTransaction(async (tx) => {
+      const [cs, ks] = await Promise.all([tx.get(cuzRef), tx.get(kolRef)]);
+      if (!cs.exists) throw new Hata("Önce borsaya bir kez gir (cüzdanın açılsın).");
+      const c = cs.data(), kol = ks.exists ? ks.data() : kolBos();
+      kol.ad = kim.ad; kol.kartlar = kol.kartlar || {};
+      if ((c.bkc || 0) + 1e-9 < P.fiyat) throw new Hata(`Paket ${P.fiyat} BERKAY, yeterli BERKAY'ın yok.`);
+      c.bkc = r6(c.bkc - P.fiyat);
+      const cikan = [];
+      for (let i = 0; i < P.adet; i++) cikan.push(kartCek(P.agirlik, i === 0 ? P.garanti : null));
+      cikan.sort((a, b) => ["siradan", "nadir", "epik", "efsanevi"].indexOf(KART_NADIR[a]) - ["siradan", "nadir", "epik", "efsanevi"].indexOf(KART_NADIR[b]));
+      const yeniler = cikan.filter((id) => !(kol.kartlar[id] > 0));
+      for (const id of cikan) kol.kartlar[id] = (kol.kartlar[id] || 0) + 1;
+      kol.acilan = (kol.acilan || 0) + 1; kol.son = now;
+      const setler = kartSetKontrol(kol), odul = setler.length * KART_SET_ODUL;
+      c.bkc = r6(c.bkc + odul);
+      tx.set(cuzRef, c); tx.set(kolRef, kol);
+      kasaYaz(tx, P.fiyat - odul);
+      logYaz(tx, `Kart paketi (${tip}): ${cikan.join(", ")}` + (odul ? ` · set ödülü +${odul}` : ""), odul - P.fiyat);
+      return { ok: true, cikan, yeniler: [...new Set(yeniler)], setler, odul, kol, cuzdan: cuzdanCevap(c) };
+    });
+  }
+  if (tur === "kartBoz") {
+    // fazlalığı boz: 1'den fazla olan kartın bir kopyasını kasaya sat
+    const id = String(govde.kart || "");
+    if (!KART_NADIR[id]) throw new Hata("Böyle bir kart yok.");
+    return db.runTransaction(async (tx) => {
+      const [cs, ks] = await Promise.all([tx.get(cuzRef), tx.get(kolRef)]);
+      if (!cs.exists || !ks.exists) throw new Hata("Önce bir paket aç.");
+      const c = cs.data(), kol = ks.data();
+      const adet = Math.max(1, Math.min(99, Math.floor(sayi(govde.adet) || 1)));
+      if ((kol.kartlar[id] || 0) - adet < 1) throw new Hata("Sadece fazlalıkları bozabilirsin (en az 1 tane kalmalı).");
+      const deger = KART_BOZ[KART_NADIR[id]] * adet;
+      kol.kartlar[id] -= adet; c.bkc = r6((c.bkc || 0) + deger);
+      tx.set(cuzRef, c); tx.set(kolRef, kol); kasaYaz(tx, -deger);
+      logYaz(tx, `Kart bozuldu: ${adet}× ${id} → +${deger}`, deger);
+      return { ok: true, deger, kol, cuzdan: cuzdanCevap(c), mesaj: `+${deger} BERKAY` };
+    });
+  }
+  if (tur === "kartTeklif") {
+    const ver = String(govde.ver || ""), iste = String(govde.iste || ""), alan = String(govde.alan || "");
+    if (!KART_NADIR[ver] || !KART_NADIR[iste]) throw new Hata("Kart seçimi hatalı.");
+    if (!alan || alan === kim.uid) throw new Hata("Kime teklif edeceğini seç.");
+    const [ks, as] = await Promise.all([kolRef.get(), db.collection("kart_koleksiyon").doc(alan).get()]);
+    if (!ks.exists || !((ks.data().kartlar || {})[ver] > 0)) throw new Hata("Vereceğin kart sende yok.");
+    if (!as.exists || !((as.data().kartlar || {})[iste] > 0)) throw new Hata("İstediğin kart onda yok.");
+    const acik = await db.collection("kart_teklif").where("veren", "==", kim.uid).where("durum", "==", "acik").get();
+    if (acik.size >= 10) throw new Hata("En fazla 10 açık teklifin olabilir.");
+    const ref = db.collection("kart_teklif").doc();
+    await ref.set({ veren: kim.uid, verenAd: kim.ad, alan, alanAd: as.data().ad || "?", ver, iste, durum: "acik", t: now });
+    return { ok: true, mesaj: "Teklif gönderildi." };
+  }
+  if (tur === "kartKabul" || tur === "kartReddet" || tur === "kartIptal") {
+    const ref = db.collection("kart_teklif").doc(String(govde.id || "x"));
+    return db.runTransaction(async (tx) => {
+      const ts = await tx.get(ref);
+      if (!ts.exists) throw new Hata("Teklif bulunamadı.");
+      const t = ts.data();
+      if (t.durum !== "acik") throw new Hata("Bu teklif artık açık değil.");
+      if (tur === "kartIptal") { if (t.veren !== kim.uid) throw new Hata("Bu teklif senin değil."); tx.update(ref, { durum: "iptal", bitis: now }); return { ok: true, mesaj: "Teklif geri çekildi." }; }
+      if (t.alan !== kim.uid) throw new Hata("Bu teklif sana değil.");
+      if (tur === "kartReddet") { tx.update(ref, { durum: "red", bitis: now }); return { ok: true, mesaj: "Reddedildi." }; }
+      const vRef = db.collection("kart_koleksiyon").doc(t.veren);
+      const vcRef = db.collection("borsa_cuzdan").doc(t.veren);
+      const [vs, as, cs, vcs] = await Promise.all([tx.get(vRef), tx.get(kolRef), tx.get(cuzRef), tx.get(vcRef)]);
+      const v = vs.exists ? vs.data() : null, a = as.exists ? as.data() : null;
+      if (!v || !((v.kartlar || {})[t.ver] > 0)) { tx.update(ref, { durum: "gecersiz", bitis: now }); return { ok: false, hata: "Teklif eden kişide o kart artık yok." }; }
+      if (!a || !((a.kartlar || {})[t.iste] > 0)) throw new Hata("İstenen kart sende yok.");
+      v.kartlar[t.ver]--; a.kartlar[t.ver] = (a.kartlar[t.ver] || 0) + 1;
+      a.kartlar[t.iste]--; v.kartlar[t.iste] = (v.kartlar[t.iste] || 0) + 1;
+      const odulA = kartSetKontrol(a).length * KART_SET_ODUL, odulV = kartSetKontrol(v).length * KART_SET_ODUL;
+      if (odulA && cs.exists) { const c = cs.data(); c.bkc = r6((c.bkc || 0) + odulA); tx.set(cuzRef, c); }
+      if (odulV && vcs.exists) { const c2 = vcs.data(); c2.bkc = r6((c2.bkc || 0) + odulV); tx.set(vcRef, c2); }
+      kasaYaz(tx, -(odulA + odulV));
+      tx.set(vRef, v); tx.set(kolRef, a); tx.update(ref, { durum: "tamam", bitis: now });
+      return { ok: true, mesaj: "Takas tamam! 🤝" + (odulA ? ` Set tamamlandı: +${odulA} BERKAY` : ""), kol: a };
+    });
+  }
+  throw new Hata("Bilinmeyen kart işlemi.");
+}
+
 const ITIRAF_ISLEMLERI = ["itirafGonder", "itirafTepki", "adminItiraf"];
 function itirafIz(uid) { return createHmac("sha256", crashGizli()).update("itiraf:" + uid).digest("hex").slice(0, 16); }
 async function itirafIslem(db, kim, govde, now) {
@@ -2215,6 +2338,8 @@ export default async function handler(req, res) {
       sonuc = await rekorSifirla(db, kim, govde);
     } else if (ITIRAF_ISLEMLERI.includes(tur)) {
       sonuc = await itirafIslem(db, kim, govde, now);
+    } else if (KART_ISLEMLERI.includes(tur)) {
+      sonuc = await kartIslem(db, kim, govde, now);
     } else if (KUMAR_ISLEMLERI.includes(tur)) {
       sonuc = await kumarIslem(db, kim, govde, now);
     } else if (EKONOMI_ISLEMLERI.includes(tur)) {
@@ -2243,4 +2368,4 @@ export default async function handler(req, res) {
 }
 
 // Testler için dışa açık matematik
-export const _ic = { rekorSifirla, itirafIslem, itirafIz, ruletAn, ruletSonuc, ruletCarpan, slotDegerlendir, SLOT_SEMBOL, SLOT_AGIRLIK, turnuvaOyunu, TURNUVA, minesCarpan, minesBombalar, bjToplam, bjDeste, PLINKO, oyuncuOlay, seviyeHesap, gunGorevleri, haftaAnahtari, GOREVLER, kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };
+export const _ic = { kartIslem, KART_NADIR, KART_SET, rekorSifirla, itirafIslem, itirafIz, ruletAn, ruletSonuc, ruletCarpan, slotDegerlendir, SLOT_SEMBOL, SLOT_AGIRLIK, turnuvaOyunu, TURNUVA, minesCarpan, minesBombalar, bjToplam, bjDeste, PLINKO, oyuncuOlay, seviyeHesap, gunGorevleri, haftaAnahtari, GOREVLER, kumarIslem, crashAn, crashNoktasi, CRASH, ozetBelki, ozetHesapla, coinListesi, VARSAYILAN_COINLER, bakiye, ekonomiIslem, ekonomiAdminIslem, EKONOMI_VARSAYILAN, mmAdim, kullaniciIslem, adminIslem, egriAl, egriSat, egriShortAc, egriGeriAl, pozPnl, likFiyati, ilerlet, yeniDurum, mumYaz, likidasyonlar, pozKapatIc, rotaHedef };

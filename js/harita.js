@@ -2,6 +2,7 @@
 // harita.js — topluluk.html "🗺️ Harita": grubun efsanelerinin geçtiği yerler.
 // Leaflet + CARTO/OpenStreetMap altlığı; sadece bölüm açılınca yüklenir.
 // Firestore: harita/{id} {baslik, ne, hikaye, emoji, lat, lng, ekleyen, resimVar}, harita_resim/{id} {resim}.
+// İzmit Fethi: fetih/{pinId} {sahipUid, sahip, onceki, t}. Pinin 250 m yakınındaysan "Fethet" ile yeri alırsın.
 // ============================================================
 (function () {
   "use strict";
@@ -12,6 +13,7 @@
   const EMOJILER = ["💥", "🏍️", "🍔", "🚓", "🍺", "🏥", "⚽", "😴", "💀", "🤮", "💸", "❤️", "🎂", "🏆", "🤡", "📦"];
   const tsMs = (t) => (t && t.toMillis ? t.toMillis() : Date.now());
 
+  let fetih = new Map();
   let profile = null, harita = null, katman = null, pinler = new Map(), isaretler = new Map(), ekleMod = false, yeniKonum = null, yeniIsaret = null, secEmoji = EMOJILER[0], bekleyenResim = null, basladi = false;
   window.YaparmiAuth.onChange((p) => { profile = p; $("hrEkleBtn").hidden = !p; listeCiz(); });
   window.addEventListener("mk-bolum", (e) => { if (e.detail === "harita") baslat(); });
@@ -42,10 +44,11 @@
     katman = L.layerGroup().addTo(harita);
     harita.on("click", (e) => { if (ekleMod) konumSec(e.latlng); });
     let ilk = true;
+    db.collection("fetih").onSnapshot((s) => { fetih = new Map(s.docs.map((d) => [d.id, d.data()])); isaretleriCiz(); fetihTablo(); }, () => {});
     db.collection("harita").onSnapshot((s) => {
       pinler = new Map(s.docs.map((d) => [d.id, { id: d.id, ...d.data() }]));
       isaretleriCiz();
-      listeCiz();
+      listeCiz(); fetihTablo();
       if (ilk) { ilk = false; sigdir(); const h = location.hash.split("/")[1]; if (h && pinler.has(h)) pinAc(h); }
     }, (e) => { $("hrListe").textContent = "Pinler yüklenemedi: " + e.message; });
   }
@@ -55,11 +58,13 @@
     if (l.length === 1) harita.setView([l[0].lat, l[0].lng], 14);
     else harita.fitBounds(L.latLngBounds(l.map((p) => [p.lat, p.lng])), { padding: [40, 40], maxZoom: 15 });
   }
-  const ikon = (emoji, yeni) => L.divIcon({ className: "hr-pin" + (yeni ? " yeni" : ""), html: `<span><i>${emoji}</i></span>`, iconSize: [40, 40], iconAnchor: [20, 38], popupAnchor: [0, -34] });
+  const renkBul = (ad) => { let h = 0; for (const c of String(ad || "")) h = (h * 31 + c.charCodeAt(0)) % 360; return `hsl(${h} 75% 45%)`; };
+  const ikon = (emoji, yeni, sahip) => L.divIcon({ className: "hr-pin" + (yeni ? " yeni" : "") + (sahip ? " fethedildi" : ""), html: `<span${sahip ? ` style="--sahip:${renkBul(sahip)}"` : ""}><i>${emoji}</i></span>${sahip ? `<b class="hr-bayrak" style="background:${renkBul(sahip)}">🏴</b>` : ""}`, iconSize: [40, 40], iconAnchor: [20, 38], popupAnchor: [0, -34] });
   function isaretleriCiz() {
     katman.clearLayers(); isaretler.clear();
     pinler.forEach((p) => {
-      const m = L.marker([p.lat, p.lng], { icon: ikon(EMOJILER.includes(p.emoji) ? p.emoji : "📍"), title: p.baslik, riseOnHover: true });
+      const f = fetih.get(p.id);
+      const m = L.marker([p.lat, p.lng], { icon: ikon(EMOJILER.includes(p.emoji) ? p.emoji : "📍", false, f && f.sahip), title: p.baslik, riseOnHover: true });
       m.bindPopup(() => popupIcerik(p), { maxWidth: 300, minWidth: 220, className: "hr-popup" });
       m.on("popupopen", () => history.replaceState(null, "", "#harita/" + p.id));
       m.addTo(katman); isaretler.set(p.id, m);
@@ -74,6 +79,16 @@
       db.collection("harita_resim").doc(p.id).get().then((s) => { if (s.exists) img.src = s.data().resim; else img.remove(); }).catch(() => img.remove());
     }
     if (p.hikaye) k.append(el("p", null, p.hikaye));
+    // --- İzmit Fethi ---
+    const f = fetih.get(p.id), fk = el("div", "hr-fetih");
+    fk.append(el("b", null, f ? `🏴 Sahibi: ${f.sahip}` : "🏳️ Kimsenin değil"));
+    if (f && f.onceki) fk.append(el("small", "muted", ` (${f.onceki}'den aldı)`));
+    if (profile && (!f || f.sahipUid !== profile.uid)) {
+      const fb = el("button", "btn hr-fethet", "📍 Fethet (oradaysan)"); fb.type = "button";
+      fb.addEventListener("click", () => fethet(p, fb, fk));
+      fk.append(fb);
+    } else if (!profile) fk.append(el("small", "muted", " · Fethetmek için giriş yap"));
+    k.append(fk);
     const alt = el("div", "hr-pop-alt");
     alt.append(el("small", "muted", `📌 ${p.ekleyen} · ${new Date(tsMs(p.tarih)).toLocaleDateString("tr-TR")}`));
     if (profile && (p.ekleyenUid === profile.uid || profile.rol === "admin")) {
@@ -87,6 +102,36 @@
     }
     k.append(alt);
     return k;
+  }
+  // --- İzmit Fethi: konum doğrula, yeri al ---
+  function mesafe(a, b, c, d) { const R = 6371000, r = Math.PI / 180, x = (c - a) * r, y = (d - b) * r; const h = Math.sin(x / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin(y / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); }
+  function fethet(p, btn, kutu) {
+    if (!navigator.geolocation) { alert("Tarayıcın konum vermiyor."); return; }
+    btn.disabled = true; btn.textContent = "📡 Konum alınıyor…";
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const m = mesafe(pos.coords.latitude, pos.coords.longitude, p.lat, p.lng);
+      if (m > 250) { btn.disabled = false; btn.textContent = "📍 Fethet (oradaysan)"; kutu.append(el("small", "hr-uzak", ` · ${m > 1000 ? (m / 1000).toFixed(1) + " km" : Math.round(m) + " m"} uzaktasın, 250 m'ye gel`)); return; }
+      const f = fetih.get(p.id);
+      try {
+        await db.collection("fetih").doc(p.id).set({ sahipUid: profile.uid, sahip: profile.kullaniciAdi, onceki: f ? f.sahip : "", t: firebase.firestore.FieldValue.serverTimestamp() });
+        btn.textContent = "🏴 Fethedildi!"; if (window.Ekonomi) Ekonomi.toast(`🏴 ${p.baslik} artık senin!` + (f ? ` (${f.sahip}'den aldın)` : ""));
+      } catch (e) { btn.disabled = false; btn.textContent = "📍 Fethet (oradaysan)"; alert(e.message); }
+    }, (e) => { btn.disabled = false; btn.textContent = "📍 Fethet (oradaysan)"; alert(e.code === 1 ? "Konum izni vermelisin." : "Konum alınamadı."); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
+  }
+  function fetihTablo() {
+    const k = $("hrFetihTablo"); if (!k) return;
+    k.textContent = "";
+    const say = new Map();
+    fetih.forEach((f, id) => { if (!pinler.has(id)) return; const x = say.get(f.sahip) || []; x.push(pinler.get(id).baslik); say.set(f.sahip, x); });
+    const l = [...say.entries()].sort((a, b) => b[1].length - a[1].length);
+    if (!l.length) { k.append(el("p", "muted", "Henüz kimse bir yer fethetmedi. Bir efsane yerine git, pine dokun, 📍 Fethet'e bas.")); return; }
+    l.forEach(([ad, yerler], i) => {
+      const s = el("div", "hr-fetih-satir"); s.style.setProperty("--sahip", renkBul(ad));
+      s.append(el("b", "hr-fetih-no", ["🥇", "🥈", "🥉"][i] || i + 1 + "."), el("b", "hr-fetih-ad", ad), el("span", "hr-fetih-say", `🏴 ${yerler.length} yer`), el("small", "muted", yerler.slice(0, 4).join(", ") + (yerler.length > 4 ? "…" : "")));
+      k.append(s);
+    });
+    const bos = [...pinler.keys()].filter((id) => !fetih.has(id)).length;
+    k.append(el("small", "muted", `🏳️ ${bos} yer hâlâ sahipsiz.`));
   }
   function pinAc(id) {
     const p = pinler.get(id), m = isaretler.get(id);

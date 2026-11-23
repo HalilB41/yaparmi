@@ -246,6 +246,68 @@ service cloud.firestore {
 
 
     // Site ayarları: ayarlar/kahin { sinirsizBot } → ana sayfadaki "Sınırsız bot" düğmesi görünsün mü.
+    // ===== Koleksiyon kartları: sadece sunucu (api/borsa.js) yazar =====
+    match /kart_koleksiyon/{uid} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /kart_teklif/{id} {
+      allow read: if hesapli() && (resource.data.veren == request.auth.uid || resource.data.alan == request.auth.uid);
+      allow write: if false;
+    }
+
+    // ===== BerkedIn =====
+    match /berkedin_onay/{uid} {
+      allow read: if true;
+      allow write: if hesapli() && uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['ad', 'onaylar', 't'])
+        && request.resource.data.ad == kullaniciAdim()
+        && request.resource.data.onaylar is map && request.resource.data.onaylar.size() <= 150;
+    }
+    match /berkedin_tavsiye/{id} {
+      allow read: if true;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['hedef', 'metin', 'yazanUid', 'yazan', 't'])
+        && request.resource.data.hedef is string && request.resource.data.hedef.size() <= 20
+        && request.resource.data.metin is string && request.resource.data.metin.size() >= 3 && request.resource.data.metin.size() <= 400
+        && request.resource.data.yazanUid == request.auth.uid && request.resource.data.yazan == kullaniciAdim()
+        && request.resource.data.t == request.time;
+      allow delete: if isAdmin() || (hesapli() && resource.data.yazanUid == request.auth.uid);
+    }
+    match /berkedin_ilan/{id} {
+      allow read: if true;
+      allow create: if hesapli()
+        && request.resource.data.keys().hasOnly(['baslik', 'sirket', 'maas', 'aciklama', 'yazanUid', 'yazan', 't', 'basvuranlar'])
+        && request.resource.data.baslik is string && request.resource.data.baslik.size() >= 2 && request.resource.data.baslik.size() <= 80
+        && request.resource.data.sirket is string && request.resource.data.sirket.size() >= 2 && request.resource.data.sirket.size() <= 60
+        && request.resource.data.maas is string && request.resource.data.maas.size() <= 40
+        && request.resource.data.aciklama is string && request.resource.data.aciklama.size() <= 400
+        && request.resource.data.yazanUid == request.auth.uid && request.resource.data.yazan == kullaniciAdim()
+        && request.resource.data.t == request.time
+        && request.resource.data.basvuranlar is list && request.resource.data.basvuranlar.size() == 0;
+      // Başvuru: listeye sadece kendi adını ekleyebilirsin
+      allow update: if hesapli()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['basvuranlar'])
+        && request.resource.data.basvuranlar.size() == resource.data.basvuranlar.size() + 1
+        && request.resource.data.basvuranlar.hasAll(resource.data.basvuranlar)
+        && kullaniciAdim() in request.resource.data.basvuranlar
+        && !(kullaniciAdim() in resource.data.basvuranlar);
+      allow delete: if isAdmin() || (hesapli() && resource.data.yazanUid == request.auth.uid);
+    }
+
+    // ===== İzmit Fethi: harita pinini fethetme =====
+    match /fetih/{pinId} {
+      allow read: if true;
+      allow write: if hesapli()
+        && exists(/databases/$(database)/documents/harita/$(pinId))
+        && request.resource.data.keys().hasOnly(['sahipUid', 'sahip', 'onceki', 't'])
+        && request.resource.data.sahipUid == request.auth.uid && request.resource.data.sahip == kullaniciAdim()
+        && request.resource.data.onceki is string && request.resource.data.onceki.size() <= 40
+        && request.resource.data.t == request.time
+        && (resource == null || resource.data.sahipUid != request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
     // Grup belgeseli: belgesel/veri. Sadece giriş yapmış (anonim olmayan) üyeler okur, admin yükler.
     match /belgesel/{docId} {
       allow read: if hesapli();

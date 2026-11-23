@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Koleksiyon Kartları · yaparmi.com</title>
+  <meta name="description" content="Grubun efsane anlarından koleksiyon kartları. Paket aç, takas et, seti tamamla." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#eceefa" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0a0c1b" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/ikon-192.png" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema"),r=localStorage.getItem("yaparmi_renk");if(t)document.documentElement.dataset.theme=t;if(r)document.documentElement.dataset.renk=r}catch(e){}</script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/images/ikon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page kr-page">
+    <section class="kr-ust card">
+      <div>
+        <span class="kr-etiket">🃏 KOLEKSİYON KARTLARI</span>
+        <h1>Grubun efsane anları, kart kart</h1>
+        <p class="muted">Paket aç, fazlalıkları boz, arkadaşlarınla takas et. Bir seti tamamlayana <b>+200 BERKAY</b>.</p>
+      </div>
+      <div class="kr-paketler">
+        <button type="button" class="kr-paket" data-tip="normal"><span class="kr-paket-emoji">📦</span><b>Normal paket</b><small>4 kart · 50 BERKAY</small></button>
+        <button type="button" class="kr-paket kr-altin" data-tip="altin"><span class="kr-paket-emoji">✨</span><b>Altın paket</b><small>4 kart, en az 1 epik · 250 BERKAY</small></button>
+        <p class="kr-bakiye" id="krBakiye"></p>
+      </div>
+    </section>
+    <p class="suggest-status" id="krDurum"></p>
+    <nav class="km-sekmeler kr-sekmeler" role="tablist">
+      <button type="button" data-sekme="album" class="on">📒 Albümüm <span id="krSay"></span></button>
+      <button type="button" data-sekme="takas">🤝 Takas <span class="adm-say" id="krTeklifSay" hidden></span></button>
+      <button type="button" data-sekme="siralama">🏆 Koleksiyoncular</button>
+    </nav>
+    <section id="krAlbum" class="kr-bolum"></section>
+    <section id="krTakas" class="kr-bolum" hidden>
+      <div class="card kr-kutu">
+        <h2>🤝 Yeni takas teklifi</h2>
+        <div class="kr-takas-form">
+          <label>Kime <select id="krKime"></select></label>
+          <label>Veriyorum <select id="krVer"></select></label>
+          <label>İstiyorum <select id="krIste"></select></label>
+          <button type="button" class="btn" id="krTeklifBtn">Teklif gönder</button>
+        </div>
+      </div>
+      <div class="card kr-kutu"><h2>📥 Gelen teklifler</h2><div id="krGelen" class="kr-liste"></div></div>
+      <div class="card kr-kutu"><h2>📤 Gönderdiklerim</h2><div id="krGiden" class="kr-liste"></div></div>
+    </section>
+    <section id="krSiralama" class="kr-bolum" hidden><div class="card kr-kutu"><div id="krSiraListe" class="kr-liste"></div></div></section>
+  </main>
+
+  <div class="kr-acilis" id="krAcilis" hidden>
+    <div class="kr-acilis-kartlar" id="krAcilisKartlar"></div>
+    <p id="krAcilisYazi"></p>
+    <button type="button" class="btn" id="krAcilisKapat">Albüme koy</button>
+  </div>
+  <div class="kr-detay" id="krDetay" hidden><div class="kr-detay-ic card" id="krDetayIc"></div></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/ekonomi.js"></script>
+  <script src="js/kart-katalog.js"></script>
+  <script src="js/kartlar.js"></script>
+</body>
+</html>

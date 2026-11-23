@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Berkay'ın Telefonu · yaparmi.com</title>
+  <meta name="description" content="Berkay telefonunu unuttu. Kilidi açabilir misin?" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#eceefa" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0a0c1b" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/ikon-192.png" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema"),r=localStorage.getItem("yaparmi_renk");if(t)document.documentElement.dataset.theme=t;if(r)document.documentElement.dataset.renk=r}catch(e){}</script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/images/ikon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="tl-body">
+  <main class="page tl-page">
+    <div class="tl-yan">
+      <span class="kr-etiket">📱 BERKAY TELEFONUNU UNUTTU</span>
+      <h1>Kilidi açabilir misin?</h1>
+      <p class="muted">Berkay telefonu masada bırakıp Popeyes'e gitti. Kurcala, uygulamaları aç, gizli köşeleri bul.</p>
+      <div class="tl-sirlar card"><b>🔍 Bulunan sırlar <span id="tlSirSay">0/10</span></b><ul id="tlSirListe"></ul><button type="button" class="btn btn-ghost" id="tlSifirla">Baştan başla</button></div>
+    </div>
+    <div class="tl-telefon" id="tlTelefon">
+      <div class="tl-centik"></div>
+      <div class="tl-durum"><span id="tlSaat">23:59</span><span>📶 🔋 1%</span></div>
+      <div class="tl-ekran" id="tlEkran"></div>
+      <div class="tl-alt-cizgi" id="tlEv" title="Ana ekran"></div>
+    </div>
+  </main>
+  <div class="tl-sir-toast" id="tlToast" hidden></div>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/telefon.js"></script>
+</body>
+</html>
