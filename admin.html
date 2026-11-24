@@ -526,6 +526,17 @@
         <div class="adm-intro wide"><b>🎮 Oyunlar</b> Rekor tabloları ve Kasksız 85 kaza resmi.</div>
 
       <div class="panel card admin-section">
+        <h2>🕹️ Macera bölüm kilitleri</h2>
+        <p class="muted">Herkes için başlangıç bölümü: seçtiğin bölüme kadar (o dahil) her bölüm herkese açık olur. 1 seçersen normal düzen: herkes 1. bölümden başlar. Tüm adminler için hepsini açarsan bütün cihazlarında 50 bölüm açık gelir.</p>
+        <div class="tpl-form adm-form">
+          <label>Herkes şu bölümden başlasın <select id="maceraBaslangic"></select></label>
+          <label class="tpl-check"><input type="checkbox" id="maceraAdminHepsi" /> Adminlerde tüm bölümler açık olsun</label>
+          <button type="button" class="admin-btn approve" id="maceraKaydet">💾 Kaydet</button>
+        </div>
+        <p class="suggest-status" id="maceraDurum"></p>
+      </div>
+
+      <div class="panel card admin-section">
         <h2>🧹 Rekorları sıfırla</h2>
         <p class="muted">Seçtiğin oyunun grup rekor tablosunu ve herkesin kişisel rekorunu siler (BERKAY rekor ödülü yeniden kazanılabilir olur). Boksta puanlama değişti, eski 999'ları silmek için kullan. Geri alınamaz.</p>
         <div class="tpl-form adm-form">
@@ -663,6 +674,9 @@
   <script src="js/kahin-paylas.js"></script>
   <script src="js/kahin-ayar-admin.js"></script>
   <script src="js/duyuru-admin.js"></script>
+  <script src="js/macera-seviye.js"></script>
+  <script src="js/macera-seviye2.js"></script>
+  <script src="js/macera-admin.js"></script>
   <script src="js/belgesel-admin.js"></script>
   <script src="js/sayac.js"></script>
   <script src="js/cark-ciz.js"></script>

@@ -318,6 +318,11 @@ service cloud.firestore {
     match /ayarlar/{docId} {
       allow read: if true;
       allow write: if isAdmin() && docId == 'kahin';
+      // Macera bölüm kilitleri: herkes için başlangıç bölümü + adminlerde hepsi açık
+      allow write: if isAdmin() && docId == 'macera'
+        && request.resource.data.keys().hasOnly(['baslangic', 'adminHepsi', 'kim'])
+        && request.resource.data.baslangic is int && request.resource.data.baslangic >= 1 && request.resource.data.baslangic <= 50
+        && request.resource.data.adminHepsi is bool;
       allow write: if isAdmin() && docId == 'duyuru'
         && request.resource.data.keys().hasOnly(['aktif', 'metin', 'link', 'tur', 'id', 'kim'])
         && request.resource.data.metin is string && request.resource.data.metin.size() <= 300;

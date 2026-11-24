@@ -1966,8 +1966,22 @@
     if (degisti) { try { localStorage.setItem("macera_kayit2", JSON.stringify(kayit)); } catch { /* yok */ } }
   }
   const KAPAK = SEV.map((x) => x.ikon || "🎮");
+  // Admin ayarı (ayarlar/macera): { baslangic: herkes için açık son bölüm, adminHepsi: adminlerde 50 bölüm açık }
+  let maceraAyar = {};
+  function acikSayisi(kayit) {
+    let a = Math.max(kayit.acik || 1, maceraAyar.baslangic || 1);
+    if (maceraAyar.adminHepsi && profile && profile.rol === "admin") a = SEV.length;
+    return Math.min(SEV.length, a);
+  }
   function secimCiz() {
-    const kayit = kayitOku(), acik = kayit.acik || 1;
+    const kayit = kayitOku(), acik = acikSayisi(kayit);
+    const not = $("mcAdminNot");
+    if (not) {
+      const parca = [];
+      if ((maceraAyar.baslangic || 1) > 1) parca.push(`Admin herkes için ${maceraAyar.baslangic}. bölüme kadar açtı.`);
+      if (maceraAyar.adminHepsi && profile && profile.rol === "admin") parca.push("👑 Admin olduğun için tüm bölümler açık.");
+      not.textContent = parca.join(" "); not.hidden = !parca.length;
+    }
     const k = $("mcBolumler"); k.textContent = "";
     SEV.forEach((sv, i) => {
       const kilit = i + 1 > acik;
@@ -1997,6 +2011,7 @@
   async function skorlariYukle() {
     if (typeof db === "undefined" || !db) return;
     try { skorlar = (await db.collection("macera_skor2").get()).docs.map((d) => d.data()); } catch { skorlar = []; }
+    try { const a = await db.collection("ayarlar").doc("macera").get(); maceraAyar = a.exists ? a.data() || {} : {}; } catch { maceraAyar = {}; }
     sunucuIlerleme();
     if (!S) secimCiz(); else siralamaCiz();
   }
