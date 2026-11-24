@@ -3190,13 +3190,8 @@ body::after {
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
-/* Kartlar: hafif üst parlama, koyu gölge */
-.card {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, #fff 3%), var(--surface));
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-}
-:root[data-theme="light"] .card { background: var(--surface); }
+/* Kartlar: koyu gölge (arka plana dokunmuyoruz; bazı kartların kendi renkli zemini var, ör. Macera bölümleri) */
+.card { box-shadow: var(--shadow); }
 a.card:hover, button.card:not(:disabled):hover {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
   box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent), 0 16px 40px -22px color-mix(in srgb, var(--accent) 70%, transparent);
