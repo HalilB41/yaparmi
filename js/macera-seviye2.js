@@ -200,7 +200,7 @@
     },
     {
       ad: "Gerinme.apk", kim: "Burger", tema: "halisaha", mini: "esneme", ikon: "🧘", muzik: "sinav",
-      ipucu: "Esneme: basılı tut (Boşluk / ⬆ / ekrana bas) yeşil çubuk yükselir, bırakınca düşer. 🦵 çubuğun içinde kalsın, ilerleme dolsun. 5 gün.",
+      ipucu: "Esneme: basılı tut (Boşluk / ⬆ / ekrana bas), sayaç dolarken 1… 2… 3… say. Yeşil bölgeye gelince bırak. Erken bırakırsan az esnersin, geç kalırsan kas çeker. Her gün 3 hareket, 5 gün, 5 can.",
       anlat: [
         "Halısaha öncesi Burger gruba bir dosya attı: Gerinme Egzersizleri.apk",
         "'14 günlük bacak açma programı. Ben yaptığım dönem artıyordu.'",

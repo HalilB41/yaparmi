@@ -1063,48 +1063,64 @@ window.MACERA_EK = function (A) {
   // 44) Gerinme.apk: çubuğu bacağın üstünde tut
   // =========================================================
   M.esneme = {
-    GUN: [1, 4, 7, 10, 14], UST: 110, ALT: 470,
-    kur(s) { return { g: s.esnemeG || 0, bar: 250, bv: 0, hedef: 300, hv: 0, hedefY: 300, ilerleme: 30, hedefSaat: 0 }; },
+    GUN: [1, 4, 7, 10, 14],
+    HAREKET: [["Bacak açma", "🤸"], ["Omuz-sırt", "🙆"], ["Boyun çevirme", "🧘"], ["Öne eğilme", "🙇"], ["Yan esneme", "🤾"]],
+    kur(s) { return { g: s.esnemeG || 0, i: 0, dolum: 0, tut: false, can: 5, sonuc: null, sonucT: 0, bekle: 0.6, t: 0 }; },
+    pencere: (g) => [0.74 + g * 0.02, 1.0],
+    hiz: (g) => 0.48 + g * 0.06,
     guncelle(s, o, dt) {
-      const E = M.esneme, z = o.g, bh = 110 - z * 9;
-      s.konus = { x: 760, y: 300 };
+      const E = M.esneme; o.t += dt; s.konus = { x: 760, y: 300 };
+      o.sonucT -= dt;
+      if (o.bekle > 0) { o.bekle -= dt; o.dolum = Math.max(0, o.dolum - dt * 2); return; }
       const basili = G.tus.zipla || G.tus.at || G.imlec.bas;
-      o.bv = kenar(o.bv + (basili ? -1500 : 1150) * dt, -520, 620);
-      o.bar += o.bv * dt;
-      if (o.bar < E.UST) { o.bar = E.UST; o.bv = Math.abs(o.bv) * 0.3; }
-      if (o.bar + bh > E.ALT) { o.bar = E.ALT - bh; o.bv = -Math.abs(o.bv) * 0.3; }
-      o.hedefSaat -= dt;
-      if (o.hedefSaat <= 0) { o.hedefSaat = Math.max(0.35, 1.3 - z * 0.2) * (0.5 + Math.random()); o.hedefY = E.UST + 20 + Math.random() * (E.ALT - E.UST - 40); if (Math.random() < 0.15 + z * 0.08) o.hedefSaat *= 0.4; }
-      o.hv += ((o.hedefY - o.hedef) * (3 + z * 1.6) - o.hv * (2.2 - z * 0.15)) * dt;
-      o.hedef = kenar(o.hedef + o.hv * dt, E.UST + 12, E.ALT - 12);
-      const ic = o.hedef > o.bar && o.hedef < o.bar + bh;
-      o.ilerleme += (ic ? 22 : -(12 + z * 2)) * dt;
-      if (o.ilerleme >= 100) {
-        SES.bitti();
-        if (z + 1 >= E.GUN.length) { mesaj("🧘 14 günlük program bitti! Bacak açıldı", 2.5); return bitir(); }
-        o.g++; s.esnemeG = o.g; o.ilerleme = 30; mesaj(`${E.GUN[o.g]}. gün · kayıt noktası`, 1.4);
-        if (o.g === 2) anlat("7. gün. Burger: 'Omuz sırt esnetmeleri de var.'");
+      const [a, b] = E.pencere(o.g);
+      const hata = (yazi) => {
+        o.can--; o.sonuc = yazi; o.sonucT = 1.2; o.bekle = 0.8; o.tut = false; salla(0.15); bip(220, 120, 0.2, "sawtooth", 0.08);
+        if (o.can <= 0) ol("Kas koptu. Burger: 'Ben yaptığım dönem artıyordu'");
+      };
+      if (basili) {
+        o.tut = true; o.dolum += E.hiz(o.g) * dt;
+        const sayi = Math.floor(o.dolum * 3); if (sayi !== o.sayi && sayi >= 1 && sayi <= 3) { o.sayi = sayi; bip(500 + sayi * 150, 500 + sayi * 150, 0.08, "triangle", 0.06); }
+        if (o.dolum > b + 0.06) return hata("😖 Fazla esnedin, kas çekti!");
+      } else if (o.tut) {
+        o.tut = false; o.sayi = 0;
+        if (o.dolum < 0.12) { o.dolum = 0; return; }
+        if (o.dolum < a) return hata("😐 Az esnedin, bir daha");
+        SES.burger(); o.sonuc = rastgele(["✅ Tam kıvamında!", "✅ Esne esne!", "✅ Bacak açılıyor!"]); o.sonucT = 0.9; o.bekle = 0.6; o.i++;
+        if (o.i >= 3) {
+          SES.bitti();
+          if (o.g + 1 >= E.GUN.length) { mesaj("🧘 14 günlük program bitti! Bacak açıldı", 2.5); return bitir(); }
+          o.g++; s.esnemeG = o.g; o.i = 0; o.can = Math.min(5, o.can + 1); mesaj(`${E.GUN[o.g]}. gün · kayıt noktası`, 1.4);
+          if (o.g === 2) anlat("7. gün. Burger: 'Omuz sırt esnetmeleri de var.'");
+        }
       }
-      if (o.ilerleme <= 0) return ol("Kas koptu. Burger: 'Ben yaptığım dönem artıyordu'");
     },
     ciz(s, o) {
-      const E = M.esneme, bh = 110 - o.g * 9;
+      const E = M.esneme, [a, b] = E.pencere(o.g), har = E.HAREKET[(o.g + o.i) % E.HAREKET.length];
       zemin("#0f172a", "#14532d");
       ctx.fillStyle = "#166534"; ctx.fillRect(0, 420, VW, 140);
-      yuvarlak(400, E.UST - 6, 76, E.ALT - E.UST + 12, 18, "rgba(0,0,0,.55)");
-      const ic = o.hedef > o.bar && o.hedef < o.bar + bh;
-      yuvarlak(406, o.bar, 64, bh, 12, ic ? "rgba(74,222,128,.75)" : "rgba(74,222,128,.4)");
-      emoji("🦵", 438, o.hedef, 38);
-      yuvarlak(500, E.UST, 22, E.ALT - E.UST, 11, "rgba(255,255,255,.15)");
-      const h = (E.ALT - E.UST) * Math.max(0, Math.min(1, o.ilerleme / 100));
-      yuvarlak(500, E.ALT - h, 22, h, 11, o.ilerleme < 25 ? "#ef4444" : "#facc15");
-      emoji("🧘", 760, 340, 140); yazi("Burger", 760, 430, "800 16px sans-serif");
-      emoji("📱", 200, 250, 70); yazi("Gerinme Egzersizleri.apk", 200, 310, "700 13px sans-serif", "#cbd5e1");
-      yazi(`${E.GUN[o.g]}. GÜN / 14`, 200, 160, "900 26px sans-serif", "#fde68a");
-      berkayCiz(200, 470, 100);
+      yazi(`${E.GUN[o.g]}. GÜN / 14`, 200, 150, "900 26px sans-serif", "#fde68a");
+      yazi(`Hareket ${Math.min(3, o.i + 1)}/3 · ${har[0]}`, 200, 182, "800 16px sans-serif", "#e2e8f0");
+      for (let i = 0; i < 5; i++) emoji(i < o.can ? "💪" : "🩹", 130 + i * 34, 220, 24);
+      emoji("📱", 200, 300, 60); yazi("Gerinme Egzersizleri.apk", 200, 350, "700 13px sans-serif", "#cbd5e1");
+      berkayCiz(200, 490, 100);
+      // dairesel sayaç
+      const cx = 480, cy = 300, r = 110, bas = -Math.PI / 2, tam = Math.PI * 2;
+      ctx.lineWidth = 26; ctx.lineCap = "butt";
+      ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.beginPath(); ctx.arc(cx, cy, r, 0, tam); ctx.stroke();
+      ctx.strokeStyle = "rgba(74,222,128,.45)"; ctx.beginPath(); ctx.arc(cx, cy, r, bas + a * tam, bas + b * tam); ctx.stroke();
+      const d = Math.min(1.1, o.dolum), ic = d >= a && d <= b;
+      ctx.strokeStyle = d > b ? "#ef4444" : ic ? "#4ade80" : "#facc15"; ctx.lineCap = "round";
+      if (d > 0.005) { ctx.beginPath(); ctx.arc(cx, cy, r, bas, bas + Math.min(d, 1.06) * tam); ctx.stroke(); }
+      emoji(har[1], cx, cy + 4, 90);
+      const sayi = Math.min(3, Math.floor(d * 3));
+      if (o.tut) yazi(ic ? "ŞİMDİ BIRAK!" : sayi ? `${sayi}…` : "esne…", cx, cy + r + 58, "900 26px sans-serif", ic ? "#4ade80" : "#fff");
+      else if (o.bekle <= 0) yazi("Basılı tut, yeşilde bırak", cx, cy + r + 58, "800 18px sans-serif", "#cbd5e1");
+      if (o.sonucT > 0 && o.sonuc) yazi(o.sonuc, cx, 130, "900 24px sans-serif", o.sonuc.startsWith("✅") ? "#4ade80" : "#fca5a5");
+      emoji("🧘", 790, 340, 130); yazi("Burger", 790, 430, "800 16px sans-serif");
     },
     skor: (o) => `🧘 ${M.esneme.GUN[o.g]}/14. gün`,
-    gorev: () => "Basılı tut = yüksel · 🦵 yeşil çubuğun içinde kalsın",
+    gorev: () => "Basılı tut (Boşluk / ekrana bas), yeşil bölgede bırak",
   };
 
   // =========================================================
