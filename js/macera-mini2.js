@@ -943,18 +943,37 @@ window.MACERA_EK = function (A) {
     ["Alsas-Loren", 520, 340, 3, 0, 24], ["Belçika", 520, 170, 1, 0, 14], ["Lüksemburg", 650, 250, 1, 0, 8], ["Lyon", 660, 430, 2, 0, 18], ["Paris", 800, 220, 3, 2, 30],
   ];
   const HOI_RENK = ["#71717a", "#3b82f6", "#ef4444"];
+  const HOI_DOLGU = ["rgba(113,113,122,.55)", "rgba(37,99,235,.62)", "rgba(220,38,38,.62)"];
+  // Bölgeler: her merkezin Voronoi hücresi (harita dikdörtgeninin, komşulara olan orta dikmelerle kırpılmış hali)
+  const HOI_ALAN = [[30, 100], [930, 100], [930, 540], [30, 540]];
+  const HOI_CEVRE = (() => {
+    const kirp = (poli, ax, ay, bx, by) => {
+      // a'ya b'den daha yakın noktalar kalır
+      const mx = (ax + bx) / 2, my = (ay + by) / 2, nx = bx - ax, ny = by - ay;
+      const ic = (p) => (p[0] - mx) * nx + (p[1] - my) * ny <= 0, out = [];
+      for (let i = 0; i < poli.length; i++) {
+        const p = poli[i], q = poli[(i + 1) % poli.length], pi = ic(p), qi = ic(q);
+        if (pi) out.push(p);
+        if (pi !== qi) { const dp = (p[0] - mx) * nx + (p[1] - my) * ny, dq = (q[0] - mx) * nx + (q[1] - my) * ny, t = dp / (dp - dq); out.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); }
+      }
+      return out;
+    };
+    return HOI.map((a, i) => HOI.reduce((poli, b, j) => (i === j ? poli : kirp(poli, a[1], a[2], b[1], b[2])), HOI_ALAN));
+  })();
+  const hoiIcinde = (x, y) => { for (let i = 0; i < HOI_CEVRE.length; i++) { const P = HOI_CEVRE[i]; let ic = false; for (let a = 0, b = P.length - 1; a < P.length; b = a++) { if ((P[a][1] > y) !== (P[b][1] > y) && x < ((P[b][0] - P[a][0]) * (y - P[a][1])) / (P[b][1] - P[a][1]) + P[a][0]) ic = !ic; } if (ic) return i; } return -1; };
   M.hoi = {
-    kur: () => ({ t: 0, d: HOI.map(([ad, x, y, b, sahip, asker]) => ({ ad, x, y, b, sahip, asker, yildiz: ad === "Alsas-Loren" })), filo: [], kaynak: -1, imlec: 0, ai: 3 }),
+    kur: () => ({ t: 0, d: HOI.map(([ad, x, y, b, sahip, asker]) => ({ ad, x, y, b, sahip, asker, yildiz: ad === "Alsas-Loren" })), filo: [], kaynak: -1, imlec: 0, ai: 3, surukle: -1 }),
     gonder(o, a, b) {
       const k = o.d[a], n = Math.floor(k.asker / 2); if (n < 1 || a === b) return;
       k.asker -= n; o.filo.push({ x: k.x, y: k.y, hedef: b, n, sahip: k.sahip });
       if (k.sahip === 1) bip(500, 700, 0.06, "triangle", 0.06);
     },
+    // dokun-dokun: önce kendi bölgen, sonra hedef. Seçiliye tekrar dokunmak seçimi kaldırır.
     tikla(o, i) {
       const k = o.d[i];
       if (o.kaynak < 0) { if (k.sahip === 1) o.kaynak = i; }
       else if (i === o.kaynak) o.kaynak = -1;
-      else { M.hoi.gonder(o, o.kaynak, i); o.kaynak = o.d[o.kaynak].sahip === 1 && k.sahip === 1 ? -1 : -1; }
+      else { if (o.d[o.kaynak].sahip === 1) M.hoi.gonder(o, o.kaynak, i); o.kaynak = -1; }
     },
     guncelle(s, o, dt) {
       o.t += dt; s.konus = { x: 110, y: 470 };
@@ -978,11 +997,28 @@ window.MACERA_EK = function (A) {
           if (hedefler.length && Math.floor(k.asker / 2) > o.d[hedefler[0][0]].asker + 2) M.hoi.gonder(o, a, hedefler[0][0]);
         }
       }
+      // klavye
       if (G.sol) o.imlec = (o.imlec + 8) % 9;
       if (G.sag) o.imlec = (o.imlec + 1) % 9;
       if (G.sayi >= 1 && G.sayi <= 9) { o.imlec = G.sayi - 1; M.hoi.tikla(o, G.sayi - 1); }
       if (G.sec || G.at) M.hoi.tikla(o, o.imlec);
-      if (G.tik) { let en = -1, ed = 50; o.d.forEach((k, i) => { const d = uzak(k.x, k.y, G.tik.x, G.tik.y); if (d < ed) { ed = d; en = i; } }); if (en >= 0) { o.imlec = en; M.hoi.tikla(o, en); } }
+      // fare / dokunma: bölgenin her yerine dokunulur; kendi bölgenden sürükleyip hedefte bırakınca gider
+      if (G.tik) {
+        const i = hoiIcinde(G.tik.x, G.tik.y);
+        if (i >= 0) {
+          o.imlec = i;
+          if (o.kaynak >= 0 && i !== o.kaynak) { M.hoi.tikla(o, i); o.surukle = -1; }
+          else if (o.d[i].sahip === 1) { o.surukle = i; o.surukleYeni = o.kaynak !== i; o.kaynak = i; }
+        } else o.kaynak = -1;
+      }
+      if (o.surukle >= 0) {
+        const i = hoiIcinde(G.imlec.x, G.imlec.y);
+        if (!G.imlec.bas) {
+          if (i >= 0 && i !== o.surukle) { M.hoi.gonder(o, o.surukle, i); o.kaynak = -1; }
+          else if (i === o.surukle && !o.surukleYeni) o.kaynak = -1; // seçiliye tekrar dokundu: bırak
+          o.surukle = -1;
+        } else if (i >= 0) o.uzerinde = i;
+      }
       const ben = o.d.filter((k) => k.sahip === 1).length, dus = o.d.filter((k) => k.sahip === 2).length;
       const benFilo = o.filo.some((f) => f.sahip === 1), dusFilo = o.filo.some((f) => f.sahip === 2);
       if ((ben >= 7 && o.d[4].sahip === 1) || (!dus && !dusFilo)) { mesaj("🗺️ Almanya kuruldu!", 2.5); return bitir(); }
@@ -990,25 +1026,37 @@ window.MACERA_EK = function (A) {
       if (o.t > 150) return ol("Süre doldu, Almanya kurulamadı");
     },
     ciz(s, o) {
-      zemin("#0c1f2e", "#14532d");
-      ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.lineWidth = 2;
-      o.d.forEach((a, i) => o.d.forEach((b, j) => { if (j > i && uzak(a.x, a.y, b.x, b.y) < 230) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } }));
-      o.d.forEach((k, i) => {
-        const r = 20 + k.b * 6;
-        ctx.fillStyle = HOI_RENK[k.sahip]; ctx.beginPath(); ctx.arc(k.x, k.y, r, 0, 7); ctx.fill();
-        if (i === o.kaynak) { ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(k.x, k.y, r + 6, 0, 7); ctx.stroke(); }
-        if (i === o.imlec) { ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(k.x, k.y, r + 12, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
-        yazi(String(Math.floor(k.asker)), k.x, k.y + 7, "900 19px sans-serif");
-        yazi(`${i + 1}. ${k.ad}${k.yildiz ? " ⭐" : ""}`, k.x, k.y + r + 18, "800 13px sans-serif", "#e2e8f0");
+      zemin("#0c1f2e", "#0b3b5c");
+      const yol = (P) => { ctx.beginPath(); P.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath(); };
+      HOI_CEVRE.forEach((P, i) => {
+        const k = o.d[i];
+        yol(P); ctx.fillStyle = HOI_DOLGU[k.sahip]; ctx.fill();
+        if (o.surukle >= 0 && G.imlec.bas && o.uzerinde === i && i !== o.surukle) { ctx.fillStyle = "rgba(253,224,71,.25)"; ctx.fill(); }
+        ctx.strokeStyle = "rgba(15,23,42,.9)"; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.stroke();
       });
-      for (const f of o.filo) { ctx.fillStyle = HOI_RENK[f.sahip]; ctx.beginPath(); ctx.arc(f.x, f.y, 9, 0, 7); ctx.fill(); yazi(String(f.n), f.x, f.y - 12, "800 12px sans-serif"); }
-      yuvarlak(VW - 220, 100, 200, 66, 12, "rgba(0,0,0,.5)");
-      yazi(`🔵 Almanya ${o.d.filter((k) => k.sahip === 1).length}  🔴 Fransa ${o.d.filter((k) => k.sahip === 2).length}`, VW - 120, 126, "800 14px sans-serif");
-      yazi(`⏱ ${Math.max(0, 150 - o.t).toFixed(0)} sn`, VW - 120, 152, "800 14px sans-serif", "#fde68a");
-      if (o.kaynak >= 0) yazi(`${o.d[o.kaynak].ad} seçili → hedefe dokun`, VW / 2, 120, "800 16px sans-serif", "#fde68a");
+      // seçili ve klavye imleci: kalın kenar
+      if (o.kaynak >= 0) { yol(HOI_CEVRE[o.kaynak]); ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 6; ctx.stroke(); }
+      if (o.imlec >= 0 && o.imlec !== o.kaynak) { yol(HOI_CEVRE[o.imlec]); ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 2; ctx.setLineDash([8, 6]); ctx.stroke(); ctx.setLineDash([]); }
+      // sürükleme oku
+      if (o.surukle >= 0 && G.imlec.bas) {
+        const a = o.d[o.surukle], bx = G.imlec.x, by = G.imlec.y, an = Math.atan2(by - a.y, bx - a.x);
+        ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(bx, by); ctx.stroke();
+        ctx.fillStyle = "#fde68a"; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx - 18 * Math.cos(an - 0.45), by - 18 * Math.sin(an - 0.45)); ctx.lineTo(bx - 18 * Math.cos(an + 0.45), by - 18 * Math.sin(an + 0.45)); ctx.fill();
+      }
+      o.d.forEach((k, i) => {
+        ctx.fillStyle = "rgba(15,23,42,.75)"; ctx.beginPath(); ctx.arc(k.x, k.y, 24, 0, 7); ctx.fill();
+        ctx.strokeStyle = HOI_RENK[k.sahip]; ctx.lineWidth = 3; ctx.stroke();
+        yazi(String(Math.floor(k.asker)), k.x, k.y + 7, "900 19px sans-serif");
+        yazi(`${i + 1}. ${k.ad}${k.yildiz ? " ⭐" : ""}`, k.x, k.y + 44, "800 13px sans-serif", "#f8fafc");
+      });
+      for (const f of o.filo) { ctx.fillStyle = HOI_RENK[f.sahip]; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 9, 0, 7); ctx.fill(); ctx.stroke(); yazi(String(f.n), f.x, f.y - 13, "800 12px sans-serif"); }
+      yuvarlak(VW - 220, 106, 200, 62, 12, "rgba(0,0,0,.6)");
+      yazi(`🔵 Almanya ${o.d.filter((k) => k.sahip === 1).length}  🔴 Fransa ${o.d.filter((k) => k.sahip === 2).length}`, VW - 120, 130, "800 14px sans-serif");
+      yazi(`⏱ ${Math.max(0, 150 - o.t).toFixed(0)} sn`, VW - 120, 154, "800 14px sans-serif", "#fde68a");
+      if (o.kaynak >= 0) { yuvarlak(VW / 2 - 200, 104, 400, 30, 10, "rgba(0,0,0,.6)"); yazi(`${o.d[o.kaynak].ad} seçili → hedefe dokun ya da sürükle`, VW / 2, 125, "800 15px sans-serif", "#fde68a"); }
     },
     skor: (o) => `🗺️ ${o.d.filter((k) => k.sahip === 1).length}/9`,
-    gorev: () => "Kendi bölgen → hedef · Alsas-Loren dahil 7 bölge",
+    gorev: () => "Kendi bölgenden hedefe sürükle ya da dokun-dokun",
   };
 
   // =========================================================

@@ -188,7 +188,7 @@
     },
     {
       ad: "Alsas-Loren", kim: "Kurban & Alihan", tema: "borsa", mini: "hoi", ikon: "🗺️", muzik: "borsa",
-      ipucu: "Strateji: kendi bölgene, sonra hedefe dokun (ya da numaraları bas, ← → + Boşluk). Askerlerin yarısı gider. Alsas-Loren dahil 7 bölgeyi al ya da Fransa'yı sil.",
+      ipucu: "Strateji: kendi bölgenden hedef bölgeye sürükle-bırak, ya da önce kendi bölgene sonra hedefe dokun (klavyede numaralar). Askerlerin yarısı gider. Alsas-Loren dahil 7 bölgeyi al ya da Fransa'yı sil.",
       anlat: [
         "Kurban sınav yaptı: 'Hangi maden yataklarını aldıktan sonra Almanya kuruluyor?'",
         "Alihan bocaladı, sonra toparladı: 'Alsas-Loren'i mi diyon olm, bunu bilmeyen yok.'",
