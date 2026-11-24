@@ -1951,6 +1951,20 @@
   // eski 11 bölümlük ilerlemeden açılan bölüm sayısını taşı
   try { if (!localStorage.getItem("macera_kayit2") && localStorage.getItem("macera_kayit")) { const e = JSON.parse(localStorage.getItem("macera_kayit")); localStorage.setItem("macera_kayit2", JSON.stringify({ acik: Math.min(SEV.length, e.acik || 1) })); } } catch { /* yok */ }
   function kayitOku() { try { return JSON.parse(localStorage.getItem("macera_kayit2") || "{}"); } catch { return {}; } }
+  // Hesaba kayıtlı süreler (macera_skor2) bu cihazdaki ilerlemeyle birleştirilir: laptopta geçilen bölüm telefonda da açık olur.
+  function sunucuIlerleme() {
+    if (!profile || !skorlar.length) return;
+    const benim = skorlar.filter((x) => x.uid === profile.uid && x.bolum >= 1 && x.bolum <= SEV.length);
+    if (!benim.length) return;
+    const kayit = kayitOku(); let degisti = false;
+    for (const x of benim) {
+      const eski = kayit[x.bolum];
+      if (!eski || x.sure < eski.sure) { kayit[x.bolum] = { sure: x.sure, olum: x.olum, burger: x.burger }; degisti = true; }
+      const ac = Math.min(SEV.length, x.bolum + 1);
+      if ((kayit.acik || 1) < ac) { kayit.acik = ac; degisti = true; }
+    }
+    if (degisti) { try { localStorage.setItem("macera_kayit2", JSON.stringify(kayit)); } catch { /* yok */ } }
+  }
   const KAPAK = SEV.map((x) => x.ikon || "🎮");
   function secimCiz() {
     const kayit = kayitOku(), acik = kayit.acik || 1;
@@ -1983,6 +1997,7 @@
   async function skorlariYukle() {
     if (typeof db === "undefined" || !db) return;
     try { skorlar = (await db.collection("macera_skor2").get()).docs.map((d) => d.data()); } catch { skorlar = []; }
+    sunucuIlerleme();
     if (!S) secimCiz(); else siralamaCiz();
   }
   async function skorGonder(bolum, sure, olum, burger) {
@@ -1997,7 +2012,7 @@
       if (lider && lider.uid === profile.uid && window.Ekonomi) Ekonomi.toast(`👑 ${SEV[bolum - 1].ad} bölümünde grup rekoru senin!`, 4000);
     } catch (e) { console.warn("skor:", e.message); }
   }
-  if (window.YaparmiAuth) YaparmiAuth.onChange((p) => { profile = p; $("mcGiris").hidden = !!p; });
+  if (window.YaparmiAuth) YaparmiAuth.onChange((p) => { profile = p; $("mcGiris").hidden = !!p; sunucuIlerleme(); if (!S) secimCiz(); });
   $("mcSifirla").addEventListener("click", () => { if (confirm("Bu cihazdaki ilerlemen (açılan bölümler ve en iyi sürelerin) silinsin mi? Sıralamadaki süreler kalır.")) { localStorage.removeItem("macera_kayit2"); secimCiz(); } });
   secimCiz();
   skorlariYukle();
