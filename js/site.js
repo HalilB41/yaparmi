@@ -144,19 +144,21 @@
     ["/borsa", "Borsa"], ["/kumarhane", "Kumarhane"], ["/cark", "Çark"], ["/topluluk", "Topluluk"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
-  // Logo: içinde soru işareti olan konuşma balonu + sarı yıldız (renkler CSS'ten, .brand-mark)
+  // Logo: turuncu→pembe kare, içinde soru işareti + sarı piksel kıvılcımlar (images/logo.svg ile aynı)
   const ORB =
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-6 12 12)">' +
-    '<path class="bm-bubble" d="M8 3h8a5 5 0 0 1 5 5v4a5 5 0 0 1-5 5h-6.3l-3.7 3.3c-.5.45-1.3.1-1.3-.57v-3.1A5 5 0 0 1 3 12V8a5 5 0 0 1 5-5z"/>' +
-    '<path class="bm-q" d="M9.7 8.2a2.4 2.4 0 1 1 3.5 2.15c-.75.38-1.2.95-1.2 1.75v.25" fill="none" stroke-width="2.3" stroke-linecap="round"/>' +
-    '<circle class="bm-dot" cx="12" cy="14.9" r="1.3"/></g>' +
-    '<path class="bm-spark" d="M20.6 .6l.75 1.7 1.7.75-1.7.75-.75 1.7-.75-1.7-1.7-.75 1.7-.75z"/></svg>';
+    '<svg viewBox="0 0 64 64" aria-hidden="true"><defs>' +
+    '<linearGradient id="bmG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb21f"/><stop offset=".5" stop-color="#ff6a1a"/><stop offset="1" stop-color="#ff2e7e"/></linearGradient>' +
+    '<linearGradient id="bmP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#ffe9d6"/></linearGradient></defs>' +
+    '<rect x="4" y="4" width="56" height="56" rx="17" fill="url(#bmG)"/><rect x="4" y="4" width="56" height="28" rx="17" fill="#fff" opacity=".12"/>' +
+    '<path d="M22.5 24.5a9.5 9.5 0 1 1 14.2 8.3c-3 1.7-4.7 3.9-4.7 7.2v1.2" fill="none" stroke="url(#bmP)" stroke-width="7.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<rect x="28.2" y="45.6" width="7.6" height="7.6" rx="2" fill="#fff"/>' +
+    '<rect x="46" y="11" width="5" height="5" rx="1" fill="#ffe14d"/><rect x="52" y="17" width="3.4" height="3.4" rx=".8" fill="#ffe14d" opacity=".85"/><rect x="41" y="7.5" width="2.6" height="2.6" rx=".6" fill="#fff" opacity=".7"/></svg>';
   const MOON = '<svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
   const SUN = '<svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 
   const RENKLER = [
-    ["", "Kâhin moru", "#5a3fd4"], ["popeyes", "Popeyes turuncusu", "#e8590c"],
-    ["pembe", "Ehliyet pembesi", "#d6336c"], ["tarla", "Tarla yeşili", "#2b8a3e"],
+    ["", "Neon turuncu", "#ff7a1a"], ["mor", "Kâhin moru", "#9d89ff"],
+    ["pembe", "Pembe", "#ff7aa8"], ["tarla", "Tarla yeşili", "#2b8a3e"],
   ];
   const topbar = document.createElement("header");
   topbar.className = "topbar";
@@ -171,7 +173,7 @@
     '<div class="card tema-panel" id="temaPanel" hidden>' +
     '<div class="tema-baslik">Görünüm</div>' +
     '<div class="tema-mod" role="group" aria-label="Açık / koyu">' +
-    '<button type="button" data-mod="light">☀️ Açık</button><button type="button" data-mod="dark">🌙 Koyu</button><button type="button" data-mod="">💻 Sistem</button></div>' +
+    '<button type="button" data-mod="dark">🌙 Koyu</button><button type="button" data-mod="light">☀️ Açık</button></div>' +
     '<div class="tema-baslik">Renk</div>' +
     '<div class="tema-renkler">' +
     RENKLER.map(([k, ad, c]) => '<button type="button" data-renk="' + k + '" title="' + ad + '" aria-label="' + ad + '" style="--sw:' + c + '"><i></i><span>' + ad + "</span></button>").join("") +
@@ -261,7 +263,7 @@
   const temaPanel = document.getElementById("temaPanel");
   function lsYaz(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch { /* yok sayılabilir */ } }
   function temaCiz() {
-    temaPanel.querySelectorAll("[data-mod]").forEach((b) => b.classList.toggle("on", (root.dataset.theme || "") === b.dataset.mod));
+    temaPanel.querySelectorAll("[data-mod]").forEach((b) => b.classList.toggle("on", (root.dataset.theme || "dark") === b.dataset.mod));
     temaPanel.querySelectorAll("[data-renk]").forEach((b) => b.classList.toggle("on", (root.dataset.renk || "") === b.dataset.renk));
   }
   temaBtn.addEventListener("click", (e) => {
@@ -275,7 +277,7 @@
     const mod = e.target.closest("[data-mod]");
     const renk = e.target.closest("[data-renk]");
     if (mod) {
-      if (mod.dataset.mod) root.dataset.theme = mod.dataset.mod; else delete root.dataset.theme;
+      root.dataset.theme = mod.dataset.mod || "dark";
       lsYaz(TEMA, mod.dataset.mod);
     }
     if (renk) {

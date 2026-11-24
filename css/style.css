@@ -3065,3 +3065,156 @@ body.mc-oynuyor .mc-oyun { scroll-margin-top: 70px; }
 .hr-fetih-satir { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; border-left: 5px solid var(--sahip); background: rgba(148,163,184,.1); }
 .hr-fetih-no { width: 28px; } .hr-fetih-ad { color: var(--sahip); } .hr-fetih-say { font-weight: 800; }
 @media (max-width: 820px) { .tl-telefon { order: -1; } }
+
+/* =========================================================
+   2026 KOYU OYUN TEMASI
+   Varsayılan artık koyu (sayfa başındaki betik data-theme="dark" koyar, "Açık" seçilirse light).
+   Neon turuncu vurgu, mor/camgöbeği ışıklar, ince ızgara zemin, yeni logo.
+   ========================================================= */
+:root, :root[data-theme="dark"] {
+  --bg: #06070d;
+  --surface: #10121c;
+  --surface-2: #171a28;
+  --surface-3: #212538;
+  --ink: #f5f3fb;
+  --ink-2: #c4c0d6;
+  --muted: #8b88a3;
+  --line: #242840;
+  --accent: #ff7a1a;
+  --accent-hover: #ff9746;
+  --accent-ink: #190900;
+  --accent-soft: #2a1608;
+  --accent-line: #6c3410;
+  --neon: #8b5cf6;
+  --neon-2: #22d3ee;
+  --neon-3: #ff2e7e;
+  --sun: #ffd23f;
+  --sun-soft: #3a2f10;
+  --sun-ink: #ffe7a6;
+  --ok: #34d399;
+  --ok-soft: #0f2e22;
+  --err: #ff6b6b;
+  --err-soft: #3a1717;
+  --night: #0b0d16;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  --shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 18px 40px -22px rgba(0, 0, 0, .85);
+  --shadow-lg: 0 30px 70px -24px rgba(0, 0, 0, .9);
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #eef0f7;
+  --surface: #ffffff;
+  --surface-2: #f3f4fa;
+  --surface-3: #e6e8f3;
+  --ink: #15131f;
+  --ink-2: #474257;
+  --muted: #7f7a8f;
+  --line: #dde0ee;
+  --accent: #f0600a;
+  --accent-hover: #d14f04;
+  --accent-ink: #ffffff;
+  --accent-soft: #ffe8d8;
+  --accent-line: #f8c4a0;
+  --sun: #f5b82e;
+  --sun-soft: #fdf0cc;
+  --sun-ink: #4a3300;
+  --ok: #1d8656;
+  --ok-soft: #d8efe2;
+  --err: #c8412c;
+  --err-soft: #f8e0d9;
+  --night: #1a1f2b;
+  --shadow-sm: 0 1px 2px rgba(21, 19, 31, .06);
+  --shadow: 0 1px 2px rgba(21, 19, 31, .05), 0 10px 30px -14px rgba(21, 19, 31, .22);
+  --shadow-lg: 0 24px 60px -20px rgba(21, 19, 31, .35);
+  color-scheme: light;
+}
+/* Renk seçenekleri: varsayılan neon turuncu; mor eski Kâhin rengi */
+:root[data-renk="mor"] { --accent: #9d89ff; --accent-hover: #b4a5ff; --accent-ink: #15102a; --accent-soft: #241d45; --accent-line: #4d4290; }
+:root[data-renk="mor"][data-theme="light"] { --accent: #5a3fd4; --accent-hover: #4830b4; --accent-ink: #fff; --accent-soft: #e9e4fb; --accent-line: #c9bdf5; }
+:root[data-renk="popeyes"]:not([data-theme="light"]) { --accent: #ff7a1a; --accent-hover: #ff9746; --accent-ink: #190900; --accent-soft: #2a1608; --accent-line: #6c3410; }
+
+/* Zemin: üstte renkli ışıklar, altta solan ince ızgara */
+html { background: var(--bg); }
+body::before {
+  inset: -10vmax;
+  opacity: 1 !important;
+  background:
+    radial-gradient(34vmax 26vmax at 10% 0%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 70%),
+    radial-gradient(36vmax 28vmax at 95% 6%, color-mix(in srgb, var(--neon) 30%, transparent), transparent 70%),
+    radial-gradient(40vmax 30vmax at 85% 105%, color-mix(in srgb, var(--neon-2) 16%, transparent), transparent 70%),
+    radial-gradient(34vmax 26vmax at 0% 100%, color-mix(in srgb, var(--neon-3) 14%, transparent), transparent 70%);
+}
+body::after {
+  opacity: 1 !important;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px) !important;
+  background-size: 46px 46px !important;
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 20%, transparent 75%) !important;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 20%, transparent 75%) !important;
+}
+:root[data-theme="light"] body::before { opacity: .55 !important; }
+:root[data-theme="light"] body::after {
+  background-image:
+    linear-gradient(rgba(21, 19, 31, .05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 19, 31, .05) 1px, transparent 1px) !important;
+}
+
+/* Üst bar: koyu cam + alt kenarda neon çizgi */
+.topbar {
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .03), 0 12px 30px -24px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.topbar::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 70%, transparent), color-mix(in srgb, var(--neon) 60%, transparent), transparent);
+}
+.mainnav a { color: var(--ink-2); }
+.mainnav a:hover { background: var(--surface-2); color: var(--ink); }
+.mainnav a.on {
+  background: var(--accent); color: var(--accent-ink);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 60%, #fff 10%), 0 6px 18px -6px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+
+/* Yeni logo: turuncu→pembe kare içinde soru işareti + piksel kıvılcımlar (renkleri sabit) */
+.brand-mark {
+  width: 42px; height: 42px; border-radius: 0; background: none; box-shadow: none;
+  filter: drop-shadow(0 6px 14px rgba(255, 106, 26, .45));
+}
+.brand-mark svg { width: 42px; height: 42px; }
+.brand:hover .brand-mark { transform: rotate(-8deg) scale(1.07); }
+.brand-word { font-weight: 800; letter-spacing: -0.04em; }
+.brand-word b {
+  background: linear-gradient(135deg, #ffb21f, #ff6a1a 45%, #ff2e7e);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Kartlar: hafif üst parlama, koyu gölge */
+.card {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, #fff 3%), var(--surface));
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+:root[data-theme="light"] .card { background: var(--surface); }
+a.card:hover, button.card:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent), 0 16px 40px -22px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* Ana düğmeler: neon parlama */
+.btn,
+#ask-btn, #usernameForm button, #ahirForm button,
+.auth-panel button[type="submit"], .suggest-box button[type="submit"],
+.sp-big-btn, .admin-btn.publish {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 85%, #ffd23f 15%), var(--accent) 55%, color-mix(in srgb, var(--accent) 80%, var(--neon-3) 20%));
+  box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--accent) 90%, transparent), inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.btn:hover,
+#ask-btn:hover, #usernameForm button:hover, #ahirForm button:hover,
+.auth-panel button[type="submit"]:hover, .suggest-box button[type="submit"]:hover,
+.sp-big-btn:hover, .admin-btn.publish:hover { background: var(--accent-hover); filter: brightness(1.05); }
+input[type="text"], input[type="password"], input[type="number"], input:not([type]), textarea, select, .sp-input { background: var(--surface-2); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 10px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-track { background: transparent; }
