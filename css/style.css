@@ -3213,3 +3213,56 @@ input[type="text"], input[type="password"], input[type="number"], input:not([typ
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 10px; border: 2px solid var(--bg); }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* =========================================================
+   SOHBET (sohbet.html, js/dc.js) — Discord benzeri: kanallar + ses odaları
+   ========================================================= */
+.dc-sunucu { display: grid; grid-template-columns: 260px 1fr; padding: 0; overflow: hidden; min-height: 560px; }
+.dc-yan { display: flex; flex-direction: column; background: color-mix(in srgb, var(--surface) 80%, #000 20%); border-right: 1px solid var(--line); min-width: 0; }
+.dc-sunucu-ad { padding: 16px 16px 12px; font-weight: 800; font-size: 1.02rem; border-bottom: 1px solid var(--line); }
+.dc-grup { padding: 16px 16px 6px; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.dc-kanal { display: flex; align-items: center; gap: 8px; width: calc(100% - 16px); margin: 1px 8px; padding: 8px 10px; border: 0; border-radius: 8px; background: none; color: var(--ink-2); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+.dc-kanal span { width: 18px; text-align: center; color: var(--muted); font-weight: 800; }
+.dc-kanal:hover { background: var(--surface-2); color: var(--ink); }
+.dc-kanal.on { background: var(--surface-3); color: var(--ink); }
+.dc-kanal.dc-ses.on { box-shadow: inset 3px 0 0 var(--ok); }
+.dc-kanal em { margin-left: auto; font-style: normal; font-size: .72rem; padding: 1px 7px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); }
+.dc-uyeler { display: grid; gap: 2px; padding: 0 8px 4px 34px; }
+.dc-uye { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; font-size: .88rem; color: var(--ink-2); }
+.dc-uye i { font-style: normal; font-size: .8rem; margin-left: auto; }
+.dc-uye i + i { margin-left: 2px; }
+.dc-av { display: inline-grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--surface-3); color: #fff; font-weight: 800; font-size: .95rem; transition: box-shadow .12s; }
+.dc-av.kucuk { width: 24px; height: 24px; font-size: .72rem; }
+.dc-uye.konusuyor .dc-av { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ok); }
+.dc-kopuk { filter: grayscale(.2); }
+.dc-ben { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 10px; background: color-mix(in srgb, var(--surface) 60%, #000 40%); border-top: 1px solid var(--line); }
+.dc-ben-bilgi { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.dc-ben-bilgi div { display: grid; min-width: 0; }
+.dc-ben-bilgi b { font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dc-ben-bilgi small { font-size: .72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dc-ben-tus { display: flex; gap: 2px; }
+.dc-ben-tus button { width: 34px; height: 34px; border: 0; border-radius: 8px; background: none; cursor: pointer; font-size: 1.05rem; }
+.dc-ben-tus button:hover { background: var(--surface-3); }
+.dc-ben-tus button.kapali { background: var(--err-soft); }
+.dc-ben-tus .dc-kirmizi { background: var(--err-soft); }
+.dc-ana { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.dc-ust { display: flex; align-items: baseline; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.dc-ust small { color: var(--muted); font-size: .8rem; }
+.dc-mesajlar { flex: 1; overflow-y: auto; padding: 14px 18px; display: grid; align-content: start; gap: 14px; max-height: 62vh; min-height: 360px; }
+.dc-msj { display: flex; gap: 12px; }
+.dc-msj-ic { min-width: 0; display: grid; gap: 2px; }
+.dc-msj-bas { display: flex; align-items: baseline; gap: 8px; }
+.dc-msj-bas small { color: var(--muted); font-size: .72rem; }
+.dc-msj p { margin: 0; color: var(--ink-2); line-height: 1.45; overflow-wrap: anywhere; }
+.dc-bos { color: var(--muted); text-align: center; margin: 40px 0; }
+.dc-yaz { display: flex; gap: 8px; margin: 0 18px 14px; padding: 6px 6px 6px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
+.dc-yaz input { flex: 1; min-width: 0; border: 0 !important; background: none !important; color: var(--ink); font: inherit; outline: none; box-shadow: none !important; padding: 8px 0; }
+.dc-yaz button { width: 40px; border: 0; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font-weight: 900; cursor: pointer; }
+.dc-not { margin: -6px 18px 12px; font-size: .82rem; color: var(--err); }
+.dc-ipucu { font-size: .82rem; margin-top: 12px; }
+@media (max-width: 760px) {
+  .dc-sunucu { grid-template-columns: 1fr; }
+  .dc-yan { border-right: 0; border-bottom: 1px solid var(--line); }
+  .dc-ben { margin-top: 8px; }
+  .dc-mesajlar { max-height: 55vh; min-height: 300px; }
+}

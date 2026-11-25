@@ -140,7 +140,7 @@
   // Menü, logo, tema düğmesi ve Giriş Yap butonu buradan eklenir; sayfaların
   // HTML'inde sadece kendi içerikleri var.
   const NAV = [
-    ["/", "Kâhin"], ["/evren", "Evren"], ["/macera", "Macera"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
+    ["/", "Kâhin"], ["/sohbet", "Sohbet"], ["/macera", "Macera"], ["/sosyal", "Sosyal hayat"], ["/galeri", "Galeri"],
     ["/borsa", "Borsa"], ["/kumarhane", "Kumarhane"], ["/cark", "Çark"], ["/topluluk", "Topluluk"],
   ];
   const here = (location.pathname.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/");
@@ -229,7 +229,7 @@
   // ---------------- Telefon: alt menü çubuğu + "Menü" sayfası ----------------
   // Sadece dar ekranda görünür (CSS: .alt-bar). Üstteki yatay menü telefonda gizlenir.
   const ALT = [["/", "🔮", "Kâhin"], ["/borsa", "📈", "Borsa"], ["/kumarhane", "🎰", "Kumar"], ["/cark", "🎡", "Çark"]];
-  const IKON = { "/": "🔮", "/evren": "🌍", "/macera": "🎮", "/sosyal": "🎭", "/galeri": "🖼️", "/borsa": "📈", "/kumarhane": "🎰", "/cark": "🎡", "/topluluk": "📊" };
+  const IKON = { "/": "🔮", "/sohbet": "🎧", "/macera": "🎮", "/sosyal": "🎭", "/galeri": "🖼️", "/borsa": "📈", "/kumarhane": "🎰", "/cark": "🎡", "/topluluk": "📊" };
   const altBar = document.createElement("nav");
   altBar.className = "alt-bar";
   altBar.setAttribute("aria-label", "Hızlı menü");

@@ -693,6 +693,30 @@ service cloud.firestore {
         && request.resource.data.son == request.time;
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
+    // Sohbet sayfası ses odaları (js/dc.js): kim hangi odada + iki kişinin bir kez değiştirdiği bağlantı teklifi
+    match /ses_oda/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if hesapli() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['ad', 'oda', 'mik', 'son'])
+        && request.resource.data.ad == kullaniciAdim()
+        && request.resource.data.oda in ['genel', 'oyun', 'gece']
+        && request.resource.data.mik is bool
+        && request.resource.data.son == request.time;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+    match /ses_sinyal/{id} {
+      allow read: if request.auth != null && (resource.data.kimden == request.auth.uid || resource.data.kime == request.auth.uid);
+      allow create, update: if hesapli() && (
+        (request.resource.data.kimden == request.auth.uid
+          && request.resource.data.keys().hasOnly(['kimden', 'kime', 'oda', 'offer', 'answer', 't'])
+          && request.resource.data.kime is string
+          && request.resource.data.oda in ['genel', 'oyun', 'gece']
+          && request.resource.data.offer is string && request.resource.data.offer.size() < 30000)
+        || (resource != null && resource.data.kime == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['answer'])
+          && request.resource.data.answer is string && request.resource.data.answer.size() < 30000));
+      allow delete: if request.auth != null && (resource.data.kimden == request.auth.uid || resource.data.kime == request.auth.uid);
+    }
     match /evren_sinyal/{id} {
       allow read: if request.auth != null && (resource.data.kimden == request.auth.uid || resource.data.kime == request.auth.uid);
       allow create: if hesapli()

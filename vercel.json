@@ -33,6 +33,11 @@
       "permanent": false
     },
     {
+      "source": "/evren",
+      "destination": "/sohbet",
+      "permanent": false
+    },
+    {
       "source": "/oyun",
       "destination": "/",
       "permanent": false

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sohbet · yaparmi.com</title>
+  <meta name="description" content="Grubun Discord'u: metin kanalı ve tek tıkla girilen sesli sohbet odaları." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#06070d" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/ikon-192.png" />
+  <script>try{var t=localStorage.getItem("yaparmi_tema"),r=localStorage.getItem("yaparmi_renk");document.documentElement.dataset.theme=t==="light"?"light":"dark";if(r)document.documentElement.dataset.renk=r}catch(e){}</script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/images/ikon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page dc-sayfa">
+    <header class="page-head dc-bas">
+      <span class="eyebrow"><i>🎧</i> Sohbet</span>
+      <h1>Grubun <em>Discord'u</em></h1>
+      <p class="lead">Yaz ya da bir ses odasına girip konuş. Ses kişiden kişiye doğrudan gider, hiçbir yere kaydedilmez.</p>
+    </header>
+    <div class="dc-sunucu card">
+      <aside class="dc-yan">
+        <div class="dc-sunucu-ad">👷 Has Ameleler</div>
+        <div class="dc-grup">Metin kanalları</div>
+        <button type="button" class="dc-kanal on" data-metin="genel"><span>#</span> genel</button>
+        <div class="dc-grup">Ses kanalları</div>
+        <div id="dcSesKanallar"></div>
+        <div class="dc-ben" id="dcBen">
+          <div class="dc-ben-bilgi"><span class="dc-av" id="dcBenAv">?</span><div><b id="dcBenAd">Misafir</b><small id="dcBenDurum">Ses bağlı değil</small></div></div>
+          <div class="dc-ben-tus">
+            <button type="button" id="dcMik" title="Mikrofon">🎙️</button>
+            <button type="button" id="dcSagir" title="Kulaklık">🎧</button>
+            <button type="button" id="dcAyril" class="dc-kirmizi" title="Sesten ayrıl" hidden>📞</button>
+          </div>
+        </div>
+      </aside>
+      <section class="dc-ana">
+        <div class="dc-ust"><b># genel</b><small>Ana sayfadaki Sohbet ile aynı kanal</small></div>
+        <div class="dc-mesajlar" id="dcMesajlar" role="log" aria-live="polite"><p class="dc-bos">Yükleniyor…</p></div>
+        <form class="dc-yaz" id="dcForm" autocomplete="off">
+          <input id="dcYazi" maxlength="300" placeholder="#genel kanalına mesaj gönder" enterkeyhint="send" />
+          <button type="submit" aria-label="Gönder">➤</button>
+        </form>
+        <p class="dc-not" id="dcNot" hidden></p>
+      </section>
+    </div>
+    <p class="muted dc-ipucu">🔊 Bir ses kanalına tıkla, mikrofon izni ver, konuş. Konuşanın yuvarlağı yeşil yanar. Bazı mobil hatlarda doğrudan bağlantı kurulamayabilir; o zaman Wi-Fi'den dene.</p>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/ekonomi.js"></script>
+  <script src="js/dc.js"></script>
+</body>
+</html>
