@@ -65,15 +65,27 @@
   const AD_KEY = "yaparmi_username";
   const temizAd = (s) => String(s || "").normalize("NFC").replace(/\s+/g, "").slice(0, 12);
   let sonGonder = 0;
+  // Sohbet adı: önce bu tarayıcıdaki eski ad, sonra hesabın kullanıcı adı denenir.
+  // ahir_kullanicilar/{ad} belgesine kendi uid'ini yazabiliyorsan o ad senindir
+  // (boşsa alınır, seninse güncellenir, başkasınınsa kural reddeder).
+  // Eski ad başka bir hesaba (ör. önceki anonim girişe) aitse otomatik hesabın adına geçer.
+  let benimAd = null;
   async function sohbetAdi() {
-    let ad = ""; try { ad = localStorage.getItem(AD_KEY) || ""; } catch { /* yok */ }
-    if (ad) return ad;
-    const aday = temizAd(profile && profile.kullaniciAdi);
-    if (!aday) throw new Error("Önce sağ üstten giriş yap.");
-    try { await db.collection("ahir_kullanicilar").doc(aday).set({ uid: auth.currentUser.uid }); }
-    catch { throw new Error(`"${aday}" sohbet adı başkasında. Ana sayfadaki Sohbet'ten kendine bir ad seç.`); }
-    try { localStorage.setItem(AD_KEY, aday); } catch { /* yok */ }
-    return aday;
+    const uid = auth.currentUser.uid;
+    if (benimAd && benimAd.uid === uid) return benimAd.ad;
+    let eski = ""; try { eski = temizAd(localStorage.getItem(AD_KEY)); } catch { /* yok */ }
+    const hesap = temizAd(profile && profile.kullaniciAdi);
+    const adaylar = [...new Set([eski, hesap].filter(Boolean))];
+    if (!adaylar.length) throw new Error("Önce sağ üstten giriş yap.");
+    for (const ad of adaylar) {
+      try {
+        await db.collection("ahir_kullanicilar").doc(ad).set({ uid });
+        try { localStorage.setItem(AD_KEY, ad); } catch { /* yok */ }
+        benimAd = { uid, ad };
+        return ad;
+      } catch { /* bu ad başkasının, sıradakini dene */ }
+    }
+    throw new Error(`"${adaylar.join('" / "')}" sohbet adı başka bir hesapta kayıtlı. Admin panelinden ya da farklı bir kullanıcı adıyla dene.`);
   }
   const not = (y) => { $("dcNot").textContent = y || ""; $("dcNot").hidden = !y; };
   $("dcForm").addEventListener("submit", async (e) => {
@@ -90,7 +102,10 @@
       await db.collection("ahir_limits").doc(uid).set({ sonMesajZamani: firebase.firestore.FieldValue.serverTimestamp() });
       inp.value = "";
       if (window.Basarim) Basarim.say("ahir");
-    } catch (err) { not(err.message.includes("permission") ? "Mesaj gönderilemedi (çok hızlı yazmış olabilirsin)." : err.message); }
+    } catch (err) {
+      if (err.message.includes("permission")) { benimAd = null; not("Mesaj gönderilemedi, 3 saniye bekleyip tekrar dene."); }
+      else not(err.message);
+    }
     inp.disabled = false; inp.focus();
   });
 
