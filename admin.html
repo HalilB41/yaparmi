@@ -522,7 +522,7 @@
 
       <!-- ================= OYUNLAR ================= -->
       <section class="adm-panel admin-grid" data-panel="oyunlar" hidden>
-        <div class="adm-intro wide"><b>🎮 Oyunlar</b> Rekor tabloları ve Kasksız 85 kaza resmi.</div>
+        <div class="adm-intro wide"><b>🎮 Oyunlar</b> Macera bölüm kilitleri.</div>
 
       <div class="panel card admin-section">
         <h2>🕹️ Macera bölüm kilitleri</h2>
@@ -533,29 +533,6 @@
           <button type="button" class="admin-btn approve" id="maceraKaydet">💾 Kaydet</button>
         </div>
         <p class="suggest-status" id="maceraDurum"></p>
-      </div>
-
-      <div class="panel card admin-section">
-        <h2>🧹 Rekorları sıfırla</h2>
-        <p class="muted">Seçtiğin oyunun grup rekor tablosunu ve herkesin kişisel rekorunu siler (BERKAY rekor ödülü yeniden kazanılabilir olur). Boksta puanlama değişti, eski 999'ları silmek için kullan. Geri alınamaz.</p>
-        <div class="tpl-form adm-form">
-          <label>Oyun <select id="rekorSifirOyun"><option value="boks">🥊 Boks makinesi</option><option value="penalti">⚽ Penaltı</option><option value="motor">🏍️ Kasksız 85</option></select></label>
-          <button type="button" class="admin-btn reject" id="rekorSifirBtn">🧹 Sıfırla</button>
-        </div>
-        <p class="suggest-status" id="rekorSifirDurum"></p>
-      </div>
-
-      <div class="panel card admin-section">
-        <h2>🏍️ Kasksız 85 kaza resmi</h2>
-        <p class="muted">Spor sayfasındaki motor oyununda kaza anında çıkan resim. Resim yoksa 💥 görünür.</p>
-        <div class="se-img-box">
-            <img id="motorResimOnizleme" alt="Kaza resmi" hidden style="width:120px;height:120px;border-radius:12px;object-fit:cover;border:2px solid var(--accent);" />
-            <div>
-              <input type="file" id="motorResimDosya" accept="image/*" />
-              <button type="button" class="admin-btn reject se-small" id="motorResimSil" hidden>Resmi kaldır</button>
-              <p class="suggest-status" id="motorResimDurum"></p>
-            </div>
-          </div>
       </div>
 
 </section>
@@ -686,7 +663,6 @@
   <script src="js/admin-sekme.js"></script>
   <script src="js/sosyal-hikaye.js"></script>
   <script src="js/sosyal-editor.js"></script>
-  <script src="js/spor-admin.js"></script>
   <script src="js/topluluk-admin.js"></script>
   <script src="js/itiraf-admin.js"></script>
 </body>

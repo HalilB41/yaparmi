@@ -906,7 +906,6 @@ const GOREVLER = [
   { id: "duelloOyna", grup: "sosyal", ad: "1 düello aç ya da kabul et", hedef: 1, odul: 20, esles: (t) => (t === "duello" || t === "duelloAc" ? 1 : 0) },
   { id: "tahmin1", grup: "sosyal", ad: "Tahmin pazarında bahis yap", hedef: 1, odul: 20, esles: (t) => (t === "tahmin" ? 1 : 0) },
   { id: "cark1", grup: "sosyal", ad: "BERKAY çarkını çevir", hedef: 1, odul: 15, esles: (t) => (t === "cark" ? 1 : 0) },
-  { id: "oyun1", grup: "sosyal", ad: "Spor'daki oyunlardan birinde skor yap", hedef: 1, odul: 20, esles: (t) => (t === "oyun" ? 1 : 0) },
   { id: "islem5", grup: "borsa", ad: "Borsada 5 işlem yap", hedef: 5, odul: 30, esles: (t) => (t === "islem" ? 1 : 0) },
   { id: "kaldiracKar", grup: "borsa", ad: "Bir kaldıraç pozisyonunu kârla kapat", hedef: 1, odul: 40, esles: (t, v) => (t === "islem" && v.kar > 0 ? 1 : 0) },
   { id: "coin2", grup: "borsa", ad: "BERKAY dışında bir coin al", hedef: 1, odul: 25, esles: (t, v) => (t === "islem" && v.tur === "spotAl" && v.coin && v.coin !== "BERKAY" ? 1 : 0) },

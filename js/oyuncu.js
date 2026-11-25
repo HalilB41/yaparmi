@@ -28,7 +28,6 @@
     ["duelloOyna", "sosyal", "1 düello aç ya da kabul et", 1, 20, "/kumarhane#duello"],
     ["tahmin1", "sosyal", "Tahmin pazarında bahis yap", 1, 20, "/topluluk#tahmin"],
     ["cark1", "sosyal", "BERKAY çarkını çevir", 1, 15, "/cark"],
-    ["oyun1", "sosyal", "Spor'daki oyunlardan birinde skor yap", 1, 20, "/spor"],
     ["islem5", "borsa", "Borsada 5 işlem yap", 5, 30, "/borsa"],
     ["kaldiracKar", "borsa", "Bir kaldıraç pozisyonunu kârla kapat", 1, 40, "/borsa"],
     ["coin2", "borsa", "BERKAY dışında bir coin al", 1, 25, "/borsa"],

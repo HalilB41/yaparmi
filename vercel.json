@@ -18,6 +18,11 @@
       "permanent": false
     },
     {
+      "source": "/spor",
+      "destination": "/macera",
+      "permanent": false
+    },
+    {
       "source": "/oyun",
       "destination": "/",
       "permanent": false

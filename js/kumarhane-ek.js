@@ -479,7 +479,7 @@
       g.append(ul);
     }
   }
-  $("tuKatil").addEventListener("click", async () => {
+  if ($("tuKatil")) $("tuKatil").addEventListener("click", async () => {
     if (!tu) return;
     if (!confirm(`${OYUN_AD[tu.oyun]} turnuvasına ${tu.giris} BERKAY'a katılıyorsun. Hafta sonuna kadar en iyi skorun sayılır. Tamam mı?`)) return;
     $("tuKatil").disabled = true;

@@ -25,7 +25,7 @@
     { ad: "Berkaypedia Kütüphanesi", ikon: "📖", x: 34, y: 4, w: 10, h: 8, renk: "#78350f", cati: "#b45309", link: "/topluluk#wiki", kapi: "alt" },
     { ad: "Kâhin Çadırı", ikon: "🔮", x: 47, y: 5, w: 8, h: 7, renk: "#701a75", cati: "#c026d3", link: "/", kapi: "alt", cadir: true },
     { ad: "Mez4 Deposu", ikon: "📦", x: 3, y: 24, w: 14, h: 10, renk: "#374151", cati: "#6b7280", link: "/macera", kapi: "ust", yazi: "MEZ4" },
-    { ad: "Spor Salonu", ikon: "⚽", x: 19, y: 25, w: 8, h: 7, renk: "#065f46", cati: "#10b981", link: "/spor", kapi: "ust" },
+    { ad: "Oyun Salonu", ikon: "🎮", x: 19, y: 25, w: 8, h: 7, renk: "#065f46", cati: "#10b981", link: "/macera", kapi: "ust" },
     { ad: "Galeri", ikon: "🖼️", x: 34, y: 25, w: 8, h: 7, renk: "#9f1239", cati: "#f43f5e", link: "/galeri", kapi: "ust" },
     { ad: "Topluluk Meydanı Kulübü", ikon: "📊", x: 45, y: 24, w: 10, h: 7, renk: "#854d0e", cati: "#eab308", link: "/topluluk", kapi: "ust" },
   ];

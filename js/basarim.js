@@ -12,7 +12,7 @@
 
   const KATEGORILER = [
     ["kahin", "🔮", "Kâhin ve Sohbet"],
-    ["spor", "🥊", "Spor"],
+    ["macera", "🎮", "Macera"],
     ["grup", "🤝", "Grup"],
     ["diger", "📚", "Sosyal hayat, galeri"],
     ["gizli", "🌙", "Gizli"],
@@ -25,25 +25,18 @@
     { id: "ahir_ilk", k: "kahin", ikon: "💬", ad: "Sohbete hoş geldin", acik: "Sohbete ilk mesajını yaz.", sayac: "ahir", hedef: 1 },
     { id: "ahir_20", k: "kahin", ikon: "📣", ad: "Sohbetin sesi", acik: "Sohbete 20 mesaj yaz.", sayac: "ahir", hedef: 20 },
 
-    { id: "boks_ilk", k: "spor", ikon: "🥊", ad: "İlk yumruk", acik: "Torbaya ilk kez vur.", sayac: "boks_vurus", hedef: 1 },
-    { id: "boks_50", k: "spor", ikon: "💪", ad: "Torba düşmanı", acik: "Torbaya toplam 50 kez vur.", sayac: "boks_vurus", hedef: 50 },
-    { id: "boks_500", k: "spor", ikon: "👊", ad: "Fena değil", acik: "Boks makinesinde 500'ü geç.", sayac: "boks_rekor", hedef: 500 },
-    { id: "boks_900", k: "spor", ikon: "🍔", ad: "Burger'in rakibi", acik: "Boks makinesinde 900'ü geç.", sayac: "boks_rekor", hedef: 900 },
-    { id: "boks_999", k: "spor", ikon: "🏆", ad: "Efsane", acik: "Boks makinesinde tam 999 vur.", sayac: "boks_rekor", hedef: 999 },
-    { id: "el_kirik", k: "spor", ikon: "🦴", ad: "Çıt!", acik: "Boks yaparken elini kır.", sayac: "el_kirik", hedef: 1 },
-    { id: "el_kirik_5", k: "spor", ikon: "🏥", ad: "Ortopedinin gediklisi", acik: "Elini 5 kez kır.", sayac: "el_kirik", hedef: 5 },
-    { id: "gol_ilk", k: "spor", ikon: "⚽", ad: "İlk gol", acik: "Penaltıda Kurban'a gol at.", sayac: "gol", hedef: 1 },
-    { id: "gol_10", k: "spor", ikon: "📚", ad: "Kurban'ın kâbusu", acik: "Penaltıda toplam 10 gol at.", sayac: "gol", hedef: 10 },
-    { id: "gol_seri3", k: "spor", ikon: "🎩", ad: "Hat-trick", acik: "Üst üste 3 penaltı golü at.", sayac: "gol_seri", hedef: 3 },
-    { id: "kubi85", k: "spor", ikon: "🏍️", ad: "Kubiii 85'i gördüm", acik: "Kasksız 85'te hızı 85'e çıkar.", sayac: "motor_hiz", hedef: 85 },
-    { id: "tarla", k: "spor", ikon: "🌾", ad: "Tarlaya vardı", acik: "Kasksız 85'te tarlaya kazasız ulaş.", sayac: "tarla", hedef: 1 },
-    { id: "kaza_10", k: "spor", ikon: "🪖", ad: "Kask nedir?", acik: "Kasksız 85'te 10 kaza yap.", sayac: "kaza", hedef: 10 },
+    // Macera ilerlemesinden (localStorage macera_kayit2) hesaplanır
+    { id: "mc_ilk", k: "macera", ikon: "📦", ad: "Has amele", acik: "Macera'da ilk bölümü bitir.", sayac: "macera_bolum", hedef: 1 },
+    { id: "mc_10", k: "macera", ikon: "🏍️", ad: "Yolun başı", acik: "Macera'da 10 bölüm bitir.", sayac: "macera_bolum", hedef: 10 },
+    { id: "mc_20", k: "macera", ikon: "🛵", ad: "Kurye ruhu", acik: "Macera'da 20 bölüm bitir.", sayac: "macera_bolum", hedef: 20 },
+    { id: "mc_30", k: "macera", ikon: "⏰", ad: "05:17 alarmı", acik: "Macera'da 30 bölüm bitir.", sayac: "macera_bolum", hedef: 30 },
+    { id: "mc_40", k: "macera", ikon: "🗺️", ad: "Alsas-Loren fatihi", acik: "Macera'da 40 bölüm bitir.", sayac: "macera_bolum", hedef: 40 },
+    { id: "mc_final", k: "macera", ikon: "🤓", ad: "Halil'i yendin", acik: "Macera'nın final boss'u Halil'i yen.", sayac: "macera_final", hedef: 1 },
 
 
 
     { id: "davet_1", k: "grup", ikon: "🔗", ad: "Davetçi", acik: "Davet linkinle bir arkadaşın kayıt olsun.", sayac: "davet", hedef: 1 },
     { id: "davet_3", k: "grup", ikon: "👥", ad: "Grup kurucusu", acik: "Davet linkinle 3 arkadaşın kayıt olsun.", sayac: "davet", hedef: 3 },
-    { id: "lider", k: "grup", ikon: "🥇", ad: "Rekortmen", acik: "Bir spor oyununun grup rekor tablosunda 1. ol.", sayac: "lider_x", hedef: 1 },
     { id: "paylas", k: "grup", ikon: "📤", ad: "Yayıncı", acik: "Kâhinin bir cevabını paylaş.", sayac: "paylas", hedef: 1 },
     { id: "bildirim", k: "grup", ikon: "🔔", ad: "Haberim olsun", acik: "Sohbet bildirimlerini aç.", sayac: "bildirim", hedef: 1 },
     { id: "uygulama", k: "grup", ikon: "📲", ad: "Cebimde", acik: "yaparmi.com'u uygulama olarak yükle.", sayac: "uygulama", hedef: 1 },
@@ -173,14 +166,12 @@
     farkli("gun", gun);
     if (simdi.getHours() >= 2 && simdi.getHours() < 5) say("gece");
     document.addEventListener("tema-degisti", (e) => { if (e.detail && e.detail.mod === "dark") say("tema"); });
-    // Eski kayıtlardan gelenler (önceki sürümde oynanmış oyunlar)
+    // Macera ilerlemesi: bitirilen bölüm sayısı ve final
     try {
-      const boks = JSON.parse(localStorage.getItem("spor_boks_eniyi") || "0");
-      if (boks) rekor("boks_rekor", boks);
-      const kirik = JSON.parse(localStorage.getItem("spor_boks_kirik") || "0");
-      if (kirik) rekor("el_kirik", kirik);
-      const pen = JSON.parse(localStorage.getItem("spor_penalti") || "null");
-      if (pen && pen.gol) rekor("gol", pen.gol);
+      const k = JSON.parse(localStorage.getItem("macera_kayit2") || "{}");
+      const biten = Object.keys(k).filter((x) => /^\d+$/.test(x)).length;
+      if (biten) rekor("macera_bolum", biten);
+      if (k[50]) rekor("macera_final", 1);
     } catch { /* yok sayılabilir */ }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", acilis);
