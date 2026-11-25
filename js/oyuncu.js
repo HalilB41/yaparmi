@@ -26,7 +26,6 @@
     ["bj21", "kumar", "Blackjack yap (ilk iki kartta 21)", 1, 60, "/kumarhane#blackjack"],
     ["duelloKazan", "sosyal", "1 düello kazan", 1, 40, "/kumarhane#duello"],
     ["duelloOyna", "sosyal", "1 düello aç ya da kabul et", 1, 20, "/kumarhane#duello"],
-    ["tahmin1", "sosyal", "Tahmin pazarında bahis yap", 1, 20, "/topluluk#tahmin"],
     ["cark1", "sosyal", "BERKAY çarkını çevir", 1, 15, "/cark"],
     ["islem5", "borsa", "Borsada 5 işlem yap", 5, 30, "/borsa"],
     ["kaldiracKar", "borsa", "Bir kaldıraç pozisyonunu kârla kapat", 1, 40, "/borsa"],

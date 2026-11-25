@@ -23,6 +23,16 @@
       "permanent": false
     },
     {
+      "source": "/tahmin",
+      "destination": "/topluluk",
+      "permanent": false
+    },
+    {
+      "source": "/soz",
+      "destination": "/topluluk",
+      "permanent": false
+    },
+    {
       "source": "/oyun",
       "destination": "/",
       "permanent": false

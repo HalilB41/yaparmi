@@ -1,13 +1,10 @@
 // ============================================================
-// merkez.js — topluluk.html: Anket & Vardiya · Tahmin · Sözler · İtiraflar bölümleri arasında geçiş.
-// Eski adresler (/tahmin, /soz) buraya yönlenir. Adres çubuğundaki #, alt sekmeyi de taşır
-// (#vardiya → Anket & Vardiya bölümünde Vardiya, #borc → Sözler'de Borçlar).
+// merkez.js — topluluk.html: Berkaypedia · İtiraflar bölümleri arasında geçiş.
+// Kaldırılan bölümlerin eski adresleri (#tahmin, #harita, #soz…) Berkaypedia'yı açar.
 // ============================================================
 (function () {
   "use strict";
-  const BOLUM = { topluluk: "topluluk", anket: "topluluk", vardiya: "topluluk", lider: "topluluk", sayac: "topluluk",
-    tahmin: "tahmin", soz: "soz", borc: "soz", bekliyor: "soz", odendi: "soz", yandi: "soz", itiraf: "itiraf",
-    wiki: "wiki", olasi: "olasi", harita: "harita" };
+  const BOLUM = { itiraf: "itiraf", wiki: "wiki" };
   // #wiki/Kasksız_85 gibi alt yollar: bölüm ilk parçadan anlaşılır
   const anahtar = () => decodeURIComponent(location.hash.slice(1)).split("/")[0];
   const sekmeler = [...document.querySelectorAll(".mk-sekmeler [data-bolum]")];
@@ -15,7 +12,7 @@
   let acikBolum = null;
   function ac(ad, kaydir) {
     const hash = anahtar();
-    if (!bolumler.some((b) => b.dataset.bolum === ad)) ad = "topluluk";
+    if (!bolumler.some((b) => b.dataset.bolum === ad)) ad = "wiki";
     sekmeler.forEach((b) => { const on = b.dataset.bolum === ad; b.classList.toggle("active", on); b.setAttribute("aria-selected", String(on)); });
     bolumler.forEach((b) => { b.hidden = b.dataset.bolum !== ad; });
     acikBolum = ad;
@@ -24,19 +21,12 @@
       const alt = document.querySelector(`.mk-bolum[data-bolum="${ad}"] .adm-tabs [data-tab].active`);
       history.replaceState(null, "", "#" + (alt ? alt.dataset.tab : ad));
     }
-    document.title = ({ topluluk: "Topluluk", tahmin: "Tahmin Pazarı", soz: "Söz Defteri", itiraf: "İtiraflar", wiki: "Berkaypedia", olasi: "Kim daha olası?", harita: "Efsaneler haritası" })[ad] + " · yaparmi.com";
+    document.title = ({ itiraf: "İtiraflar", wiki: "Berkaypedia" })[ad] + " · yaparmi.com";
     window.dispatchEvent(new CustomEvent("mk-bolum", { detail: ad }));
     if (kaydir) document.querySelector(".mk-sekmeler").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   sekmeler.forEach((b) => b.addEventListener("click", () => ac(b.dataset.bolum)));
   window.addEventListener("hashchange", () => { const b = BOLUM[anahtar()]; if (b && b !== acikBolum) ac(b, true); });
-  ac(BOLUM[anahtar()] || "topluluk");
+  ac(BOLUM[anahtar()] || "wiki");
   window.Merkez = { ac };
-})();
-// Sözler sekmesinde açık borç sayısı (soz.js'in kendi sayacını yansıt)
-(function () {
-  const kaynak = document.getElementById("sozSay_borc"), hedef = document.getElementById("mkSozSay");
-  if (!kaynak || !hedef) return;
-  const yansit = () => { hedef.textContent = kaynak.textContent; hedef.hidden = kaynak.hidden || !kaynak.textContent; };
-  new MutationObserver(yansit).observe(kaynak, { attributes: true, childList: true, characterData: true, subtree: true });
 })();

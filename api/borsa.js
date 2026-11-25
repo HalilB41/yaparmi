@@ -904,7 +904,6 @@ const GOREVLER = [
   { id: "bj21", grup: "kumar", ad: "Blackjack yap (ilk iki kartta 21)", hedef: 1, odul: 60, esles: (t, v) => (t === "bj" && v.blackjack ? 1 : 0) },
   { id: "duelloKazan", grup: "sosyal", ad: "1 düello kazan", hedef: 1, odul: 40, esles: (t, v) => (t === "duello" && v.kazandi ? 1 : 0) },
   { id: "duelloOyna", grup: "sosyal", ad: "1 düello aç ya da kabul et", hedef: 1, odul: 20, esles: (t) => (t === "duello" || t === "duelloAc" ? 1 : 0) },
-  { id: "tahmin1", grup: "sosyal", ad: "Tahmin pazarında bahis yap", hedef: 1, odul: 20, esles: (t) => (t === "tahmin" ? 1 : 0) },
   { id: "cark1", grup: "sosyal", ad: "BERKAY çarkını çevir", hedef: 1, odul: 15, esles: (t) => (t === "cark" ? 1 : 0) },
   { id: "islem5", grup: "borsa", ad: "Borsada 5 işlem yap", hedef: 5, odul: 30, esles: (t) => (t === "islem" ? 1 : 0) },
   { id: "kaldiracKar", grup: "borsa", ad: "Bir kaldıraç pozisyonunu kârla kapat", hedef: 1, odul: 40, esles: (t, v) => (t === "islem" && v.kar > 0 ? 1 : 0) },

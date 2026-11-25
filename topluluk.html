@@ -23,16 +23,11 @@
     <header class="page-head">
       <span class="eyebrow"><i>📊</i> Topluluk</span>
       <h1>Grup <em>Merkezi</em></h1>
-      <p class="lead">Berkaypedia, efsaneler haritası, "kim daha olası", anketler, tahminler, sözler ve itiraflar. Grubun bütün dedikodusu tek yerde.</p>
+      <p class="lead">Berkaypedia ve itiraflar. Grubun bütün dedikodusu tek yerde.</p>
     </header>
 
     <nav class="km-sekmeler mk-sekmeler" role="tablist" aria-label="Bölümler">
-      <button type="button" role="tab" data-bolum="topluluk">📊 Anket &amp; Vardiya</button>
       <button type="button" role="tab" data-bolum="wiki">📖 Berkaypedia</button>
-      <button type="button" role="tab" data-bolum="olasi">🤔 Kim daha olası?</button>
-      <button type="button" role="tab" data-bolum="harita">🗺️ Harita</button>
-      <button type="button" role="tab" data-bolum="tahmin">🎲 Tahmin</button>
-      <button type="button" role="tab" data-bolum="soz">🤝 Sözler <span class="adm-say" id="mkSozSay" hidden></span></button>
       <button type="button" role="tab" data-bolum="itiraf">🤫 İtiraflar</button>
       <a class="mk-sekme-link" href="/belgesel">🎬 Belgesel</a>
       <a class="mk-sekme-link" href="/kartlar">🃏 Kartlar</a>
@@ -41,68 +36,7 @@
     </nav>
 
     <!-- ANKET & VARDİYA -->
-    <section class="mk-bolum" data-bolum="topluluk" id="toplulukSayfa" hidden>
-      <p class="mk-giris">Anket aç, günün sorusunu oyla, haftanın rezilini seç, vardiyanı gir, liderlik tablosunda yerini gör. Yazdığın her şey anında yayında.</p>
-      <div class="card cark-kapi" id="toplulukGiris">
-        <div class="cark-kapi-ico">🔐</div>
-        <p>Oy vermek ve vardiya girmek için sağ üstten giriş yap. Bakmak serbest.</p>
-      </div>
-
-      <nav class="adm-tabs" role="tablist" aria-label="Topluluk bölümleri">
-        <button type="button" role="tab" data-tab="anket">🗳️ Anketler</button>
-        <button type="button" role="tab" data-tab="vardiya">🏭 Vardiya</button>
-        <button type="button" role="tab" data-tab="lider">🏆 Liderlik</button>
-        <button type="button" role="tab" data-tab="sayac">🔢 Sayaçlar</button>
-      </nav>
-
-      <section class="adm-panel" data-panel="anket" hidden>
-        <details class="card tpl-form-kart tpl-anket-ac" id="anketAcKutu">
-          <summary><b>➕ Anket aç</b> <span class="muted">Herkes açabilir, onay beklemez</span></summary>
-          <div class="tpl-form">
-            <label>Tür <select id="kAnketTur"><option value="anket">🗳️ Anket</option><option value="gunun">🌞 Günün Sorusu</option><option value="rezillik">🤡 Haftanın Rezili</option></select></label>
-            <label class="tpl-genis">Soru <input type="text" id="kAnketBaslik" maxlength="160" placeholder="ör. Berkay bu cuma halı sahaya gelir mi?" /></label>
-            <label class="tpl-genis">Seçenekler (her satıra bir tane, 2–10) <textarea id="kAnketSecenek" rows="4" placeholder="Gelir&#10;Gelmez&#10;Gelir ama kaleye geçer"></textarea></label>
-            <button type="button" class="btn" id="kAnketOlustur">Yayınla</button>
-          </div>
-          <p class="suggest-status" id="kAnketDurum"></p>
-        </details>
-        <h2 class="tpl-baslik">Açık anketler</h2>
-        <div class="tpl-liste" id="anketListe"><p class="muted">Yükleniyor…</p></div>
-        <h2 class="tpl-baslik" style="margin-top:28px">Kapananlar</h2>
-        <div class="tpl-liste" id="anketKapali"></div>
-      </section>
-
-      <section class="adm-panel" data-panel="vardiya" hidden>
-        <div class="tpl-sayaclar" id="vardiyaOzet"></div>
-        <div class="card tpl-form-kart">
-          <h2>➕ Vardiyamı gir</h2>
-          <p class="muted">Gittiğin her Hepsiburada (ya da başka yevmiye) gününü gir; takvimde ve liderlikte görünür. Aynı güne tek kayıt, tekrar girersen üstüne yazar.</p>
-          <form id="vardiyaForm" class="tpl-form" autocomplete="off">
-            <label>Tarih <input type="date" id="vardiyaTarih" required /></label>
-            <label>Vardiya <select id="vardiyaTur"><option value="gece">🌙 Gece</option><option value="gunduz">☀️ Gündüz</option><option value="sabah">🌅 Sabah</option></select></label>
-            <label>Bölüm <input type="text" id="vardiyaBolum" maxlength="30" placeholder="Mez2, Mez4, ZP, Jet…" /></label>
-            <label>Yevmiye (₺) <input type="number" id="vardiyaTl" min="0" max="99999" step="50" placeholder="2250" /></label>
-            <label class="tpl-genis">Not <input type="text" id="vardiyaNot" maxlength="120" placeholder="Koreli çocuk feleğimizi sikti…" /></label>
-            <button type="submit" class="btn">Kaydet</button>
-          </form>
-          <p class="suggest-status" id="vardiyaDurum"></p>
-        </div>
-        <h2 class="tpl-baslik">Takvim</h2>
-        <div id="vardiyaListe"><p class="muted">Yükleniyor…</p></div>
-      </section>
-
-      <section class="adm-panel" data-panel="lider" hidden>
-        <div class="tpl-lider-grid" id="liderKutu"><p class="muted">Yükleniyor…</p></div>
-      </section>
-
-      <section class="adm-panel" data-panel="sayac" hidden>
-        <p class="muted">Grup içi sayaçlar; admin panelinden artırılır.</p>
-        <div class="tpl-sayaclar" id="sayacKutu"><p class="muted">Yükleniyor…</p></div>
-      </section>
-  
-    </section>
-
-    <!-- BERKAYPEDIA -->
+        <!-- BERKAYPEDIA -->
     <section class="mk-bolum wk-bolum" data-bolum="wiki" id="wikiBolum" hidden>
       <div class="wk-ust">
         <a class="wk-logo" href="#wiki"><span class="wk-logo-top">🌐</span><span><b>Berkaypedia</b><small>Özgür ansiklopedi (özgür değil)</small></span></a>
@@ -114,114 +48,6 @@
         </div>
       </div>
       <div id="wkIcerik" class="wk-icerik"><p class="muted">Yükleniyor…</p></div>
-    </section>
-
-    <!-- KİM DAHA OLASI -->
-    <section class="mk-bolum" data-bolum="olasi" id="olasiBolum" hidden>
-      <p class="mk-giris">Soruyu oku, aklına gelen ilk kişiye bas, kimin ne dediğini gör. Herkes soru ekleyebilir.</p>
-      <div class="card ol-kart" id="olKart"><p class="muted">Yükleniyor…</p></div>
-      <div class="ol-alt">
-        <form class="card ol-ekle" id="olForm" autocomplete="off" hidden>
-          <h3>➕ Soru ekle</h3>
-          <input id="olSoru" maxlength="140" placeholder="Kimin 30 yaşında hâlâ ehliyetsiz olma ihtimali daha yüksek?" required />
-          <button type="submit" class="btn">Ekle</button>
-          <p class="suggest-status" id="olDurum"></p>
-        </form>
-        <div class="card ol-tablo"><h3>👑 Grubun unvanları</h3><div id="olUnvan"><p class="muted">Yükleniyor…</p></div></div>
-      </div>
-    </section>
-
-    <!-- HARİTA -->
-    <section class="mk-bolum" data-bolum="harita" id="haritaBolum" hidden>
-      <p class="mk-giris">Grubun efsanelerinin geçtiği yerler. Pine tıkla, hikâyesini oku. <b>📍 Pin ekle</b>'ye basıp haritada yere dokunarak sen de ekle.</p>
-      <div class="hr-sahne">
-        <div id="hrHarita" class="hr-harita" aria-label="Efsaneler haritası"></div>
-        <div class="hr-arac">
-          <button type="button" class="btn" id="hrEkleBtn">📍 Pin ekle</button>
-          <button type="button" class="btn ghost" id="hrKonum">🎯 Konumum</button>
-        </div>
-        <div class="hr-ipucu" id="hrIpucu" hidden>Haritada efsanenin geçtiği yere dokun <button type="button" class="link-btn" id="hrIptal">vazgeç</button></div>
-      </div>
-      <form class="card hr-form" id="hrForm" autocomplete="off" hidden>
-        <h3>📍 Yeni efsane</h3>
-        <div class="hr-emojiler" id="hrEmojiler" role="radiogroup" aria-label="Simge"></div>
-        <input id="hrBaslik" maxlength="60" placeholder="Kasksız 85 burada devrildi" required />
-        <input id="hrNe" maxlength="40" placeholder="Ne zaman? (2023 yazı, Kurban Bayramı…)" />
-        <textarea id="hrHikaye" maxlength="600" rows="4" placeholder="Ne oldu? Kim vardı? Kim kaçtı?"></textarea>
-        <label class="hr-foto">📷 Fotoğraf (isteğe bağlı) <input type="file" id="hrFoto" accept="image/*" /></label>
-        <div class="hr-form-alt"><button type="submit" class="btn">Kaydet</button><button type="button" class="link-btn" id="hrFormIptal">Vazgeç</button></div>
-        <p class="suggest-status" id="hrDurum"></p>
-      </form>
-      <div class="card hr-fetih-kutu">
-        <h3>🏴 İzmit Fethi</h3>
-        <p class="muted">Haritadaki efsane yerlerine gerçekten git, pine dokun, <b>📍 Fethet</b>'e bas. 250 m yakınındaysan yer senin olur. Başkası gidip fethedene kadar bayrağın orada dalgalanır.</p>
-        <div id="hrFetihTablo" class="hr-fetih-tablo"></div>
-      </div>
-      <div class="hr-liste" id="hrListe"></div>
-    </section>
-
-    <!-- TAHMİN -->
-    <section class="mk-bolum ek-page" data-bolum="tahmin" id="tahminBolum" hidden>
-      <p class="mk-giris">"Berkay bu hafta spora gider mi?" Bildiğin tarafa BERKAY yatır. Sonuç açıklanınca havuz, bilenler arasında yatırdıkları oranda paylaşılır. Kimse bilemezse herkese iade.</p>
-      <div class="card cark-kapi" id="ekKapi">
-        <div class="cark-kapi-ico">🔐</div>
-        <p id="ekKapiYazi">Yükleniyor…</p>
-        <button type="button" class="btn" id="ekGirisBtn" hidden>Kayıt ol / giriş yap</button>
-      </div>
-      <div id="ekIcerik" hidden>
-        <div class="card ek-cuzdan-serit"><span>🪙 Bakiyen</span><b id="tmBakiye">—</b><a href="/borsa" class="link-btn">Borsa</a></div>
-        <section id="tmAcik" class="tm-liste"><p class="muted">Yükleniyor…</p></section>
-        <h2 class="ek-alt-baslik">📜 Biten tahminler</h2>
-        <section id="tmBiten" class="tm-liste"><p class="muted">Henüz yok.</p></section>
-      </div>
-  
-    </section>
-
-    <!-- SÖZLER -->
-    <section class="mk-bolum" data-bolum="soz" id="sozSayfa" hidden>
-      <p class="mk-giris">"Geçerse herkese dondurma" dendi mi buraya yazılır. Koşul gerçekleşince borç başlar, gün gün sayılır. Ödeyen kanıt fotoğrafını yükler, ödemeyen herkesin önünde durur.</p>
-      <section class="soz-duvar" id="sozDuvar" hidden>
-        <h2 class="tpl-baslik">🧱 Borç duvarı</h2>
-        <div class="soz-duvar-liste" id="sozDuvarListe"></div>
-      </section>
-
-      <div class="card cark-kapi" id="sozGiris" hidden>
-        <div class="cark-kapi-ico">🔐</div>
-        <p>Söz yazmak, şahit olmak ve borç kapatmak için sağ üstten giriş yap. Bakmak serbest.</p>
-      </div>
-
-      <details class="card tpl-form-kart soz-yeni" id="sozYeni" hidden>
-        <summary><h2>➕ Yeni söz / iddia yaz</h2></summary>
-        <form id="sozForm" class="tpl-form" autocomplete="off">
-          <label>Sözü veren <input type="text" id="sozVeren" maxlength="30" list="sozIsimler" placeholder="İbo" required /></label>
-          <label>Kime <input type="text" id="sozKime" maxlength="30" list="sozIsimler" placeholder="Herkese" /></label>
-          <label class="tpl-genis">Ne söz verdi? <input type="text" id="sozMetin" maxlength="200" placeholder="Herkese Magnum dondurma" required /></label>
-          <label class="tpl-genis">Koşul (varsa) <input type="text" id="sozKosul" maxlength="200" placeholder="Berkay sürüşten tekte geçerse" /></label>
-          <label>Son tarih (isteğe bağlı) <input type="date" id="sozSonTarih" /></label>
-          <label>Durum
-            <select id="sozDurum">
-              <option value="bekliyor">⏳ Koşul daha belli değil</option>
-              <option value="borc">💸 Koşul gerçekleşti, borç başladı</option>
-            </select>
-          </label>
-          <button type="submit" class="btn">Deftere yaz</button>
-        </form>
-        <datalist id="sozIsimler"></datalist>
-        <p class="suggest-status" id="sozFormDurum"></p>
-      </details>
-
-      <nav class="adm-tabs" role="tablist" aria-label="Söz durumları">
-        <button type="button" role="tab" data-tab="borc">💸 Borçlar <span class="adm-say" id="sozSay_borc" hidden></span></button>
-        <button type="button" role="tab" data-tab="bekliyor">⏳ Bekleyen <span class="adm-say" id="sozSay_bekliyor" hidden></span></button>
-        <button type="button" role="tab" data-tab="odendi">✅ Ödenen</button>
-        <button type="button" role="tab" data-tab="yandi">🔥 Yanan</button>
-      </nav>
-
-      <section class="adm-panel" data-panel="borc" hidden><div class="tpl-liste" id="sozListe_borc"><p class="muted">Yükleniyor…</p></div></section>
-      <section class="adm-panel" data-panel="bekliyor" hidden><div class="tpl-liste" id="sozListe_bekliyor"></div></section>
-      <section class="adm-panel" data-panel="odendi" hidden><div class="tpl-liste" id="sozListe_odendi"></div></section>
-      <section class="adm-panel" data-panel="yandi" hidden><div class="tpl-liste" id="sozListe_yandi"></div></section>
-  
     </section>
 
     <!-- İTİRAFLAR -->
@@ -257,12 +83,7 @@
   <script src="js/basarim.js"></script>
   <script src="js/bildirim.js"></script>
   <script src="js/merkez.js"></script>
-  <script src="js/topluluk.js"></script>
-  <script src="js/tahmin.js"></script>
-  <script src="js/soz.js"></script>
   <script src="js/itiraf.js"></script>
   <script src="js/wiki.js"></script>
-  <script src="js/olasi.js"></script>
-  <script src="js/harita.js"></script>
 </body>
 </html>
