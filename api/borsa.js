@@ -2337,7 +2337,7 @@ export default async function handler(req, res) {
     } else if (ITIRAF_ISLEMLERI.includes(tur)) {
       sonuc = await itirafIslem(db, kim, govde, now);
     } else if (KART_ISLEMLERI.includes(tur)) {
-      sonuc = await kartIslem(db, kim, govde, now);
+      throw new Hata("Koleksiyon kartları kaldırıldı.");
     } else if (KUMAR_ISLEMLERI.includes(tur)) {
       sonuc = await kumarIslem(db, kim, govde, now);
     } else if (EKONOMI_ISLEMLERI.includes(tur)) {

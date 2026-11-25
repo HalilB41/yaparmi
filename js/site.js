@@ -243,8 +243,8 @@
   altSayfa.innerHTML =
     '<div class="alt-sayfa-kart" role="dialog" aria-label="Bütün bölümler"><div class="alt-tutamac"></div>' +
     '<div class="alt-izgara">' +
-    NAV.concat([["/profil", "Profilim"], ["/topluluk#wiki", "Berkaypedia"], ["/topluluk#itiraf", "İtiraflar"], ["/belgesel", "Belgesel"], ["/kartlar", "Kartlar"], ["/berkedin", "BerkedIn"], ["/telefon", "Berkay'ın Telefonu"]]).map(([href, ad]) =>
-      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || ({ "/profil": "👤", "/topluluk#wiki": "📖", "/topluluk#itiraf": "🤫", "/belgesel": "🎬", "/kartlar": "🃏", "/berkedin": "💼", "/telefon": "📱" })[href] || "🏆") + "</i><span>" + ad + "</span></a>").join("") +
+    NAV.concat([["/profil", "Profilim"], ["/topluluk#wiki", "Berkaypedia"], ["/topluluk#itiraf", "İtiraflar"], ["/belgesel", "Belgesel"], ["/berkedin", "BerkedIn"], ["/telefon", "Berkay'ın Telefonu"]]).map(([href, ad]) =>
+      '<a href="' + href + '"' + (href === here ? ' class="on"' : "") + "><i>" + (IKON[href] || ({ "/profil": "👤", "/topluluk#wiki": "📖", "/topluluk#itiraf": "🤫", "/belgesel": "🎬", "/berkedin": "💼", "/telefon": "📱" })[href] || "🏆") + "</i><span>" + ad + "</span></a>").join("") +
     "</div></div>";
   document.body.appendChild(altBar);
   document.body.appendChild(altSayfa);

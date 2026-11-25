@@ -3,6 +3,11 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/kartlar",
+      "destination": "/kumarhane",
+      "permanent": false
+    },
+    {
       "source": "/ders",
       "destination": "/",
       "permanent": false
