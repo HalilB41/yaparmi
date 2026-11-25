@@ -100,7 +100,7 @@
           if (!d || typeof d.mesaj !== "string" || d.uid === user.uid || !acikMi()) return;
           const ahirAcik = !document.hidden && document.getElementById("panel-ahir") && !document.getElementById("panel-ahir").hidden;
           if (ahirAcik) return;
-          goster("💬 Sohbet", (d.kullaniciAdi || "?") + ": " + d.mesaj.slice(0, 140), "/#sohbet");
+          goster("💬 Sohbet", (d.kullaniciAdi || "?") + ": " + d.mesaj.slice(0, 140), "/sohbet");
         });
       }, () => { dinliyor = false; });
     });
